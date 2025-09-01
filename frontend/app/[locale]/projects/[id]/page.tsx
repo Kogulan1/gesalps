@@ -8,12 +8,14 @@ import { StatusBadge } from "@/components/runs/RunStatus";
 import { authedFetch } from "@/lib/api";
 import Link from "next/link";
 import { useLocale } from "next-intl";
+import { useToast } from "@/components/toast/Toaster";
 
 export default function ProjectDetail() {
   const params = useParams<{id:string, locale:string}>();
   const projectId = params.id;
   const locale = useLocale();
   const supabase = useMemo(()=>createSupabaseBrowserClient(),[]);
+  const { toast } = useToast();
   const [datasets,setDatasets] = useState<any[]>([]);
   const [runs,setRuns] = useState<any[]>([]);
 
@@ -25,11 +27,27 @@ export default function ProjectDetail() {
   useEffect(()=>{load();},[]);
 
   async function onUpload(file: File){
-    const fd = new FormData();
-    fd.append('project_id', projectId);
-    fd.append('file', file);
-    const r = await authedFetch('/v1/datasets/upload', { method:'POST', body: fd });
-    if (r.ok) load();
+    try {
+      const fd = new FormData();
+      fd.append('project_id', projectId);
+      fd.append('file', file);
+      const r = await authedFetch('/v1/datasets/upload', { method:'POST', body: fd });
+      if (!r.ok) {
+        let msg = `HTTP ${r.status}`;
+        try {
+          const body = await r.json();
+          msg = body?.detail || body?.message || JSON.stringify(body);
+        } catch {
+          try { msg = await r.text(); } catch {}
+        }
+        toast({ title: 'Upload failed', description: msg, variant: 'error' });
+        return;
+      }
+      toast({ title: 'Dataset uploaded', variant: 'success' });
+      load();
+    } catch (e:any) {
+      toast({ title: 'Upload error', description: String(e?.message || e), variant: 'error' });
+    }
   }
 
   return (
