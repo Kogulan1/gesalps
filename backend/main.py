@@ -23,6 +23,24 @@ except Exception:
 
 APP_JWKS_CACHE: Dict[str, Any] = {}
 
+def ensure_bucket(name: str) -> None:
+    try:
+        buckets = supabase.storage.list_buckets()  # type: ignore[attr-defined]
+        if isinstance(buckets, list) and any((b.get('id') == name or b.get('name') == name) for b in buckets if isinstance(b, dict)):
+            return
+        # Try create (idempotent across runs)
+        try:
+            supabase.storage.create_bucket(name, public=False)  # type: ignore[call-arg]
+        except Exception:
+            # Some SDKs take options dict instead of kwargs
+            try:
+                supabase.storage.create_bucket(name, {"public": False})  # type: ignore[call-arg]
+            except Exception:
+                pass
+    except Exception:
+        # Non-fatal; upload will still surface a clear error if missing
+        pass
+
 def get_env(name: str) -> str:
     v = os.getenv(name)
     if not v:
@@ -132,6 +150,8 @@ def create_project(p: CreateProject, user: Dict[str, Any] = Depends(require_user
 
 @app.post("/v1/datasets/upload")
 async def upload_dataset(project_id: str = Form(...), file: UploadFile = File(...), user: Dict[str, Any] = Depends(require_user)):
+    # Ensure storage bucket exists (idempotent)
+    ensure_bucket("datasets")
     # Read CSV to infer schema
     content = await file.read()
     try:
@@ -235,6 +255,7 @@ def run_artifacts(run_id: str, user: Dict[str, Any] = Depends(require_user)):
 
 def execute_pipeline(run: Dict[str, Any]) -> Dict[str, Any]:
     # Placeholder: write minimal metrics and dummy artifact paths
+    ensure_bucket("artifacts")
     metrics = {
         "utility": {"ks_mean": 0.07, "corr_delta": 0.05, "auroc": None, "c_index": None},
         "privacy": {"mia_auc": 0.55, "dup_rate": 0.0},
