@@ -177,19 +177,18 @@ async def upload_dataset(project_id: str = Form(...), file: UploadFile = File(..
     # Store original CSV (DB tables use gen_random_uuid() by default; no RPC needed)
     object_name = f"{project_id}/{int(time.time())}_{file.filename or 'dataset'}.csv"
     bucket = supabase.storage.from_("datasets")
-    # Provide content type and allow upsert to avoid name collision errors
+    # Upload using simple bytes payload; rely on unique object_name to avoid collisions.
     try:
-        upload_res = bucket.upload(
-            path=object_name,
-            file=content,
-            file_options={"content-type": file.content_type or "text/csv", "upsert": True},
-        )
+        upload_res = bucket.upload(path=object_name, file=content)
     except Exception as e:
+        print(f"[upload] exception during storage upload: {type(e).__name__}: {e}")
         raise HTTPException(status_code=500, detail=f"Storage upload failed: {e}")
     # supabase-py may return dict or object; check for error fields defensively
     if isinstance(upload_res, dict) and upload_res.get("error"):
+        print(f"[upload] storage returned error dict: {upload_res}")
         raise HTTPException(status_code=500, detail=str(upload_res.get("error")))
     if hasattr(upload_res, "error") and getattr(upload_res, "error"):
+        print(f"[upload] storage returned error attr: {getattr(upload_res, 'error')}")
         raise HTTPException(status_code=500, detail=str(getattr(upload_res, "error")))
 
     # Insert row in datasets
@@ -276,16 +275,11 @@ def execute_pipeline(run: Dict[str, Any]) -> Dict[str, Any]:
         "report_json": f"{run['id']}/report.json",
     }
     # Upload minimal files
-    supabase.storage.from_("artifacts").upload(
-        path=artifacts["report_json"],
-        file=json.dumps(metrics).encode(),
-        file_options={"content-type": "application/json", "upsert": True},
-    )
-    supabase.storage.from_("artifacts").upload(
-        path=artifacts["synthetic_csv"],
-        file=b"col1,col2\n1,2\n3,4\n",
-        file_options={"content-type": "text/csv", "upsert": True},
-    )
+    try:
+        supabase.storage.from_("artifacts").upload(path=artifacts["report_json"], file=json.dumps(metrics).encode())
+        supabase.storage.from_("artifacts").upload(path=artifacts["synthetic_csv"], file=b"col1,col2\n1,2\n3,4\n")
+    except Exception as e:
+        print(f"[artifacts] upload error: {type(e).__name__}: {e}")
     return {"metrics": metrics, "artifacts": artifacts}
 
 def worker_loop():
