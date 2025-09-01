@@ -8,6 +8,7 @@ from typing import Any, Dict, Optional
 
 import pandas as pd
 from fastapi import Depends, FastAPI, Form, HTTPException, UploadFile, Request
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
 from jose import jwt
 import httpx
@@ -79,6 +80,20 @@ async def require_user(request: Request) -> Dict[str, Any]:
     return {"id": uid, "email": claims.get("email")}
 
 app = FastAPI()
+
+@app.get("/")
+def root():
+    return JSONResponse({
+        "ok": True,
+        "message": "Gesalps Backend",
+        "health": "/health",
+        "docs": "/docs",
+    })
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    # Avoid noisy 404s from platform health checks
+    return Response(status_code=204)
 
 @app.get("/health")
 def health():
