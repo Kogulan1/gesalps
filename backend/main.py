@@ -180,9 +180,10 @@ async def upload_dataset(project_id: str = Form(...), file: UploadFile = File(..
     bucket = supabase.storage.from_("datasets")
     # Provide content type and allow upsert to avoid name collision errors
     try:
+        data_stream = io.BytesIO(content)
         upload_res = bucket.upload(
             object_name,
-            content,
+            data_stream,
             {"contentType": file.content_type or "text/csv", "upsert": True},
         )
     except Exception as e:
