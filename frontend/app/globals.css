@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+/* Design tokens: Swiss clinical style */
+:root {
+  /* Palette */
+  --ges-primary: #E30613; /* Swiss red */
+  --ges-primary-600: #C60012;
+  --ges-accent: #111827; /* headings near-black */
+  --ges-muted: #6B7280; /* gray-500 text */
+  --ges-bg: #FFFFFF;
+  --ges-panel: #F9FAFB; /* gray-50 panel */
+  --ges-border: #E5E7EB; /* gray-200 */
+
+  /* Typography */
+  --ges-font-sans: var(--font-geist-sans);
+  --ges-font-mono: var(--font-geist-mono);
+}
+
+@theme inline {
+  --font-sans: var(--ges-font-sans);
+  --font-mono: var(--ges-font-mono);
+}
+
+/* Base */
+html, body {
+  background: var(--ges-bg);
+  color: var(--ges-accent);
+}
+
+body {
+  font-feature-settings: "tnum" 1; /* metric numerals */
+}
+
+/* Utilities for tokens */
+.token-heading { color: var(--ges-accent); }
+.token-muted { color: var(--ges-muted); }
+.token-panel { background: var(--ges-panel); }
+.token-border { border-color: var(--ges-border); }
+.btn-primary { background: var(--ges-primary); color: #fff; }
+.btn-primary:hover { background: var(--ges-primary-600); }
+.btn-secondary { border: 1px solid var(--ges-border); background: transparent; }
+.btn-secondary:hover { background: var(--ges-panel); }
+
+/* Focus styles for accessibility */
+:where(a, button, input, select, textarea, [role="button"]) {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ges-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-white;
+}

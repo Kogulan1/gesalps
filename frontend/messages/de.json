@@ -1,0 +1,128 @@
+{
+  "nav": {
+    "product": "Produkt",
+    "pricing": "Preise",
+    "docs": "Doku",
+    "projects": "Projekte",
+    "signin": "Anmelden",
+    "getStarted": "Loslegen",
+    "dashboard": "Dashboard",
+    "settings": "Einstellungen",
+    "changeLanguage": "Sprache ändern"
+  },
+  "hero": {
+    "title": "Synthetische klinische Daten mit messbarer Privacy & Utility.",
+    "subtitle": "Erzeugen Sie studientaugliche Datensätze und Audit‑Berichte gemäß DSG/GDPR.",
+    "ctaPrimary": "Kostenlos starten",
+    "ctaSecondary": "Doku ansehen"
+  },
+  "report": {
+    "caption": "Privacy–Utility‑Bericht"
+  },
+  "metrics": {
+    "auroc": "AUROC",
+    "cindex": "C‑Index",
+    "mia": "MIA AUC"
+  },
+  "logos": {
+    "trusted": "Vertrauen uns"
+  },
+  "features": {
+    "title1": "Studien‑aware Synthese",
+    "body1": "CTGAN/TVAE/Diffusion mit Überlebens‑ & Zensur‑Support.",
+    "title2": "Privacy–Utility‑Reports",
+    "body2": "KS, Korrelationen, AUROC, C‑Index, MIA, DP‑Budget.",
+    "title3": "Regulatorik‑ready",
+    "body3": "DSG/GDPR/HIPAA Checklisten und Audit‑Trail."
+  },
+  "how": {
+    "header": "So funktioniert’s",
+    "step1": "CSV hochladen",
+    "step2": "Generator wählen",
+    "step3": "Generieren & auswerten",
+    "step4": "Bericht herunterladen"
+  },
+  "pricing": {
+    "header": "Preise",
+    "research": {
+      "title": "Research",
+      "price": "Kostenlos"
+    },
+    "starter": {
+      "title": "Starter",
+      "price": "199 $/Monat"
+    },
+    "pharma": {
+      "title": "Pharma",
+      "price": "2’000 $/Monat"
+    }
+  },
+  "faq": {
+    "header": "Häufige Fragen",
+    "q1": "Wie wird Datenschutz gewährleistet?",
+    "a1": "DP‑Training und MIA‑Prüfungen auf Outputs.",
+    "q2": "Wo läuft die Plattform?",
+    "a2": "Vercel + EU‑Regionen mit Datenabfluss‑Kontrollen.",
+    "q3": "Unterstützt ihr Differential Privacy?",
+    "a3": "Ja, Diffusion mit konfigurierbarem Epsilon.",
+    "q4": "Gibt es On‑Prem?",
+    "a4": "Im Pharma‑Plan inklusive, auch Air‑Gap.",
+    "q5": "Welche Support‑Optionen gibt es?",
+    "a5": "E‑Mail (Starter) und dedizierter Kanal (Pharma)."
+  },
+  "auth": {
+    "signin": {
+      "title": "Anmelden"
+    },
+    "signup": {
+      "title": "Konto erstellen"
+    },
+    "email": "E‑Mail",
+    "password": "Passwort",
+    "confirm": "Passwort bestätigen",
+    "toSignin": "Konto vorhanden? Anmelden",
+    "toSignup": "Neu hier? Konto erstellen",
+    "forgot": "Passwort vergessen?"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "upload": "Datensatz hochladen (CSV)",
+    "recent": "Letzte Jobs",
+    "api": "API‑Status"
+  },
+  "footer": {
+    "privacy": "Datenschutz",
+    "terms": "Bedingungen",
+    "contact": "Kontakt",
+    "copyright": "© 2025 Gesalps"
+  },
+  "projects": {
+    "title": "Projekte",
+    "new": "Neues Projekt",
+    "name": "Projektname"
+  },
+  "datasets": {
+    "upload": "Datensatz hochladen (CSV)",
+    "schema": "Schema‑Vorschau",
+    "columns": "Spalten",
+    "rows": "Zeilen"
+  },
+  "runs": {
+    "start": "Run starten",
+    "method": "Generator",
+    "mode": "Modus",
+    "status": "Status",
+    "view": "Run ansehen",
+    "metrics": "Metriken",
+    "download": {
+      "synthetic": "Synthetic CSV herunterladen",
+      "report": "Report herunterladen"
+    }
+  },
+  "status": {
+    "queued": "Wartend",
+    "running": "Läuft",
+    "succeeded": "Erfolgreich",
+    "failed": "Fehlgeschlagen"
+  }
+}

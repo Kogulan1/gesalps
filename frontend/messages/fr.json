@@ -1,0 +1,128 @@
+{
+  "nav": {
+    "product": "Produit",
+    "pricing": "Tarifs",
+    "docs": "Docs",
+    "projects": "Projets",
+    "signin": "Se connecter",
+    "getStarted": "Commencer",
+    "dashboard": "Tableau de bord",
+    "settings": "Paramètres",
+    "changeLanguage": "Changer de langue"
+  },
+  "hero": {
+    "title": "Données cliniques synthétiques, avec confidentialité et utilité mesurables.",
+    "subtitle": "Générez des jeux de données de niveau essai et des rapports d’audit conformes RGPD/LPD.",
+    "ctaPrimary": "Commencer gratuitement",
+    "ctaSecondary": "Voir la doc"
+  },
+  "report": {
+    "caption": "Rapport confidentialité–utilité"
+  },
+  "metrics": {
+    "auroc": "AUROC",
+    "cindex": "Indice C",
+    "mia": "MIA AUC"
+  },
+  "logos": {
+    "trusted": "Ils nous font confiance"
+  },
+  "features": {
+    "title1": "Synthèse consciente des essais",
+    "body1": "CTGAN/TVAE/Diffusion avec support de survie et censure.",
+    "title2": "Rapports confidentialité–utilité",
+    "body2": "KS, corrélations, AUROC, indice C, MIA, budget DP.",
+    "title3": "Prêt pour la conformité",
+    "body3": "Check‑lists RGPD/LPD/HIPAA et journal d’audit."
+  },
+  "how": {
+    "header": "Comment ça marche",
+    "step1": "Téléverser un CSV",
+    "step2": "Choisir un générateur",
+    "step3": "Générer & évaluer",
+    "step4": "Télécharger le rapport"
+  },
+  "pricing": {
+    "header": "Tarifs",
+    "research": {
+      "title": "Recherche",
+      "price": "Gratuit"
+    },
+    "starter": {
+      "title": "Starter",
+      "price": "199 $/mois"
+    },
+    "pharma": {
+      "title": "Pharma",
+      "price": "2 000 $/mois"
+    }
+  },
+  "faq": {
+    "header": "Questions fréquentes",
+    "q1": "Comment garantissez‑vous la confidentialité ?",
+    "a1": "Apprentissage DP et évaluations MIA sur les sorties.",
+    "q2": "Où est hébergée la plateforme ?",
+    "a2": "Vercel + régions UE avec contrôle d’egress.",
+    "q3": "Supportez‑vous la confidentialité différentielle ?",
+    "a3": "Oui, diffusion avec epsilon configurable.",
+    "q4": "Option on‑premise ?",
+    "a4": "Incluse dans l’offre Pharma, pouvant être isolée.",
+    "q5": "Quelles options de support ?",
+    "a5": "Email (Starter) et canal dédié (Pharma)."
+  },
+  "auth": {
+    "signin": {
+      "title": "Se connecter"
+    },
+    "signup": {
+      "title": "Créer votre compte"
+    },
+    "email": "Email",
+    "password": "Mot de passe",
+    "confirm": "Confirmer le mot de passe",
+    "toSignin": "Vous avez un compte ? Connectez‑vous",
+    "toSignup": "Nouveau ? Créez un compte",
+    "forgot": "Mot de passe oublié ?"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "upload": "Téléverser un jeu de données (CSV)",
+    "recent": "Tâches récentes",
+    "api": "État de l’API"
+  },
+  "footer": {
+    "privacy": "Confidentialité",
+    "terms": "Conditions",
+    "contact": "Contact",
+    "copyright": "© 2025 Gesalps"
+  },
+  "projects": {
+    "title": "Projects",
+    "new": "New project",
+    "name": "Project name"
+  },
+  "datasets": {
+    "upload": "Upload dataset (CSV)",
+    "schema": "Schema preview",
+    "columns": "Columns",
+    "rows": "Rows"
+  },
+  "runs": {
+    "start": "Start run",
+    "method": "Generator",
+    "mode": "Mode",
+    "status": "Status",
+    "view": "View run",
+    "metrics": "Metrics",
+    "download": {
+      "synthetic": "Download synthetic CSV",
+      "report": "Download report"
+    }
+  },
+  "status": {
+    "queued": "Queued",
+    "running": "Running",
+    "succeeded": "Succeeded",
+    "failed": "Failed"
+  }
+}

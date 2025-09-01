@@ -1,0 +1,99 @@
+{
+  "nav": {
+    "product": "Product",
+    "pricing": "Pricing",
+    "docs": "Docs",
+    "projects": "Projects",
+    "signin": "Sign in",
+    "getStarted": "Get started",
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "changeLanguage": "Change language"
+  },
+  "hero": {
+    "title": "Synthetic clinical trial data, with measurable privacy & utility.",
+    "subtitle": "Generate trial-grade synthetic datasets and downloadable audit reports aligned with GDPR/FADP.",
+    "ctaPrimary": "Get started free",
+    "ctaSecondary": "View docs"
+  },
+  "report": { "caption": "Privacy–Utility Report" },
+  "metrics": { "auroc": "AUROC", "cindex": "C-index", "mia": "MIA AUC" },
+  "logos": { "trusted": "Trusted by" },
+  "features": {
+    "title1": "Trial-aware synthesis",
+    "body1": "CTGAN/TVAE/Diffusion with survival & censoring support.",
+    "title2": "Privacy–Utility reports",
+    "body2": "KS, correlations, AUROC, C-index, MIA, DP budget.",
+    "title3": "Regulatory-ready",
+    "body3": "GDPR/FADP/HIPAA checklists and audit trail."
+  },
+  "how": {
+    "header": "How It Works",
+    "step1": "Upload CSV",
+    "step2": "Choose generator",
+    "step3": "Generate & evaluate",
+    "step4": "Download report"
+  },
+  "pricing": {
+    "header": "Pricing",
+    "research": { "title": "Research", "price": "Free" },
+    "starter": { "title": "Starter", "price": "$199/mo" },
+    "pharma": { "title": "Pharma", "price": "$2,000/mo" }
+  },
+  "faq": {
+    "header": "Frequently asked questions",
+    "q1": "How is data privacy ensured?",
+    "a1": "We support DP training and run MIA evaluations on outputs.",
+    "q2": "Where is the platform hosted?",
+    "a2": "Vercel + EU regions with data egress controls.",
+    "q3": "Do you support differential privacy?",
+    "a3": "Yes. Diffusion with configurable epsilon budgets.",
+    "q4": "Is there an on‑prem option?",
+    "a4": "Pharma plan includes on‑prem and air‑gapped deployments.",
+    "q5": "What support options are available?",
+    "a5": "Email for Starter, dedicated channel for Pharma."
+  },
+  "auth": {
+    "signin": { "title": "Sign in" },
+    "signup": { "title": "Create your account" },
+    "email": "Email",
+    "password": "Password",
+    "confirm": "Confirm password",
+    "toSignin": "Have an account? Sign in",
+    "toSignup": "New here? Create an account",
+    "forgot": "Forgot your password?"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "upload": "Upload dataset (CSV)",
+    "recent": "Recent jobs",
+    "api": "API status"
+  },
+  "footer": {
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "contact": "Contact",
+    "copyright": "© 2025 Gesalps"
+  },
+  "projects": {
+    "title": "Projects",
+    "new": "New project",
+    "name": "Project name"
+  },
+  "datasets": {
+    "upload": "Upload dataset (CSV)",
+    "schema": "Schema preview",
+    "columns": "Columns",
+    "rows": "Rows"
+  },
+  "runs": {
+    "start": "Start run",
+    "method": "Generator",
+    "mode": "Mode",
+    "status": "Status",
+    "view": "View run",
+    "metrics": "Metrics",
+    "download": {"synthetic": "Download synthetic CSV", "report": "Download report"}
+  },
+  "status": {"queued": "Queued", "running": "Running", "succeeded": "Succeeded", "failed": "Failed"}
+}
