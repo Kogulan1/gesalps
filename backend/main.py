@@ -232,3 +232,9 @@ def worker_loop():
 
 
 threading.Thread(target=worker_loop, daemon=True).start()
+
+if __name__ == "__main__":
+    # Allow running via `python main.py` (e.g., Railway Railpack)
+    import uvicorn
+    port = int(os.getenv("PORT", "8000"))
+    uvicorn.run("backend.main:app", host="0.0.0.0", port=port, reload=False)
