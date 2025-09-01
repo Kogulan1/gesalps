@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
 
 import pandas as pd
-from fastapi import Depends, FastAPI, Form, HTTPException, UploadFile, Request
+from fastapi import Depends, FastAPI, Form, HTTPException, UploadFile, Request, File
 from fastapi.responses import JSONResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -131,7 +131,7 @@ def create_project(p: CreateProject, user: Dict[str, Any] = Depends(require_user
     return res.data[0]
 
 @app.post("/v1/datasets/upload")
-async def upload_dataset(project_id: str = Form(...), file: UploadFile = Form(...), user: Dict[str, Any] = Depends(require_user)):
+async def upload_dataset(project_id: str = Form(...), file: UploadFile = File(...), user: Dict[str, Any] = Depends(require_user)):
     # Read CSV to infer schema
     content = await file.read()
     try:
