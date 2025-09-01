@@ -6,4 +6,5 @@ pandas==2.2.2
 python-jose==3.3.0
 supabase==2.4.0
 httpx==0.25.2
+gotrue==2.10.0
 python-dotenv==1.0.1
