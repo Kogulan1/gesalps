@@ -24,31 +24,42 @@ export function ToasterProvider({ children }: { children: React.ReactNode }) {
   const toast = useCallback((t: Omit<Toast, "id">) => {
     const id = Math.random().toString(36).slice(2);
     setToasts((prev) => [...prev, { id, ...t }]);
-    setTimeout(() => dismiss(id), 4000);
+    const ttl = t.variant === "error" ? 7000 : 4000;
+    setTimeout(() => dismiss(id), ttl);
   }, [dismiss]);
   const value = useMemo(() => ({ toasts, toast, dismiss }), [toasts, toast, dismiss]);
 
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="fixed top-4 right-4 z-50 space-y-2">
+      <div className="fixed top-4 right-4 z-[9999] space-y-2">
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`rounded-xl px-4 py-3 shadow-lg backdrop-blur bg-white/90 dark:bg-neutral-900/90 border ${
+            className={`max-w-[90vw] md:max-w-md rounded-xl px-4 py-3 shadow-lg backdrop-blur bg-white/95 dark:bg-neutral-900/95 border break-words whitespace-pre-wrap ${
               t.variant === "error"
-                ? "border-red-200 text-red-800"
+                ? "border-red-300 text-red-800 dark:text-red-300"
                 : t.variant === "success"
-                ? "border-emerald-200 text-emerald-800"
-                : "border-neutral-200 text-neutral-800"
+                ? "border-emerald-300 text-emerald-800 dark:text-emerald-300"
+                : "border-neutral-300 text-neutral-900 dark:text-neutral-100"
             }`}
           >
-            {t.title && <div className="font-semibold">{t.title}</div>}
-            {t.description && <div className="text-sm opacity-90">{t.description}</div>}
+            <div className="flex items-start gap-3">
+              <div className="flex-1">
+                {t.title && <div className="font-semibold leading-snug">{t.title}</div>}
+                {t.description && <div className="text-sm opacity-90 leading-snug">{t.description}</div>}
+              </div>
+              <button
+                aria-label="Dismiss"
+                className="text-sm opacity-60 hover:opacity-100"
+                onClick={() => dismiss(t.id)}
+              >
+                ×
+              </button>
+            </div>
           </div>
         ))}
       </div>
     </ToastContext.Provider>
   );
 }
-
