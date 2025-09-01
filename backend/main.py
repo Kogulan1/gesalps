@@ -9,6 +9,7 @@ from typing import Any, Dict, Optional
 import pandas as pd
 from fastapi import Depends, FastAPI, Form, HTTPException, UploadFile, Request
 from fastapi.responses import JSONResponse, Response
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from jose import jwt
 import httpx
@@ -32,15 +33,20 @@ SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL"
 SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY") or os.getenv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
 
-# Safe defaults for hosted environments where env vars aren't set yet.
-if not SUPABASE_URL:
-    SUPABASE_URL = "https://dcshmrmkfybpmixlfddj.supabase.co"
-    print("[warn] SUPABASE_URL not set; using default public project URL")
-if not (SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY):
-    SUPABASE_ANON_KEY = (
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRjc2htcm1rZnlicG1peGxmZGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY3MjYxOTcsImV4cCI6MjA3MjMwMjE5N30.LNJlS7cBIhgsELKoO6UseqKaglqMMMVChVJPcRqRPyk"
-    )
-    print("[warn] SUPABASE_* key not set; using default anon key for development")
+# Best practice: require real env in production. Allow explicit insecure defaults for local dev only.
+ALLOW_INSECURE_DEFAULTS = os.getenv("ALLOW_INSECURE_SUPABASE_DEFAULTS", "false").lower() == "true"
+if not SUPABASE_URL or not (SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY):
+    if ALLOW_INSECURE_DEFAULTS:
+        if not SUPABASE_URL:
+            SUPABASE_URL = "https://dcshmrmkfybpmixlfddj.supabase.co"
+            print("[warn] SUPABASE_URL not set; using default public project URL (DEV ONLY)")
+        if not (SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY):
+            SUPABASE_ANON_KEY = (
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRjc2htcm1rZnlicG1peGxmZGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY3MjYxOTcsImV4cCI6MjA3MjMwMjE5N30.LNJlS7cBIhgsELKoO6UseqKaglqMMMVChVJPcRqRPyk"
+            )
+            print("[warn] SUPABASE_* key not set; using default anon key (DEV ONLY)")
+    else:
+        raise RuntimeError("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY/ANON_KEY must be set")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY)
 
@@ -80,6 +86,16 @@ async def require_user(request: Request) -> Dict[str, Any]:
     return {"id": uid, "email": claims.get("email")}
 
 app = FastAPI()
+
+# CORS (configurable via CORS_ALLOW_ORIGINS="https://app.example.com,https://www.example.com")
+cors_origins = [o.strip() for o in (os.getenv("CORS_ALLOW_ORIGINS") or "*").split(",") if o.strip()]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def root():
@@ -259,7 +275,11 @@ def worker_loop():
             time.sleep(1)
 
 
-threading.Thread(target=worker_loop, daemon=True).start()
+WORKER_ENABLED = (os.getenv("WORKER_ENABLED", "true").lower() == "true")
+if WORKER_ENABLED:
+    threading.Thread(target=worker_loop, daemon=True).start()
+else:
+    print("[boot] Worker disabled via WORKER_ENABLED=false")
 
 if __name__ == "__main__":
     # Allow running via `python main.py` (e.g., Railway Railpack)

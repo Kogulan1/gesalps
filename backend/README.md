@@ -15,6 +15,9 @@ Env vars:
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY` (recommended)
 - `SUPABASE_ANON_KEY` (fallback for local dev)
+- `CORS_ALLOW_ORIGINS` (comma-separated, e.g., `https://your.app,https://admin.your.app`; default `*`)
+- `WORKER_ENABLED` (`true`/`false`; default `true`)
+- `ALLOW_INSECURE_SUPABASE_DEFAULTS` (`true` only for local dev; default `false`)
 
 Local setup with .env:
 - Create `backend/.env` (already added) containing your Supabase values:
@@ -46,3 +49,6 @@ Alternatively, open the Supabase SQL editor and run the contents of `sql/schema.
 Security notes:
 - JWT is verified against Supabase JWKS when possible; falls back to unverified claims if JWKS fails (adjust as needed).
 - For production, keep `SERVICE_ROLE` key private and run on server-side only.
+- In production, set `ALLOW_INSECURE_SUPABASE_DEFAULTS=false` (default) and provide real Supabase env vars.
+- Optionally set `CORS_ALLOW_ORIGINS` to your frontend origins.
+- You can disable the background worker with `WORKER_ENABLED=false` (useful until schema is applied).
