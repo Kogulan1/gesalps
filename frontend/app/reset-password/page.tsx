@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,7 @@ import { useToast } from "@/components/toast/Toaster";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
 import { scorePassword } from "@/lib/password";
 
-export default function ResetPasswordPage() {
+function ResetPasswordInner() {
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const { toast } = useToast();
   const router = useRouter();
@@ -98,3 +98,16 @@ export default function ResetPasswordPage() {
     </div>
   );
 }
+
+// Wrap useSearchParams in a Suspense boundary to satisfy Next.js build
+// when prerendering/streaming (CSR bailout on search params hooks).
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-md px-4 py-16 text-neutral-600">Preparing reset…</div>}>
+      <ResetPasswordInner />
+    </Suspense>
+  );
+}
+
+// Ensure this page is treated as dynamic when accessed with query params
+export const dynamic = "force-dynamic";
