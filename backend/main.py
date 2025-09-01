@@ -174,8 +174,7 @@ async def upload_dataset(project_id: str = Form(...), file: UploadFile = File(..
         cols.append({"name": str(col), "type": str(s.dtype), "missing": round(miss, 4), "unique": uniq})
     schema = {"columns": cols}
 
-    # Store original CSV
-    ds_id = supabase.rpc("uuid_generate_v4").execute().data if hasattr(supabase, "rpc") else None
+    # Store original CSV (DB tables use gen_random_uuid() by default; no RPC needed)
     object_name = f"{project_id}/{int(time.time())}_{file.filename or 'dataset'}.csv"
     bucket = supabase.storage.from_("datasets")
     # Provide content type and allow upsert to avoid name collision errors
