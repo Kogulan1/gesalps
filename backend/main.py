@@ -31,8 +31,15 @@ SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL"
 SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY") or os.getenv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
 
+# Safe defaults for hosted environments where env vars aren't set yet.
 if not SUPABASE_URL:
-    raise RuntimeError("SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL) must be set")
+    SUPABASE_URL = "https://dcshmrmkfybpmixlfddj.supabase.co"
+    print("[warn] SUPABASE_URL not set; using default public project URL")
+if not (SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY):
+    SUPABASE_ANON_KEY = (
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRjc2htcm1rZnlicG1peGxmZGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY3MjYxOTcsImV4cCI6MjA3MjMwMjE5N30.LNJlS7cBIhgsELKoO6UseqKaglqMMMVChVJPcRqRPyk"
+    )
+    print("[warn] SUPABASE_* key not set; using default anon key for development")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY)
 
@@ -237,4 +244,4 @@ if __name__ == "__main__":
     # Allow running via `python main.py` (e.g., Railway Railpack)
     import uvicorn
     port = int(os.getenv("PORT", "8000"))
-    uvicorn.run("backend.main:app", host="0.0.0.0", port=port, reload=False)
+    uvicorn.run(app, host="0.0.0.0", port=port, reload=False)
