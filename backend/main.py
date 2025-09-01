@@ -220,13 +220,13 @@ def execute_pipeline(run: Dict[str, Any]) -> Dict[str, Any]:
 
 def worker_loop():
     while True:
-        # Fetch one queued run
-        q = supabase.table("runs").select("*").eq("status", "queued").limit(1).execute()
-        run = (q.data or [None])[0]
-        if not run:
-            time.sleep(2)
-            continue
         try:
+            # Fetch one queued run
+            q = supabase.table("runs").select("*").eq("status", "queued").limit(1).execute()
+            run = (q.data or [None])[0]
+            if not run:
+                time.sleep(2)
+                continue
             supabase.table("runs").update({"status": "running", "started_at": datetime.utcnow().isoformat()}).eq("id", run["id"]).execute()
             result = execute_pipeline(run)
             supabase.table("metrics").insert({"run_id": run["id"], "payload_json": result["metrics"]}).execute()
@@ -234,8 +234,14 @@ def worker_loop():
                 supabase.table("run_artifacts").upsert({"run_id": run["id"], "kind": kind, "path": path}).execute()
             supabase.table("runs").update({"status": "succeeded", "finished_at": datetime.utcnow().isoformat()}).eq("id", run["id"]).execute()
         except Exception as e:
-            supabase.table("runs").update({"status": "failed", "finished_at": datetime.utcnow().isoformat()}).eq("id", run["id"]).execute()
-        time.sleep(1)
+            try:
+                if 'run' in locals() and run and run.get('id'):
+                    supabase.table("runs").update({"status": "failed", "finished_at": datetime.utcnow().isoformat()}).eq("id", run["id"]).execute()
+            except Exception:
+                pass
+            # Log minimal error and backoff to avoid noisy crashes (e.g., schema not applied yet)
+            print(f"[worker] error: {e}")
+            time.sleep(1)
 
 
 threading.Thread(target=worker_loop, daemon=True).start()
