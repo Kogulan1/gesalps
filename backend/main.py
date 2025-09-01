@@ -178,9 +178,20 @@ async def upload_dataset(project_id: str = Form(...), file: UploadFile = File(..
     ds_id = supabase.rpc("uuid_generate_v4").execute().data if hasattr(supabase, "rpc") else None
     object_name = f"{project_id}/{int(time.time())}_{file.filename or 'dataset'}.csv"
     bucket = supabase.storage.from_("datasets")
-    upload_res = bucket.upload(object_name, content)
-    if hasattr(upload_res, "error") and upload_res.error:
-        raise HTTPException(status_code=500, detail=str(upload_res.error))
+    # Provide content type and allow upsert to avoid name collision errors
+    try:
+        upload_res = bucket.upload(
+            object_name,
+            content,
+            {"contentType": file.content_type or "text/csv", "upsert": True},
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Storage upload failed: {e}")
+    # supabase-py may return dict or object; check for error fields defensively
+    if isinstance(upload_res, dict) and upload_res.get("error"):
+        raise HTTPException(status_code=500, detail=str(upload_res.get("error")))
+    if hasattr(upload_res, "error") and getattr(upload_res, "error"):
+        raise HTTPException(status_code=500, detail=str(getattr(upload_res, "error")))
 
     # Insert row in datasets
     dataset_row = {
