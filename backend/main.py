@@ -12,6 +12,12 @@ from pydantic import BaseModel
 from jose import jwt
 import httpx
 from supabase import create_client, Client
+try:
+    # Load environment variables from a local .env if present
+    from dotenv import load_dotenv  # type: ignore
+    load_dotenv()
+except Exception:
+    pass
 
 APP_JWKS_CACHE: Dict[str, Any] = {}
 
