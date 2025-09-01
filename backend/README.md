@@ -16,6 +16,12 @@ Env vars:
 - `SUPABASE_SERVICE_ROLE_KEY` (recommended)
 - `SUPABASE_ANON_KEY` (fallback for local dev)
 
+Local setup with .env:
+- Create `backend/.env` (already added) containing your Supabase values:
+  - `SUPABASE_URL`
+  - `SUPABASE_ANON_KEY` (or `SUPABASE_SERVICE_ROLE_KEY` for server-only use)
+- For convenience, `NEXT_PUBLIC_*` variants are also included and recognized by the app.
+
 Run locally:
 ```bash
 pip install -r requirements.txt
