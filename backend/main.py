@@ -179,11 +179,10 @@ async def upload_dataset(project_id: str = Form(...), file: UploadFile = File(..
     bucket = supabase.storage.from_("datasets")
     # Provide content type and allow upsert to avoid name collision errors
     try:
-        data_stream = io.BytesIO(content)
         upload_res = bucket.upload(
-            object_name,
-            data_stream,
-            {"contentType": file.content_type or "text/csv", "upsert": True},
+            path=object_name,
+            file=content,
+            file_options={"content-type": file.content_type or "text/csv", "upsert": True},
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Storage upload failed: {e}")
@@ -277,8 +276,16 @@ def execute_pipeline(run: Dict[str, Any]) -> Dict[str, Any]:
         "report_json": f"{run['id']}/report.json",
     }
     # Upload minimal files
-    supabase.storage.from_("artifacts").upload(artifacts["report_json"], json.dumps(metrics).encode())
-    supabase.storage.from_("artifacts").upload(artifacts["synthetic_csv"], b"col1,col2\n1,2\n3,4\n")
+    supabase.storage.from_("artifacts").upload(
+        path=artifacts["report_json"],
+        file=json.dumps(metrics).encode(),
+        file_options={"content-type": "application/json", "upsert": True},
+    )
+    supabase.storage.from_("artifacts").upload(
+        path=artifacts["synthetic_csv"],
+        file=b"col1,col2\n1,2\n3,4\n",
+        file_options={"content-type": "text/csv", "upsert": True},
+    )
     return {"metrics": metrics, "artifacts": artifacts}
 
 def worker_loop():
