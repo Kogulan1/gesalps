@@ -77,8 +77,8 @@ export default function RunDetail() {
                 try { const js = await getRunReportJSON(id); setReport(js);} catch(e:any){ toast({ title:'Load report failed', description:String(e?.message||e), variant:'error'});} 
               }}
             >View report</button>
-                      <button
-              className=\"underline\"
+            <button
+              className="underline"
               onClick={async()=>{
                 try {
                   const r = await authedFetch(`/v1/runs/${id}/report/pdf`,{ method:'POST' });
@@ -94,8 +94,8 @@ export default function RunDetail() {
           <CardHeader><CardTitle>Report</CardTitle></CardHeader>
           <CardContent>
             <pre className="text-sm whitespace-pre-wrap break-words">{JSON.stringify(report, null, 2)}</pre>
-                      <button
-              className=\"underline\"
+            <button
+              className="underline"
               onClick={async()=>{
                 try {
                   const r = await authedFetch(`/v1/runs/${id}/report/pdf`,{ method:'POST' });
