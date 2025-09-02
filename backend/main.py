@@ -16,6 +16,10 @@ from pydantic import BaseModel
 from jose import jwt
 import httpx
 from supabase import create_client, Client
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
 try:
     # Load environment variables from a local .env if present
     from dotenv import load_dotenv  # type: ignore
@@ -363,6 +367,89 @@ def run_report_json(run_id: str, user: Dict[str, Any] = Depends(require_user)):
         except Exception:
             raise HTTPException(status_code=500, detail="Invalid report JSON")
     return js
+
+def _status_badge(value: Optional[float], op: str, threshold: float) -> str:
+    try:
+        if value is None:
+            return "N/A"
+        ok = value <= threshold if op == "<=" else value >= threshold
+        return "Pass" if ok else "Check"
+    except Exception:
+        return "N/A"
+
+def build_report_pdf_bytes(run_id: str, metrics: Dict[str, Any]) -> bytes:
+    buf = io.BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=A4, topMargin=36, bottomMargin=36, leftMargin=36, rightMargin=36)
+    styles = getSampleStyleSheet()
+    story = []
+    story.append(Paragraph("Synthesis Report", styles['Title']))
+    story.append(Spacer(1, 12))
+
+    # Privacy Assessment
+    story.append(Paragraph("Privacy Assessment", styles['Heading2']))
+    mia = metrics.get('privacy', {}).get('mia_auc')
+    dup = metrics.get('privacy', {}).get('dup_rate')
+    privacy_rows = [
+        ["Test", "Result", "Threshold", "Status"],
+        ["Membership Inference AUC", f"{mia if mia is not None else '—'}", "≤ 0.60", _status_badge(mia, "<=", 0.60)],
+        ["Record Linkage Risk (%)", f"{dup*100:.1f}%" if isinstance(dup, (int,float)) else "—", "≤ 5%", _status_badge((dup*100 if isinstance(dup,(int,float)) else None), "<=", 5.0)],
+    ]
+    t = Table(privacy_rows, hAlign='LEFT')
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#F3F4F6')),
+        ('GRID', (0,0), (-1,-1), 0.25, colors.HexColor('#D1D5DB')),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('ALIGN', (1,1), (-1,-1), 'CENTER'),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+    ]))
+    story.append(t)
+    story.append(Spacer(1, 18))
+
+    # Utility Assessment
+    story.append(Paragraph("Utility Assessment", styles['Heading2']))
+    ks = metrics.get('utility', {}).get('ks_mean')
+    corr = metrics.get('utility', {}).get('corr_delta')
+    auroc = metrics.get('utility', {}).get('auroc')
+    cindex = metrics.get('utility', {}).get('c_index')
+    util_rows = [
+        ["Metric", "Value", "Target", "Status"],
+        ["KS mean (lower is better)", f"{ks if ks is not None else '—'}", "≤ 0.10", _status_badge(ks, "<=", 0.10)],
+        ["Correlation Δ (lower is better)", f"{corr if corr is not None else '—'}", "≤ 0.10", _status_badge(corr, "<=", 0.10)],
+        ["AUROC (synthetic)", f"{auroc if auroc is not None else '—'}", "≥ 0.80", _status_badge(auroc, ">=", 0.80)],
+        ["Survival C-Index (synthetic)", f"{cindex if cindex is not None else '—'}", "≥ 0.70", _status_badge(cindex, ">=", 0.70)],
+    ]
+    t2 = Table(util_rows, hAlign='LEFT')
+    t2.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#F3F4F6')),
+        ('GRID', (0,0), (-1,-1), 0.25, colors.HexColor('#D1D5DB')),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('ALIGN', (1,1), (-1,-1), 'CENTER'),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+    ]))
+    story.append(t2)
+
+    doc.build(story)
+    buf.seek(0)
+    return buf.read()
+
+@app.post("/v1/runs/{run_id}/report/pdf")
+def generate_report_pdf(run_id: str, user: Dict[str, Any] = Depends(require_user)):
+    r = supabase.table("runs").select("id,project_id").eq("id", run_id).single().execute()
+    if not r.data:
+        raise HTTPException(status_code=404, detail="Run not found")
+    proj = supabase.table("projects").select("owner_id").eq("id", r.data["project_id"]).single().execute()
+    if not proj.data or proj.data.get("owner_id") != user["id"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    m = supabase.table("metrics").select("payload_json").eq("run_id", run_id).single().execute()
+    payload = (m.data or {}).get('payload_json') or {}
+    pdf_bytes = build_report_pdf_bytes(run_id, payload)
+    ensure_bucket("artifacts")
+    path = f"{run_id}/report.pdf"
+    supabase.storage.from_("artifacts").upload(path=path, file=pdf_bytes)
+    supabase.table("run_artifacts").upsert({"run_id": run_id, "kind": "report_pdf", "path": path}).execute()
+    signed = supabase.storage.from_("artifacts").create_signed_url(path, int(timedelta(hours=1).total_seconds()))
+    url = signed.get("signedURL") if isinstance(signed, dict) else getattr(signed, "signed_url", None)
+    return {"path": path, "signedUrl": url}
 
 # --- Worker (placeholder) ---------------------------------------------------
 

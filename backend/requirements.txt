@@ -9,3 +9,4 @@ httpx==0.25.2
 # Align gotrue with httpx<0.26 to satisfy supabase==2.4.0
 gotrue==2.8.1
 python-dotenv==1.0.1
+reportlab==4.2.5
