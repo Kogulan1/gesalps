@@ -11,3 +11,14 @@ export async function authedFetch(path: string, init: RequestInit = {}) {
   return fetch(`${base}${path}`, { ...init, headers });
 }
 
+export async function previewDatasetCSV(datasetId: string) {
+  const res = await authedFetch(`/v1/datasets/${datasetId}/preview`);
+  if (!res.ok) throw new Error(`Preview failed: ${res.status}`);
+  return await res.text();
+}
+
+export async function deleteDataset(datasetId: string) {
+  const res = await authedFetch(`/v1/datasets/${datasetId}`, { method: "DELETE" });
+  if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
+  return await res.json();
+}

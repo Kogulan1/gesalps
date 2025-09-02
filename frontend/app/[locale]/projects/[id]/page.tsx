@@ -5,10 +5,11 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import FileDropzone from "@/components/files/FileDropzone";
 import { StatusBadge } from "@/components/runs/RunStatus";
-import { authedFetch } from "@/lib/api";
+import { authedFetch, deleteDataset, previewDatasetCSV } from "@/lib/api";
 import Link from "next/link";
 import { useLocale } from "next-intl";
 import { useToast } from "@/components/toast/Toaster";
+import PreviewModal from "@/components/PreviewModal";
 
 export default function ProjectDetail() {
   const params = useParams<{id:string, locale:string}>();
@@ -18,6 +19,8 @@ export default function ProjectDetail() {
   const { toast } = useToast();
   const [datasets,setDatasets] = useState<any[]>([]);
   const [runs,setRuns] = useState<any[]>([]);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewCSV, setPreviewCSV] = useState("");
 
   async function load(){
     const { data:ds } = await supabase.from('datasets').select('*').eq('project_id', projectId).order('created_at',{ascending:false});
@@ -47,6 +50,26 @@ export default function ProjectDetail() {
       load();
     } catch (e:any) {
       toast({ title: 'Upload error', description: String(e?.message || e), variant: 'error' });
+    }
+  }
+
+  async function onPreview(id: string){
+    try {
+      const csv = await previewDatasetCSV(id);
+      setPreviewCSV(csv); setPreviewOpen(true);
+    } catch(e:any){
+      toast({ title: 'Preview failed', description: String(e?.message || e), variant: 'error' });
+    }
+  }
+
+  async function onDelete(id: string){
+    if (!confirm('Delete this dataset and all its runs/artifacts? This cannot be undone.')) return;
+    try {
+      await deleteDataset(id);
+      setDatasets(prev=>prev.filter(d=>d.id!==id));
+      toast({ title: 'Dataset deleted', variant: 'success' });
+    } catch(e:any){
+      toast({ title: 'Delete failed', description: String(e?.message || e), variant: 'error' });
     }
   }
 
@@ -84,7 +107,11 @@ export default function ProjectDetail() {
                           <td className="py-2">{d.name}</td>
                           <td className="py-2">{d.rows_count ?? '-'}</td>
                           <td className="py-2">{new Date(d.created_at).toLocaleString()}</td>
-                          <td className="py-2 text-right"><Link className="underline" href={`/${locale}/datasets/${d.id}`}>Open</Link></td>
+                          <td className="py-2 text-right">
+                            <button className="underline mr-3" onClick={()=>onPreview(d.id)}>Preview</button>
+                            <Link className="underline mr-3" href={`/${locale}/datasets/${d.id}`}>Open</Link>
+                            <button className="underline text-red-600" onClick={()=>onDelete(d.id)}>Delete</button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -128,6 +155,7 @@ export default function ProjectDetail() {
           </Card>
         </div>
       </div>
+      <PreviewModal open={previewOpen} onClose={()=>setPreviewOpen(false)} csv={previewCSV} />
     </div>
   );
 }

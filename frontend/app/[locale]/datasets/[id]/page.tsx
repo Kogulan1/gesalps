@@ -5,8 +5,10 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import SchemaTable from "@/components/tables/SchemaTable";
 import { Button } from "@/components/ui/button";
-import { authedFetch } from "@/lib/api";
+import { authedFetch, deleteDataset, previewDatasetCSV } from "@/lib/api";
 import { useLocale } from "next-intl";
+import { useToast } from "@/components/toast/Toaster";
+import PreviewModal from "@/components/PreviewModal";
 
 export default function DatasetDetail() {
   const params = useParams<{id:string, locale:string}>();
@@ -16,6 +18,9 @@ export default function DatasetDetail() {
   const [ds,setDs] = useState<any|null>(null);
   const [method,setMethod] = useState('ctgan');
   const [mode,setMode] = useState('balanced');
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewCSV, setPreviewCSV] = useState("");
+  const { toast } = useToast();
 
   useEffect(()=>{(async()=>{
     const { data } = await supabase.from('datasets').select('*').eq('id', id).single();
@@ -30,6 +35,25 @@ export default function DatasetDetail() {
     }
   }
 
+  async function onPreview(){
+    try {
+      const csv = await previewDatasetCSV(id);
+      setPreviewCSV(csv); setPreviewOpen(true);
+    } catch(e:any){
+      toast({ title: 'Preview failed', description: String(e?.message || e), variant: 'error' });
+    }
+  }
+
+  async function onDelete(){
+    if (!confirm('Delete this dataset and all its runs/artifacts? This cannot be undone.')) return;
+    try {
+      await deleteDataset(id);
+      location.href = `/${locale}/projects/${ds.project_id}`;
+    } catch(e:any){
+      toast({ title: 'Delete failed', description: String(e?.message || e), variant: 'error' });
+    }
+  }
+
   if (!ds) return <div className="mx-auto max-w-3xl px-4 py-8">Loading…</div>;
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -37,6 +61,10 @@ export default function DatasetDetail() {
         <CardHeader><CardTitle>{ds.name}</CardTitle></CardHeader>
         <CardContent>
           <div className="mb-4 token-muted">{ds.rows_count ?? '-'} rows • {ds.cols_count ?? '-'} cols</div>
+          <div className="mb-4 flex gap-3">
+            <Button variant="outline" className="rounded-2xl" onClick={onPreview}>Preview</Button>
+            <Button variant="outline" className="rounded-2xl text-red-600 border-red-600" onClick={onDelete}>Delete dataset</Button>
+          </div>
           <SchemaTable schema={ds.schema_json} />
         </CardContent>
       </Card>
@@ -58,7 +86,7 @@ export default function DatasetDetail() {
           </div>
         </CardContent>
       </Card>
+      <PreviewModal open={previewOpen} onClose={()=>setPreviewOpen(false)} csv={previewCSV} />
     </div>
   );
 }
-
