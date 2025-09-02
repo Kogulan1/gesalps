@@ -77,7 +77,16 @@ export default function RunDetail() {
                 try { const js = await getRunReportJSON(id); setReport(js);} catch(e:any){ toast({ title:'Load report failed', description:String(e?.message||e), variant:'error'});} 
               }}
             >View report</button>
-          </CardContent>
+                      <button
+              className=\"underline\"
+              onClick={async()=>{
+                try {
+                  const r = await authedFetch(`/v1/runs/${id}/report/pdf`,{ method:'POST' });
+                  if (r.ok){ const { signedUrl } = await r.json(); if (signedUrl) window.open(signedUrl, '_blank'); }
+                } catch(e:any){ toast({ title:'Generate PDF failed', description:String(e?.message||e), variant:'error'}); }
+              }}
+            >Generate report (PDF)</button>
+</CardContent>
         </Card>
       )}
       {report && (
@@ -85,7 +94,16 @@ export default function RunDetail() {
           <CardHeader><CardTitle>Report</CardTitle></CardHeader>
           <CardContent>
             <pre className="text-sm whitespace-pre-wrap break-words">{JSON.stringify(report, null, 2)}</pre>
-          </CardContent>
+                      <button
+              className=\"underline\"
+              onClick={async()=>{
+                try {
+                  const r = await authedFetch(`/v1/runs/${id}/report/pdf`,{ method:'POST' });
+                  if (r.ok){ const { signedUrl } = await r.json(); if (signedUrl) window.open(signedUrl, '_blank'); }
+                } catch(e:any){ toast({ title:'Generate PDF failed', description:String(e?.message||e), variant:'error'}); }
+              }}
+            >Generate report (PDF)</button>
+</CardContent>
         </Card>
       )}
       <PreviewModal open={previewOpen} onClose={()=>setPreviewOpen(false)} csv={previewCSV} />
