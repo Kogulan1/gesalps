@@ -406,11 +406,14 @@ def build_report_pdf_bytes(run_id: str, metrics: Dict[str, Any]) -> bytes:
     doc = SimpleDocTemplate(buf, pagesize=A4, topMargin=36, bottomMargin=36, leftMargin=36, rightMargin=36)
     styles = getSampleStyleSheet()
     story = []
-    story.append(Paragraph("Synthesis Report", styles['Title']))
+    title = styles['Title']; title.fontSize = 20
+    h2 = styles['Heading2']; h2.spaceBefore = 12; h2.spaceAfter = 6
+    body = styles['BodyText']
+    story.append(Paragraph("Synthesis Report", title))
     story.append(Spacer(1, 12))
 
     # Privacy Assessment
-    story.append(Paragraph("Privacy Assessment", styles['Heading2']))
+    story.append(Paragraph("Privacy Assessment", h2))
     mia = metrics.get('privacy', {}).get('mia_auc')
     dup = metrics.get('privacy', {}).get('dup_rate')
     privacy_rows = [
@@ -418,9 +421,10 @@ def build_report_pdf_bytes(run_id: str, metrics: Dict[str, Any]) -> bytes:
         ["Membership Inference AUC", f"{mia if mia is not None else '—'}", "≤ 0.60", _status_badge(mia, "<=", 0.60)],
         ["Record Linkage Risk (%)", f"{dup*100:.1f}%" if isinstance(dup, (int,float)) else "—", "≤ 5%", _status_badge((dup*100 if isinstance(dup,(int,float)) else None), "<=", 5.0)],
     ]
-    t = Table(privacy_rows, hAlign='LEFT')
+    t = Table(privacy_rows, hAlign='LEFT', colWidths=[220, 90, 110, 80])
     t.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#F3F4F6')),
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#111827')),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
         ('GRID', (0,0), (-1,-1), 0.25, colors.HexColor('#D1D5DB')),
         ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
         ('ALIGN', (1,1), (-1,-1), 'CENTER'),
@@ -430,7 +434,7 @@ def build_report_pdf_bytes(run_id: str, metrics: Dict[str, Any]) -> bytes:
     story.append(Spacer(1, 18))
 
     # Utility Assessment
-    story.append(Paragraph("Utility Assessment", styles['Heading2']))
+    story.append(Paragraph("Utility Assessment", h2))
     ks = metrics.get('utility', {}).get('ks_mean')
     corr = metrics.get('utility', {}).get('corr_delta')
     auroc = metrics.get('utility', {}).get('auroc')
@@ -442,15 +446,20 @@ def build_report_pdf_bytes(run_id: str, metrics: Dict[str, Any]) -> bytes:
         ["AUROC (synthetic)", f"{auroc if auroc is not None else '—'}", "≥ 0.80", _status_badge(auroc, ">=", 0.80)],
         ["Survival C-Index (synthetic)", f"{cindex if cindex is not None else '—'}", "≥ 0.70", _status_badge(cindex, ">=", 0.70)],
     ]
-    t2 = Table(util_rows, hAlign='LEFT')
+    t2 = Table(util_rows, hAlign='LEFT', colWidths=[220, 90, 110, 80])
     t2.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#F3F4F6')),
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#111827')),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
         ('GRID', (0,0), (-1,-1), 0.25, colors.HexColor('#D1D5DB')),
         ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
         ('ALIGN', (1,1), (-1,-1), 'CENTER'),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
     ]))
     story.append(t2)
+    story.append(Spacer(1, 16))
+    story.append(Paragraph("Overall Evaluation", h2))
+    overall_ok = ( (mia is None or mia <= 0.60) and (dup is None or (dup*100) <= 5) and (ks is None or ks <= 0.10) and (corr is None or corr <= 0.10) and (auroc is None or auroc >= 0.80) and (cindex is None or cindex >= 0.70) )
+    story.append(Paragraph("Meets privacy and utility targets" if overall_ok else "Review metrics before release", body))
 
     doc.build(story)
     buf.seek(0)
