@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/runs/RunStatus";
 import { previewRunSyntheticCSV, getRunReportJSON } from "@/lib/api";
 import PreviewModal from "@/components/PreviewModal";
+import ReportView from "@/components/runs/ReportView";
 import { useToast } from "@/components/toast/Toaster";
 
 export default function RunDetail() {
@@ -31,6 +32,7 @@ export default function RunDetail() {
     async function loadFinal(){
       const m = await authedFetch(`/v1/runs/${id}/metrics`); if (m.ok) setMetrics(await m.json());
       const a = await authedFetch(`/v1/runs/${id}/artifacts`); if (a.ok) setArtifacts(await a.json());
+      try { const rj = await authedFetch(`/v1/runs/${id}/report`); if (rj.ok) setReport(await rj.json()); } catch {}
     }
     poll();
     return ()=>{alive=false};
@@ -92,8 +94,8 @@ export default function RunDetail() {
       {report && (
         <Card>
           <CardHeader><CardTitle>Report</CardTitle></CardHeader>
-          <CardContent>
-            <pre className="text-sm whitespace-pre-wrap break-words">{JSON.stringify(report, null, 2)}</pre>
+          <CardContent className="space-y-4">
+            <ReportView report={report} />
             <button
               className="underline"
               onClick={async()=>{
@@ -103,7 +105,7 @@ export default function RunDetail() {
                 } catch(e:any){ toast({ title:'Generate PDF failed', description:String(e?.message||e), variant:'error'}); }
               }}
             >Generate report (PDF)</button>
-</CardContent>
+          </CardContent>
         </Card>
       )}
       <PreviewModal open={previewOpen} onClose={()=>setPreviewOpen(false)} csv={previewCSV} />
