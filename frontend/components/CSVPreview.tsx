@@ -9,15 +9,15 @@ export default function CSVPreview({ csv }: { csv: string }) {
   if (!rows.length) return <div className="text-sm text-gray-500">No data</div>;
   const [head, ...body] = rows;
   return (
-    <div className="overflow-auto">
+    <div className="overflow-auto text-neutral-900 dark:text-neutral-100">
       <table className="w-full text-sm">
         <thead>
-          <tr>{head.map((h,i)=><th key={i} className="text-left border-b px-2 py-2">{h}</th>)}</tr>
+          <tr>{head.map((h,i)=><th key={i} className="text-left border-b px-2 py-2 bg-neutral-50 dark:bg-neutral-800" style={{borderColor:'var(--ges-border)'}}>{h}</th>)}</tr>
         </thead>
         <tbody>
           {body.map((r,ri)=> (
-            <tr key={ri} className="border-b">
-              {r.map((c,ci)=><td key={ci} className="px-2 py-2">{c}</td>)}
+            <tr key={ri} className="border-b" style={{borderColor:'var(--ges-border)'}}>
+              {r.map((c,ci)=><td key={ci} className="px-2 py-2 whitespace-pre-wrap break-words">{c}</td>)}
             </tr>
           ))}
         </tbody>

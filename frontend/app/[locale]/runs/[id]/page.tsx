@@ -15,7 +15,7 @@ import CSVPreview from "@/components/CSVPreview";
 import JSONPreview from "@/components/JSONPreview";
 import PDFViewer from "@/components/PDFViewer";
 import { useMemo } from "react";
-import { toArtifactMap, fmtBytes } from "@/lib/artifacts";
+import { toArtifactMap, fmtBytes, forceDownloadUrl } from "@/lib/artifacts";
 import { useToast } from "@/components/toast/Toaster";
 
 export default function RunDetail() {
@@ -102,13 +102,13 @@ export default function RunDetail() {
         <CardContent>
           <div className="flex flex-wrap gap-3 items-center">
             {artifactsMap.synthetic_csv?.signedUrl && (
-              <a href={artifactsMap.synthetic_csv.signedUrl!} target="_blank" rel="noreferrer" download className="px-3 py-2 rounded-md border inline-flex items-center gap-2">Synthetic CSV <span className="text-xs token-muted">{fmtBytes(artifactsMap.synthetic_csv.bytes)}</span></a>
+              <a href={forceDownloadUrl(artifactsMap.synthetic_csv.signedUrl!, 'synthetic.csv')} className="px-3 py-2 rounded-md border inline-flex items-center gap-2">Synthetic CSV <span className="text-xs token-muted">{fmtBytes(artifactsMap.synthetic_csv.bytes)}</span></a>
             )}
             {artifactsMap.report_json?.signedUrl && (
-              <a href={artifactsMap.report_json.signedUrl!} target="_blank" rel="noreferrer" download className="px-3 py-2 rounded-md border inline-flex items-center gap-2">Report JSON <span className="text-xs token-muted">{fmtBytes(artifactsMap.report_json.bytes)}</span></a>
+              <a href={forceDownloadUrl(artifactsMap.report_json.signedUrl!, 'report.json')} className="px-3 py-2 rounded-md border inline-flex items-center gap-2">Report JSON <span className="text-xs token-muted">{fmtBytes(artifactsMap.report_json.bytes)}</span></a>
             )}
             {artifactsMap.report_pdf?.signedUrl && (
-              <a href={artifactsMap.report_pdf.signedUrl!} target="_blank" rel="noreferrer" download className="px-3 py-2 rounded-md border inline-flex items-center gap-2">Report PDF <span className="text-xs token-muted">{fmtBytes(artifactsMap.report_pdf.bytes)}</span></a>
+              <a href={forceDownloadUrl(artifactsMap.report_pdf.signedUrl!, 'report.pdf')} className="px-3 py-2 rounded-md border inline-flex items-center gap-2">Report PDF <span className="text-xs token-muted">{fmtBytes(artifactsMap.report_pdf.bytes)}</span></a>
             )}
           </div>
           {!artifactsMap.synthetic_csv && !artifactsMap.report_json && !artifactsMap.report_pdf && (
