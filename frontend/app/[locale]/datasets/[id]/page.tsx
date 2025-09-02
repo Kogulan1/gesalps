@@ -5,7 +5,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import SchemaTable from "@/components/tables/SchemaTable";
 import { Button } from "@/components/ui/button";
-import { authedFetch, deleteDataset, previewDatasetCSV } from "@/lib/api";
+import { authedFetch, deleteDataset, previewDatasetCSV, previewRunSyntheticCSV, getRunReportJSON, getRunArtifacts, deleteRun } from "@/lib/api";
 import { useLocale } from "next-intl";
 import { useToast } from "@/components/toast/Toaster";
 import PreviewModal from "@/components/PreviewModal";
@@ -19,6 +19,7 @@ export default function DatasetDetail() {
   const [ds,setDs] = useState<any|null>(null);
   const [method,setMethod] = useState('ctgan');
   const [mode,setMode] = useState('balanced');
+  const [runs,setRuns] = useState<any[]>([]);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewCSV, setPreviewCSV] = useState("");
   const [reportOpen, setReportOpen] = useState(false);
@@ -28,6 +29,8 @@ export default function DatasetDetail() {
   useEffect(()=>{(async()=>{
     const { data } = await supabase.from('datasets').select('*').eq('id', id).single();
     setDs(data||null);
+    const rs = await supabase.from('runs').select('*').eq('dataset_id', id).order('started_at', { ascending:false });
+    setRuns(rs.data||[]);
   })();},[id,supabase]);
 
   async function startRun(){
@@ -55,6 +58,45 @@ export default function DatasetDetail() {
     } catch(e:any){
       toast({ title: 'Delete failed', description: String(e?.message || e), variant: 'error' });
     }
+  }
+
+  // --- Run menu actions ---
+  async function onRunPreviewCSV(runId: string){
+    try { const csv = await previewRunSyntheticCSV(runId); setPreviewCSV(csv); setPreviewOpen(true); }
+    catch(e:any){ toast({ title:'Preview failed', description:String(e?.message||e), variant:'error'}); }
+  }
+
+  async function onRunPreviewReport(runId: string){
+    try { const js = await getRunReportJSON(runId); setReportData(js); setReportOpen(true); }
+    catch(e:any){ toast({ title:'Load report failed', description:String(e?.message||e), variant:'error'}); }
+  }
+
+  async function onRunDownloadCSV(runId: string){
+    try { const arts = await getRunArtifacts(runId); const a = (arts||[]).find((x:any)=>x.kind==='synthetic_csv'); if(a?.signedUrl) window.open(a.signedUrl,'_blank'); else throw new Error('No CSV'); }
+    catch(e:any){ toast({ title:'Download failed', description:String(e?.message||e), variant:'error'}); }
+  }
+
+  async function onRunDelete(runId: string){
+    if(!confirm('Delete this run and related data?')) return;
+    try { await deleteRun(runId); setRuns(prev=>prev.filter(r=>r.id!==runId)); toast({ title:'Run deleted', variant:'success' }); }
+    catch(e:any){ toast({ title:'Delete run failed', description:String(e?.message||e), variant:'error'}); }
+  }
+
+  function RunMenu({ id }: { id:string }){
+    const [open,setOpen] = useState(false);
+    return (
+      <div className="relative inline-block text-left">
+        <button className="px-2 py-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800" onClick={()=>setOpen(v=>!v)}>⋯</button>
+        {open && (
+          <div className="absolute right-0 mt-1 w-44 rounded-md border bg-white dark:bg-neutral-900 shadow z-10" style={{borderColor:'var(--ges-border)'}}>
+            <button className="block w-full text-left px-3 py-2 hover:bg-neutral-50 dark:hover:bg-neutral-800" onClick={()=>{setOpen(false); onRunPreviewCSV(id);}}>Preview CSV</button>
+            <button className="block w-full text-left px-3 py-2 hover:bg-neutral-50 dark:hover:bg-neutral-800" onClick={()=>{setOpen(false); onRunPreviewReport(id);}}>Preview Report</button>
+            <button className="block w-full text-left px-3 py-2 hover:bg-neutral-50 dark:hover:bg-neutral-800" onClick={()=>{setOpen(false); onRunDownloadCSV(id);}}>Download CSV</button>
+            <button className="block w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" onClick={()=>{setOpen(false); onRunDelete(id);}}>Delete Run</button>
+          </div>
+        )}
+      </div>
+    );
   }
 
   if (!ds) return <div className="mx-auto max-w-3xl px-4 py-8">Loading…</div>;
@@ -121,7 +163,6 @@ export default function DatasetDetail() {
           </div>
         </CardContent>
       </Card>
-      <PreviewModal open={previewOpen} onClose={()=>setPreviewOpen(false)} csv={previewCSV} />
       <PreviewModal open={previewOpen} onClose={()=>setPreviewOpen(false)} csv={previewCSV} />
   {reportOpen && (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-6 z-50">

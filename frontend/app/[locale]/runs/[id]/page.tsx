@@ -6,6 +6,8 @@ import MetricCard from "@/components/runs/MetricCard";
 import DownloadButton from "@/components/common/DownloadButton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/runs/RunStatus";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
+import Link from "next/link";
 import { previewRunSyntheticCSV, getRunReportJSON } from "@/lib/api";
 import PreviewModal from "@/components/PreviewModal";
 import ReportView from "@/components/runs/ReportView";
@@ -21,9 +23,11 @@ export default function RunDetail() {
   const [previewCSV, setPreviewCSV] = useState("");
   const [report, setReport] = useState<any|null>(null);
   const { toast } = useToast();
+  const [projectId,setProjectId] = useState<string|undefined>(undefined);
 
   useEffect(()=>{
     let alive = true;
+    const supabase = createSupabaseBrowserClient();
     async function poll(){
       const r = await authedFetch(`/v1/runs/${id}/status`);
       if (!alive) return; if (r.ok){ const js=await r.json(); setStatus(js); if(js.status==='succeeded'){ loadFinal(); return; } }
@@ -34,6 +38,7 @@ export default function RunDetail() {
       const a = await authedFetch(`/v1/runs/${id}/artifacts`); if (a.ok) setArtifacts(await a.json());
       try { const rj = await authedFetch(`/v1/runs/${id}/report`); if (rj.ok) setReport(await rj.json()); } catch {}
     }
+    (async ()=>{ const rr = await supabase.from('runs').select('project_id').eq('id', id).single(); setProjectId(rr.data?.project_id); })();
     poll();
     return ()=>{alive=false};
   },[id]);
@@ -41,7 +46,10 @@ export default function RunDetail() {
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Run</h1>
+        <div className="flex items-center gap-3">
+          {projectId && (<Link href={`/${'en'}/projects/${projectId}`} className="text-sm underline">← Back to Project</Link>)}
+          <h1 className="text-2xl font-semibold">Run</h1>
+        </div>
         <StatusBadge status={status.status} />
       </div>
 
