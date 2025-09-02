@@ -445,7 +445,14 @@ def generate_report_pdf(run_id: str, user: Dict[str, Any] = Depends(require_user
     pdf_bytes = build_report_pdf_bytes(run_id, payload)
     ensure_bucket("artifacts")
     path = f"{run_id}/report.pdf"
-    supabase.storage.from_("artifacts").upload(path=path, file=pdf_bytes)
+    try:
+        supabase.storage.from_("artifacts").upload(path=path, file=pdf_bytes, file_options={"contentType": "application/pdf", "upsert": True})
+    except Exception:
+        # If the file already exists, update (overwrite)
+        try:
+            supabase.storage.from_("artifacts").update(path=path, file=pdf_bytes, file_options={"contentType": "application/pdf"})
+        except Exception:
+            supabase.storage.from_("artifacts").upload(path=path, file=pdf_bytes)
     supabase.table("run_artifacts").upsert({"run_id": run_id, "kind": "report_pdf", "path": path}).execute()
     signed = supabase.storage.from_("artifacts").create_signed_url(path, int(timedelta(hours=1).total_seconds()))
     url = signed.get("signedURL") if isinstance(signed, dict) else getattr(signed, "signed_url", None)
@@ -469,6 +476,17 @@ def execute_pipeline(run: Dict[str, Any]) -> Dict[str, Any]:
     try:
         supabase.storage.from_("artifacts").upload(path=artifacts["report_json"], file=json.dumps(metrics).encode())
         supabase.storage.from_("artifacts").upload(path=artifacts["synthetic_csv"], file=b"col1,col2\n1,2\n3,4\n")
+        # ensure/update PDF too (idempotent)
+        pdf_bytes = build_report_pdf_bytes(run['id'], metrics)
+        pdf_path = f"{run['id']}/report.pdf"
+        try:
+            supabase.storage.from_("artifacts").upload(path=pdf_path, file=pdf_bytes, file_options={"contentType": "application/pdf", "upsert": True})
+        except Exception:
+            try:
+                supabase.storage.from_("artifacts").update(path=pdf_path, file=pdf_bytes, file_options={"contentType": "application/pdf"})
+            except Exception:
+                pass
+        artifacts["report_pdf"] = pdf_path
     except Exception as e:
         print(f"[artifacts] upload error: {type(e).__name__}: {e}")
     return {"metrics": metrics, "artifacts": artifacts}
