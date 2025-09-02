@@ -9,8 +9,13 @@ import { StatusBadge } from "@/components/runs/RunStatus";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
 import Link from "next/link";
 import { previewRunSyntheticCSV, getRunReportJSON } from "@/lib/api";
-import PreviewModal from "@/components/PreviewModal";
 import ReportView from "@/components/runs/ReportView";
+import Modal from "@/components/Modal";
+import CSVPreview from "@/components/CSVPreview";
+import JSONPreview from "@/components/JSONPreview";
+import PDFViewer from "@/components/PDFViewer";
+import { useMemo } from "react";
+import { toArtifactMap, fmtBytes } from "@/lib/artifacts";
 import { useToast } from "@/components/toast/Toaster";
 
 export default function RunDetail() {
@@ -24,6 +29,11 @@ export default function RunDetail() {
   const [report, setReport] = useState<any|null>(null);
   const { toast } = useToast();
   const [projectId,setProjectId] = useState<string|undefined>(undefined);
+  const [csvModal,setCsvModal] = useState(false);
+  const [jsonModal,setJsonModal] = useState(false);
+  const [pdfModal,setPdfModal] = useState(false);
+  const [csvText,setCsvText] = useState("");
+  const [reportJSON,setReportJSON] = useState<any>(null);
 
   useEffect(()=>{
     let alive = true;
@@ -43,6 +53,12 @@ export default function RunDetail() {
     return ()=>{alive=false};
   },[id]);
 
+  const artifactsMap = useMemo(()=> toArtifactMap(artifacts || []), [artifacts]);
+
+  async function onPreviewCSV(){ try { const txt = await previewRunSyntheticCSV(id); setCsvText(txt); setCsvModal(true); } catch { toast({ title: 'Could not preview CSV', variant: 'error' }); } }
+  async function onPreviewJSON(){ try { const rpt = await getRunReportJSON(id); setReportJSON(rpt); setJsonModal(true); } catch { toast({ title: 'Could not load report', variant: 'error' }); } }
+  function onPreviewPDF(){ if (artifactsMap.report_pdf?.signedUrl) setPdfModal(true); }
+
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       <div className="flex items-center justify-between">
@@ -56,6 +72,8 @@ export default function RunDetail() {
       <Card>
         <CardHeader><CardTitle>Metrics</CardTitle></CardHeader>
         <CardContent>
+          {status.status === 'failed' && (<div className="mb-6 rounded-md border border-red-200 bg-red-50 text-red-800 px-4 py-3">Run failed. Please check logs and try again.</div>)}
+          {status.status !== 'succeeded' && status.status !== 'failed' && (<div className="mb-6 rounded-md border bg-gray-50 text-gray-700 px-4 py-3">This run is {status.status}. Artifacts will appear when finished.</div>)}
           {metrics ? (
             <div className="grid md:grid-cols-3 gap-4">
               <MetricCard label="KS mean" value={metrics.utility?.ks_mean ?? null} />
@@ -68,10 +86,21 @@ export default function RunDetail() {
         </CardContent>
       </Card>
 
-      {artifacts?.length>0 && (
-        <Card>
-          <CardHeader><CardTitle>Downloads</CardTitle></CardHeader>
-          <CardContent className="flex flex-wrap gap-3 items-center">
+      <Card>
+        <CardHeader><CardTitle>Actions</CardTitle></CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-3">
+            <button className="px-3 py-2 rounded-md border disabled:opacity-50" onClick={onPreviewCSV} disabled={status.status!=="succeeded" || !artifactsMap.synthetic_csv} title={status.status!=="succeeded"?"Run must complete":""}>Preview Synthetic CSV</button>
+            <button className="px-3 py-2 rounded-md border disabled:opacity-50" onClick={onPreviewJSON} disabled={status.status!=="succeeded" || !artifactsMap.report_json} title={status.status!=="succeeded"?"Run must complete":""}>View Report (JSON)</button>
+            <button className="px-3 py-2 rounded-md border disabled:opacity-50" onClick={onPreviewPDF} disabled={status.status!=="succeeded" || !artifactsMap.report_pdf} title={status.status!=="succeeded"?"Run must complete":""}>View Report (PDF)</button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle>Downloads</CardTitle></CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-3 items-center">
             {artifacts.map((a:any)=>(
               <DownloadButton key={a.kind} href={a.signedUrl} label={a.kind} />
             ))}
