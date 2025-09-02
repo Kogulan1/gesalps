@@ -34,3 +34,16 @@ export async function getRunReportJSON(runId: string) {
   if (!res.ok) throw new Error(`Load report failed: ${res.status}`);
   return await res.json();
 }
+
+
+export async function getRunArtifacts(runId: string) {
+  const res = await authedFetch(`/v1/runs/${runId}/artifacts`);
+  if (!res.ok) throw new Error(`Artifacts failed: ${res.status}`);
+  return await res.json();
+}
+
+export async function deleteRun(runId: string) {
+  const res = await authedFetch(`/v1/runs/${runId}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error(`Delete run failed: ${res.status}`);
+  return await res.json();
+}

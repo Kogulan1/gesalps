@@ -9,6 +9,7 @@ import { authedFetch, deleteDataset, previewDatasetCSV } from "@/lib/api";
 import { useLocale } from "next-intl";
 import { useToast } from "@/components/toast/Toaster";
 import PreviewModal from "@/components/PreviewModal";
+import ReportView from "@/components/runs/ReportView";
 
 export default function DatasetDetail() {
   const params = useParams<{id:string, locale:string}>();
@@ -20,6 +21,8 @@ export default function DatasetDetail() {
   const [mode,setMode] = useState('balanced');
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewCSV, setPreviewCSV] = useState("");
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportData, setReportData] = useState<any|null>(null);
   const { toast } = useToast();
 
   useEffect(()=>{(async()=>{
@@ -70,6 +73,38 @@ export default function DatasetDetail() {
       </Card>
 
       <Card>
+        <CardHeader><CardTitle>Runs</CardTitle></CardHeader>
+        <CardContent>
+          {runs.length===0? (<div className="token-muted">No runs yet.</div>) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left token-muted">
+                    <th className="py-2">Status</th>
+                    <th className="py-2">Method</th>
+                    <th className="py-2">Started</th>
+                    <th className="py-2">Finished</th>
+                    <th className="py-2 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {runs.map((r:any)=> (
+                    <tr key={r.id} className="border-t" style={{borderColor:'var(--ges-border)'}}>
+                      <td className="py-2">{r.status}</td>
+                      <td className="py-2">{r.method}</td>
+                      <td className="py-2">{r.started_at ? new Date(r.started_at).toLocaleString() : '—'}</td>
+                      <td className="py-2">{r.finished_at ? new Date(r.finished_at).toLocaleString() : '—'}</td>
+                      <td className="py-2 text-right"><RunMenu id={r.id} /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
         <CardHeader><CardTitle>Start Run</CardTitle></CardHeader>
         <CardContent>
           <div className="flex flex-wrap items-center gap-3">
@@ -87,6 +122,18 @@ export default function DatasetDetail() {
         </CardContent>
       </Card>
       <PreviewModal open={previewOpen} onClose={()=>setPreviewOpen(false)} csv={previewCSV} />
+      <PreviewModal open={previewOpen} onClose={()=>setPreviewOpen(false)} csv={previewCSV} />
+  {reportOpen && (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-6 z-50">
+      <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl w-full max-w-4xl p-6 border" style={{borderColor:'var(--ges-border)'}}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold">Report Preview</h3>
+          <button className="px-3 py-1 rounded-md border" style={{borderColor:'var(--ges-border)'}} onClick={()=>setReportOpen(false)}>Close</button>
+        </div>
+        <ReportView report={reportData||{}} />
+      </div>
     </div>
+  )}
+</div>
   );
 }

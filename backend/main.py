@@ -316,6 +316,30 @@ def run_artifacts(run_id: str, user: Dict[str, Any] = Depends(require_user)):
         out.append({"kind": a["kind"], "signedUrl": url, "bytes": a.get("bytes"), "mime": a.get("mime")})
     return out
 
+@app.delete("/v1/runs/{run_id}")
+def delete_run(run_id: str, user: Dict[str, Any] = Depends(require_user)):
+    r = supabase.table("runs").select("id,project_id").eq("id", run_id).single().execute()
+    if not r.data:
+        raise HTTPException(status_code=404, detail="Run not found")
+    proj = supabase.table("projects").select("owner_id").eq("id", r.data["project_id"]).single().execute()
+    if not proj.data or proj.data.get("owner_id") != user["id"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    # Remove artifacts from storage (best-effort)
+    artifacts = supabase.table("run_artifacts").select("path").eq("run_id", run_id).execute().data or []
+    paths = [a.get("path") for a in artifacts if a and a.get("path")]
+    if paths:
+        try:
+            supabase.storage.from_("artifacts").remove(paths)
+        except Exception:
+            pass
+
+    # Delete dependent rows then the run
+    supabase.table("metrics").delete().eq("run_id", run_id).execute()
+    supabase.table("run_artifacts").delete().eq("run_id", run_id).execute()
+    supabase.table("runs").delete().eq("id", run_id).execute()
+    return {"ok": True}
+
 @app.get("/v1/runs/{run_id}/synthetic/preview")
 def run_synthetic_preview(run_id: str, user: Dict[str, Any] = Depends(require_user)):
     r = supabase.table("runs").select("id,project_id").eq("id", run_id).single().execute()
