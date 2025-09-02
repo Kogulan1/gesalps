@@ -8,7 +8,9 @@ from typing import Any, Dict, Optional
 
 import pandas as pd
 from fastapi import Depends, FastAPI, Form, HTTPException, UploadFile, Request, File
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import JSONResponse, Response, StreamingResponse
+import csv
+import io as pyio
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from jose import jwt
@@ -206,6 +208,54 @@ async def upload_dataset(project_id: str = Form(...), file: UploadFile = File(..
     if ins.data is None:
         raise HTTPException(status_code=500, detail=str(ins.error))
     return {"dataset_id": ins.data[0]["id"], "schema": schema}
+
+@app.get("/v1/datasets/{dataset_id}/preview")
+def dataset_preview(dataset_id: str, user: Dict[str, Any] = Depends(require_user)):
+    ds = supabase.table("datasets").select("id,project_id,file_url").eq("id", dataset_id).single().execute()
+    if not ds.data:
+        raise HTTPException(status_code=404, detail="Dataset not found")
+    proj = supabase.table("projects").select("owner_id").eq("id", ds.data["project_id"]).single().execute()
+    if not proj.data or proj.data.get("owner_id") != user["id"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    obj_path = ds.data["file_url"]
+    file_bytes = supabase.storage.from_("datasets").download(obj_path)
+    if hasattr(file_bytes, "error") and getattr(file_bytes, "error"):
+        raise HTTPException(status_code=500, detail=str(getattr(file_bytes, "error")))
+    raw = io.BytesIO(file_bytes) if isinstance(file_bytes, (bytes, bytearray)) else io.BytesIO(file_bytes.read())
+    df = pd.read_csv(raw)
+    df_head = df.head(20)
+    buf = pyio.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(df_head.columns.tolist())
+    for _, row in df_head.iterrows():
+        writer.writerow([None if pd.isna(v) else v for v in row.tolist()])
+    buf.seek(0)
+    return StreamingResponse(pyio.StringIO(buf.read()), media_type="text/csv")
+
+@app.delete("/v1/datasets/{dataset_id}")
+def dataset_delete(dataset_id: str, user: Dict[str, Any] = Depends(require_user)):
+    ds = supabase.table("datasets").select("id,project_id,file_url").eq("id", dataset_id).single().execute()
+    if not ds.data:
+        raise HTTPException(status_code=404, detail="Dataset not found")
+    proj = supabase.table("projects").select("owner_id").eq("id", ds.data["project_id"]).single().execute()
+    if not proj.data or proj.data.get("owner_id") != user["id"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    runs = supabase.table("runs").select("id").eq("dataset_id", dataset_id).execute().data or []
+    run_ids = [r["id"] for r in runs]
+    if run_ids:
+        supabase.table("metrics").delete().in_("run_id", run_ids).execute()
+        supabase.table("run_artifacts").delete().in_("run_id", run_ids).execute()
+        supabase.table("runs").delete().in_("id", run_ids).execute()
+
+    try:
+        supabase.storage.from_("datasets").remove([ds.data["file_url"]])
+    except Exception:
+        pass
+
+    supabase.table("datasets").delete().eq("id", dataset_id).execute()
+    return {"ok": True}
 
 class StartRun(BaseModel):
     dataset_id: str
