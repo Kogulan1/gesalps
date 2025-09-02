@@ -13,7 +13,6 @@ import ReportView from "@/components/runs/ReportView";
 import Modal from "@/components/Modal";
 import CSVPreview from "@/components/CSVPreview";
 import JSONPreview from "@/components/JSONPreview";
-import PDFViewer from "@/components/PDFViewer";
 import { useMemo } from "react";
 import { toArtifactMap, fmtBytes, forceDownloadUrl } from "@/lib/artifacts";
 import { useToast } from "@/components/toast/Toaster";
@@ -31,7 +30,6 @@ export default function RunDetail() {
   const [projectId,setProjectId] = useState<string|undefined>(undefined);
   const [csvModal,setCsvModal] = useState(false);
   const [jsonModal,setJsonModal] = useState(false);
-  const [pdfModal,setPdfModal] = useState(false);
   const [csvText,setCsvText] = useState("");
   const [reportJSON,setReportJSON] = useState<any>(null);
 
@@ -57,7 +55,7 @@ export default function RunDetail() {
 
   async function onPreviewCSV(){ try { const txt = await previewRunSyntheticCSV(id); setCsvText(txt); setCsvModal(true); } catch { toast({ title: 'Could not preview CSV', variant: 'error' }); } }
   async function onPreviewJSON(){ try { const rpt = await getRunReportJSON(id); setReportJSON(rpt); setJsonModal(true); } catch { toast({ title: 'Could not load report', variant: 'error' }); } }
-  function onPreviewPDF(){ if (artifactsMap.report_pdf?.signedUrl) setPdfModal(true); }
+  // PDF preview removed: we render the full report below and offer a clean download
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -92,7 +90,7 @@ export default function RunDetail() {
           <div className="flex flex-wrap gap-3">
             <button className="px-3 py-2 rounded-md border disabled:opacity-50" onClick={onPreviewCSV} disabled={status.status!=="succeeded" || !artifactsMap.synthetic_csv} title={status.status!=="succeeded"?"Run must complete":""}>Preview Synthetic CSV</button>
             <button className="px-3 py-2 rounded-md border disabled:opacity-50" onClick={onPreviewJSON} disabled={status.status!=="succeeded" || !artifactsMap.report_json} title={status.status!=="succeeded"?"Run must complete":""}>View Report (JSON)</button>
-            <button className="px-3 py-2 rounded-md border disabled:opacity-50" onClick={onPreviewPDF} disabled={status.status!=="succeeded" || !artifactsMap.report_pdf} title={status.status!=="succeeded"?"Run must complete":""}>View Report (PDF)</button>
+            {/* PDF preview removed; use download below */}
           </div>
         </CardContent>
       </Card>
@@ -124,9 +122,7 @@ export default function RunDetail() {
       <Modal open={jsonModal} title="Report (JSON)" onClose={()=>setJsonModal(false)}>
         <JSONPreview data={reportJSON} />
       </Modal>
-      <Modal open={pdfModal} title="Report (PDF)" onClose={()=>setPdfModal(false)} maxW="max-w-5xl">
-        {artifactsMap.report_pdf?.signedUrl ? (<PDFViewer url={artifactsMap.report_pdf.signedUrl} />) : (<div className="text-sm token-muted">No PDF available</div>)}
-      </Modal>
+      {/* No PDF modal: rely on download link */}
     </div>
   );
 }
