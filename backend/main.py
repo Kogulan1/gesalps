@@ -22,6 +22,8 @@ except Exception:
     pass
 
 APP_JWKS_CACHE: Dict[str, Any] = {}
+# Max upload size (MB) for dataset CSVs
+MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "10"))
 
 def ensure_bucket(name: str) -> None:
     try:
@@ -154,10 +156,13 @@ async def upload_dataset(project_id: str = Form(...), file: UploadFile = File(..
     ensure_bucket("datasets")
     # Read CSV to infer schema
     content = await file.read()
+    # Enforce size limit
+    if len(content) > MAX_UPLOAD_MB * 1024 * 1024:
+        raise HTTPException(status_code=413, detail=f"File too large. Max allowed is {MAX_UPLOAD_MB} MB")
     try:
         df = pd.read_csv(io.BytesIO(content))
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Invalid CSV: {e}")
+        raise HTTPException(status_code=400, detail=f"Invalid CSV. Please upload a UTF-8 encoded .csv file: {e}")
 
     rows_count = int(df.shape[0])
     cols_count = int(df.shape[1])
@@ -181,14 +186,11 @@ async def upload_dataset(project_id: str = Form(...), file: UploadFile = File(..
     try:
         upload_res = bucket.upload(path=object_name, file=content)
     except Exception as e:
-        print(f"[upload] exception during storage upload: {type(e).__name__}: {e}")
         raise HTTPException(status_code=500, detail=f"Storage upload failed: {e}")
     # supabase-py may return dict or object; check for error fields defensively
     if isinstance(upload_res, dict) and upload_res.get("error"):
-        print(f"[upload] storage returned error dict: {upload_res}")
         raise HTTPException(status_code=500, detail=str(upload_res.get("error")))
     if hasattr(upload_res, "error") and getattr(upload_res, "error"):
-        print(f"[upload] storage returned error attr: {getattr(upload_res, 'error')}")
         raise HTTPException(status_code=500, detail=str(getattr(upload_res, "error")))
 
     # Insert row in datasets
