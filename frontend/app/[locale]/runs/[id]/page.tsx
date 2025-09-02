@@ -6,6 +6,9 @@ import MetricCard from "@/components/runs/MetricCard";
 import DownloadButton from "@/components/common/DownloadButton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/runs/RunStatus";
+import { previewRunSyntheticCSV, getRunReportJSON } from "@/lib/api";
+import PreviewModal from "@/components/PreviewModal";
+import { useToast } from "@/components/toast/Toaster";
 
 export default function RunDetail() {
   const params = useParams<{id:string}>();
@@ -13,6 +16,10 @@ export default function RunDetail() {
   const [status,setStatus] = useState<any>({ status:'queued' });
   const [metrics,setMetrics] = useState<any|null>(null);
   const [artifacts,setArtifacts] = useState<any[]>([]);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewCSV, setPreviewCSV] = useState("");
+  const [report, setReport] = useState<any|null>(null);
+  const { toast } = useToast();
 
   useEffect(()=>{
     let alive = true;
@@ -54,14 +61,34 @@ export default function RunDetail() {
       {artifacts?.length>0 && (
         <Card>
           <CardHeader><CardTitle>Downloads</CardTitle></CardHeader>
-          <CardContent className="flex gap-3">
+          <CardContent className="flex flex-wrap gap-3 items-center">
             {artifacts.map((a:any)=>(
               <DownloadButton key={a.kind} href={a.signedUrl} label={a.kind} />
             ))}
+            <button
+              className="underline"
+              onClick={async()=>{
+                try { const csv = await previewRunSyntheticCSV(id); setPreviewCSV(csv); setPreviewOpen(true);} catch(e:any){ toast({ title:'Preview failed', description:String(e?.message||e), variant:'error'});} 
+              }}
+            >Preview synthetic_csv</button>
+            <button
+              className="underline"
+              onClick={async()=>{
+                try { const js = await getRunReportJSON(id); setReport(js);} catch(e:any){ toast({ title:'Load report failed', description:String(e?.message||e), variant:'error'});} 
+              }}
+            >View report</button>
           </CardContent>
         </Card>
       )}
+      {report && (
+        <Card>
+          <CardHeader><CardTitle>Report</CardTitle></CardHeader>
+          <CardContent>
+            <pre className="text-sm whitespace-pre-wrap break-words">{JSON.stringify(report, null, 2)}</pre>
+          </CardContent>
+        </Card>
+      )}
+      <PreviewModal open={previewOpen} onClose={()=>setPreviewOpen(false)} csv={previewCSV} />
     </div>
   );
 }
-

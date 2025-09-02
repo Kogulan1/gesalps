@@ -312,6 +312,58 @@ def run_artifacts(run_id: str, user: Dict[str, Any] = Depends(require_user)):
         out.append({"kind": a["kind"], "signedUrl": url, "bytes": a.get("bytes"), "mime": a.get("mime")})
     return out
 
+@app.get("/v1/runs/{run_id}/synthetic/preview")
+def run_synthetic_preview(run_id: str, user: Dict[str, Any] = Depends(require_user)):
+    r = supabase.table("runs").select("id,project_id").eq("id", run_id).single().execute()
+    if not r.data:
+        raise HTTPException(status_code=404, detail="Run not found")
+    proj = supabase.table("projects").select("owner_id").eq("id", r.data["project_id"]).single().execute()
+    if not proj.data or proj.data.get("owner_id") != user["id"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    art = supabase.table("run_artifacts").select("path").eq("run_id", run_id).eq("kind", "synthetic_csv").single().execute()
+    if not art.data:
+        raise HTTPException(status_code=404, detail="synthetic_csv not found")
+    file_bytes = supabase.storage.from_("artifacts").download(art.data["path"])
+    if hasattr(file_bytes, "error") and getattr(file_bytes, "error"):
+        raise HTTPException(status_code=500, detail=str(getattr(file_bytes, "error")))
+    raw = io.BytesIO(file_bytes) if isinstance(file_bytes, (bytes, bytearray)) else io.BytesIO(file_bytes.read())
+    df = pd.read_csv(raw)
+    df_head = df.head(20)
+    buf = pyio.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(df_head.columns.tolist())
+    for _, row in df_head.iterrows():
+        writer.writerow([None if pd.isna(v) else v for v in row.tolist()])
+    buf.seek(0)
+    return StreamingResponse(pyio.StringIO(buf.read()), media_type="text/csv")
+
+@app.get("/v1/runs/{run_id}/report")
+def run_report_json(run_id: str, user: Dict[str, Any] = Depends(require_user)):
+    r = supabase.table("runs").select("id,project_id").eq("id", run_id).single().execute()
+    if not r.data:
+        raise HTTPException(status_code=404, detail="Run not found")
+    proj = supabase.table("projects").select("owner_id").eq("id", r.data["project_id"]).single().execute()
+    if not proj.data or proj.data.get("owner_id") != user["id"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    art = supabase.table("run_artifacts").select("path").eq("run_id", run_id).eq("kind", "report_json").single().execute()
+    if not art.data:
+        m = supabase.table("metrics").select("payload_json").eq("run_id", run_id).single().execute()
+        if m.data and m.data.get("payload_json"):
+            return m.data["payload_json"]
+        raise HTTPException(status_code=404, detail="report_json not found")
+    file_bytes = supabase.storage.from_("artifacts").download(art.data["path"])
+    if hasattr(file_bytes, "error") and getattr(file_bytes, "error"):
+        raise HTTPException(status_code=500, detail=str(getattr(file_bytes, "error")))
+    raw = file_bytes if isinstance(file_bytes, (bytes, bytearray)) else file_bytes.read()
+    try:
+        js = json.loads(raw)
+    except Exception:
+        try:
+            js = json.loads(raw.decode("utf-8"))
+        except Exception:
+            raise HTTPException(status_code=500, detail="Invalid report JSON")
+    return js
+
 # --- Worker (placeholder) ---------------------------------------------------
 
 def execute_pipeline(run: Dict[str, Any]) -> Dict[str, Any]:

@@ -22,3 +22,15 @@ export async function deleteDataset(datasetId: string) {
   if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
   return await res.json();
 }
+
+export async function previewRunSyntheticCSV(runId: string) {
+  const res = await authedFetch(`/v1/runs/${runId}/synthetic/preview`);
+  if (!res.ok) throw new Error(`Synthetic preview failed: ${res.status}`);
+  return await res.text();
+}
+
+export async function getRunReportJSON(runId: string) {
+  const res = await authedFetch(`/v1/runs/${runId}/report`);
+  if (!res.ok) throw new Error(`Load report failed: ${res.status}`);
+  return await res.json();
+}
