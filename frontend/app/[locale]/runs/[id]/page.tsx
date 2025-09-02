@@ -101,51 +101,32 @@ export default function RunDetail() {
         <CardHeader><CardTitle>Downloads</CardTitle></CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-3 items-center">
-            {artifacts.map((a:any)=>(
-              <DownloadButton key={a.kind} href={a.signedUrl} label={a.kind} />
-            ))}
-            <button
-              className="underline"
-              onClick={async()=>{
-                try { const csv = await previewRunSyntheticCSV(id); setPreviewCSV(csv); setPreviewOpen(true);} catch(e:any){ toast({ title:'Preview failed', description:String(e?.message||e), variant:'error'});} 
-              }}
-            >Preview synthetic_csv</button>
-            <button
-              className="underline"
-              onClick={async()=>{
-                try { const js = await getRunReportJSON(id); setReport(js);} catch(e:any){ toast({ title:'Load report failed', description:String(e?.message||e), variant:'error'});} 
-              }}
-            >View report</button>
-            <button
-              className="underline"
-              onClick={async()=>{
-                try {
-                  const r = await authedFetch(`/v1/runs/${id}/report/pdf`,{ method:'POST' });
-                  if (r.ok){ const { signedUrl } = await r.json(); if (signedUrl) window.open(signedUrl, '_blank'); }
-                } catch(e:any){ toast({ title:'Generate PDF failed', description:String(e?.message||e), variant:'error'}); }
-              }}
-            >Generate report (PDF)</button>
-</CardContent>
-        </Card>
-      )}
-      {report && (
-        <Card>
-          <CardHeader><CardTitle>Report</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <ReportView report={report} />
-            <button
-              className="underline"
-              onClick={async()=>{
-                try {
-                  const r = await authedFetch(`/v1/runs/${id}/report/pdf`,{ method:'POST' });
-                  if (r.ok){ const { signedUrl } = await r.json(); if (signedUrl) window.open(signedUrl, '_blank'); }
-                } catch(e:any){ toast({ title:'Generate PDF failed', description:String(e?.message||e), variant:'error'}); }
-              }}
-            >Generate report (PDF)</button>
-          </CardContent>
-        </Card>
-      )}
-      <PreviewModal open={previewOpen} onClose={()=>setPreviewOpen(false)} csv={previewCSV} />
+            {artifactsMap.synthetic_csv?.signedUrl && (
+              <a href={artifactsMap.synthetic_csv.signedUrl!} target="_blank" rel="noreferrer" download className="px-3 py-2 rounded-md border inline-flex items-center gap-2">Synthetic CSV <span className="text-xs token-muted">{fmtBytes(artifactsMap.synthetic_csv.bytes)}</span></a>
+            )}
+            {artifactsMap.report_json?.signedUrl && (
+              <a href={artifactsMap.report_json.signedUrl!} target="_blank" rel="noreferrer" download className="px-3 py-2 rounded-md border inline-flex items-center gap-2">Report JSON <span className="text-xs token-muted">{fmtBytes(artifactsMap.report_json.bytes)}</span></a>
+            )}
+            {artifactsMap.report_pdf?.signedUrl && (
+              <a href={artifactsMap.report_pdf.signedUrl!} target="_blank" rel="noreferrer" download className="px-3 py-2 rounded-md border inline-flex items-center gap-2">Report PDF <span className="text-xs token-muted">{fmtBytes(artifactsMap.report_pdf.bytes)}</span></a>
+            )}
+          </div>
+          {!artifactsMap.synthetic_csv && !artifactsMap.report_json && !artifactsMap.report_pdf && (
+            <div className="text-sm token-muted mt-2">No artifacts available yet.</div>
+          )}
+        </CardContent>
+      </Card>
+      {report && (<Card><CardHeader><CardTitle>Report</CardTitle></CardHeader><CardContent className="space-y-4"><ReportView report={report} /></CardContent></Card>)}
+      {/* Modals */}
+      <Modal open={csvModal} title="Synthetic CSV (first 20 rows)" onClose={()=>setCsvModal(false)}>
+        <CSVPreview csv={csvText} />
+      </Modal>
+      <Modal open={jsonModal} title="Report (JSON)" onClose={()=>setJsonModal(false)}>
+        <JSONPreview data={reportJSON} />
+      </Modal>
+      <Modal open={pdfModal} title="Report (PDF)" onClose={()=>setPdfModal(false)} maxW="max-w-5xl">
+        {artifactsMap.report_pdf?.signedUrl ? (<PDFViewer url={artifactsMap.report_pdf.signedUrl} />) : (<div className="text-sm token-muted">No PDF available</div>)}
+      </Modal>
     </div>
   );
 }
