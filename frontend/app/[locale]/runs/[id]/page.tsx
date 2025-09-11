@@ -19,8 +19,7 @@ import { toArtifactMap, fmtBytes, forceDownloadUrl } from "@/lib/artifacts";
 import BackLink from "@/components/common/BackLink";
 import { useLocale } from "next-intl";
 import { useToast } from "@/components/toast/Toaster";
-import RunStepper, { mapStatusToStep } from "@/components/runs/RunStepper";
-import RobotSynthAnimation from "@/components/runs/RobotSynthAnimation";
+ 
 
 export default function RunDetail() {
   const params = useParams<{id:string}>();
@@ -44,15 +43,7 @@ export default function RunDetail() {
   const [progressLabel,setProgressLabel] = useState<string>("");
   const prevStatusRef = useRef<string | undefined>(undefined);
 
-  // Derived values used for UX
-  const hasMetrics = Boolean(metrics && Object.keys(metrics || {}).length);
-  const hasArtifacts = Array.isArray(artifacts) && artifacts.length > 0;
-  const step = mapStatusToStep({
-    status: status?.status || "queued",
-    hasMetrics,
-    hasArtifacts,
-    inTraining: (status as any)?.phase === "training" || (status as any)?.phase === "synth",
-  });
+  // no stepper/animation state
 
   useEffect(()=>{
     let alive = true;
@@ -201,25 +192,7 @@ export default function RunDetail() {
         <StatusBadge status={status.status} />
       </div>
 
-      <div className="flex items-center justify-between mb-4">
-        <RunStepper current={step} />
-      </div>
-
-      {step !== "completed" && step !== "failed" && (
-        <div className="border rounded-2xl p-6 flex items-center gap-6" style={{borderColor:'var(--ges-border)'}}>
-          <RobotSynthAnimation className="w-40 h-40" />
-          <div>
-            <div className="text-base font-medium">
-              {step === "queued" && "Waiting in queue…"}
-              {(step === "running" || step === "synthesizing") && "Synthesizing data…"}
-              {step === "evaluating" && "Evaluating privacy & utility…"}
-            </div>
-            <div className="text-sm text-neutral-500 mt-1">
-              This may take a few minutes for larger datasets.
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Removed live animation panel and stepper */}
 
       <Card>
         <CardHeader>
@@ -252,7 +225,9 @@ export default function RunDetail() {
         </CardContent>
       </Card>
 
-      {hasMetrics ? (
+      {/* Restore previous Artifacts behavior */}
+      {/* Show spinner section until artifacts are ready */}
+      {artifactsReady ? (
       <Card>
         <CardHeader><CardTitle>Artifacts</CardTitle></CardHeader>
         <CardContent>
@@ -328,7 +303,15 @@ export default function RunDetail() {
         </CardContent>
       </Card>
       ) : (
-        <div className="text-sm text-neutral-500">Artifacts will appear once evaluation completes.</div>
+        <Card>
+          <CardHeader><CardTitle>Artifacts</CardTitle></CardHeader>
+          <CardContent>
+            <div data-testid="synth-working" className="mb-2 flex items-center gap-2 rounded-md border bg-gray-50 px-4 py-3 text-gray-700" style={{borderColor:'var(--ges-border)'}}>
+              <Spinner size={14} />
+              <span>Synthesizing… our agent is optimizing your configuration</span>
+            </div>
+          </CardContent>
+        </Card>
       )}
       {(steps.length>0 || runInfo?.mode === 'agent') && (
         <Card>
