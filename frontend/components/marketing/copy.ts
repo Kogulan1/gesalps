@@ -1,9 +1,9 @@
 export const copy = {
   brand: "Gesalps",
   hero: {
-    title: "Clinical-grade synthetic data, on demand.",
+    title: "Clinical-grade synthetic data — on demand.",
     subtitle:
-      "Generate trial-grade tabular datasets with measurable privacy and utility. Built for sponsors, CROs, and AI teams.",
+      "Generate trial-ready tabular datasets with measurable privacy and utility. Built for sponsors, CROs, and AI teams.",
     ctaPrimary: "Get started free",
     ctaSecondary: "View docs",
   },
@@ -113,4 +113,3 @@ export const copy = {
     },
   ],
 };
-

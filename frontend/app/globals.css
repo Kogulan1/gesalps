@@ -5,11 +5,19 @@
   /* Palette */
   --ges-primary: #E30613; /* Swiss red */
   --ges-primary-600: #C60012;
-  --ges-accent: #111827; /* headings near-black */
-  --ges-muted: #6B7280; /* gray-500 text */
   --ges-bg: #FFFFFF;
   --ges-panel: #F9FAFB; /* gray-50 panel */
   --ges-border: #E5E7EB; /* gray-200 */
+
+  /* Updated foreground + accents for contrast */
+  --ges-fg: #0F172A;          /* slate-900 */
+  --ges-fg-muted: #334155;    /* slate-600 */
+  --ges-accent: #0EA5E9;      /* sky-500 */
+  --ges-accent-ink: #0B5ED7;  /* accessible link hover */
+
+  /* Badge tokens */
+  --ges-badge-bg: #F1F5F9;    /* slate-100 */
+  --ges-badge-fg: #0F172A;    /* slate-900 */
 
   /* Typography */
   --ges-font-sans: var(--font-geist-sans);
@@ -24,7 +32,8 @@
 /* Base */
 html, body {
   background: var(--ges-bg);
-  color: var(--ges-accent);
+  color: var(--ges-fg);
+  font-size: 16px;
 }
 
 body {
@@ -32,8 +41,8 @@ body {
 }
 
 /* Utilities for tokens */
-.token-heading { color: var(--ges-accent); }
-.token-muted { color: var(--ges-muted); }
+.token-heading { color: var(--ges-fg); }
+.token-muted { color: var(--ges-fg-muted); }
 .token-panel { background: var(--ges-panel); }
 .token-border { border-color: var(--ges-border); }
 .btn-primary { background: var(--ges-primary); color: #fff; }
@@ -45,3 +54,11 @@ body {
 :where(a, button, input, select, textarea, [role="button"]) {
   @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ges-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-white;
 }
+
+/* Headings weight */
+h1 { font-weight: 800; }
+h2 { font-weight: 700; }
+
+/* Links contrast + hover */
+a { color: var(--ges-accent); }
+a:hover { color: var(--ges-accent-ink); text-decoration: underline; }

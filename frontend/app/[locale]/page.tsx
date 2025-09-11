@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Hero from "@/components/marketing/Hero";
-import Logos from "@/components/marketing/Logos";
 import Highlights from "@/components/marketing/Highlights";
 import HowItWorks from "@/components/marketing/HowItWorks";
 import ReportPreview from "@/components/marketing/ReportPreview";
@@ -35,7 +34,6 @@ export default function Page() {
   return (
     <main>
       <Hero />
-      <Logos />
       <Highlights />
       <HowItWorks />
       <ReportPreview />
