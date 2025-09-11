@@ -198,7 +198,7 @@ export default function RunDetail() {
         <CardHeader>
           <CardTitle>Metrics</CardTitle>
           {metrics?.meta?.model && (
-            <div className="mt-1 text-xs inline-flex items-center gap-2 rounded-full px-2 py-1 border" style={{borderColor:'var(--ges-border)'}}>
+            <div className="mt-1 text-xs inline-flex items-center gap-2 rounded-full px-3 py-1.5 border font-semibold" style={{borderColor:'var(--ges-border)', background:'var(--ges-badge-bg)', color:'var(--ges-badge-fg)'}}>
               <span className="opacity-70">Attempt</span>
               <span className="font-medium">{String(metrics?.meta?.attempt ?? 1)}</span>
               <span className="opacity-70">Model</span>

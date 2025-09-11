@@ -15,11 +15,11 @@ export default function Navbar() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <div className="flex items-center gap-6">
           <Logo variant="full" size={32} href={`/${locale}`} />
-          <nav className="hidden md:flex items-center gap-6 text-sm" style={{ color: "var(--ges-muted)" }}>
-            <a href="#product" className="hover:text-black">{tNav('product')}</a>
-            <a href="#pricing" className="hover:text-black">{tNav('pricing')}</a>
-            <a href="#docs" className="hover:text-black">{tNav('docs')}</a>
-            <Link href={`/${locale}/projects`} className="hover:text-black">{tNav('projects', { fallback: 'Projects' })}</Link>
+          <nav className="hidden md:flex items-center gap-6 text-sm" style={{ color: "var(--ges-fg-muted)" }}>
+            <a href="#product">{tNav('product')}</a>
+            <a href="#pricing">{tNav('pricing')}</a>
+            <Link href={`/${locale}/docs`}>{tNav('docs')}</Link>
+            <Link href={`/${locale}/projects`}>{tNav('projects', { fallback: 'Projects' })}</Link>
           </nav>
         </div>
         <div className="flex items-center gap-2">
