@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useMemo, useState } from "react";
+import { useLocale } from "next-intl";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
 import { useToast } from "@/components/toast/Toaster";
 import { scorePassword } from "@/lib/password";
@@ -22,6 +23,9 @@ function Content() {
   const { user } = useAuth();
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const { toast } = useToast();
+  const locale = (() => {
+    try { return (typeof document !== 'undefined' && (document.cookie.split('; ').find(c=>c.startsWith('ges.locale='))?.split('=')[1])) || 'en'; } catch { return 'en'; }
+  })();
 
   const [email, setEmail] = useState(user?.email ?? "");
   const [savingEmail, setSavingEmail] = useState(false);
@@ -111,7 +115,7 @@ function Content() {
               onClick={async () => {
                 const { error } = await supabase.auth.signOut();
                 if (error) toast({ title: "Sign out failed", description: error.message, variant: "error" });
-                else window.location.href = "/";
+                else window.location.href = `/${locale}/signin`;
               }}
             >
               Sign out
@@ -124,7 +128,7 @@ function Content() {
                 const { error } = await supabase.auth.signOut({ scope: "global" as any });
                 setSigningOutAll(false);
                 if (error) toast({ title: "Failed to sign out everywhere", description: error.message, variant: "error" });
-                else window.location.href = "/";
+                else window.location.href = `/${locale}/signin`;
               }}
             >
               {signingOutAll ? "Signing out…" : "Sign out everywhere"}
@@ -147,4 +151,3 @@ function Content() {
     </div>
   );
 }
-

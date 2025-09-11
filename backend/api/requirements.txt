@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+pydantic
+httpx
+pandas
+supabase
+python-multipart
+python-jose
+reportlab

@@ -1,0 +1,10 @@
+sdv==1.26.0
+pandas==1.5.3
+numpy==1.26.4
+scipy==1.13.1
+scikit-learn==1.4.2
+python-dateutil==2.9.0.post0
+httpx==0.27.2
+supabase==2.5.1
+python-jose==3.3.0
+opacus>=1.4.0

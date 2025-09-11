@@ -60,12 +60,24 @@ create table if not exists metrics (
   created_at timestamptz not null default now()
 );
 
+-- Steps log for agent/planner progress
+create table if not exists run_steps (
+  id uuid primary key default gen_random_uuid(),
+  run_id uuid not null references runs(id) on delete cascade,
+  step_no int not null,
+  title text,
+  detail text,
+  metrics_json jsonb,
+  created_at timestamptz not null default now()
+);
+
 -- Indexes
 create index if not exists idx_projects_owner on projects(owner_id);
 create index if not exists idx_datasets_project on datasets(project_id);
 create index if not exists idx_runs_project on runs(project_id);
 create index if not exists idx_runs_dataset on runs(dataset_id);
 create index if not exists idx_artifacts_run on run_artifacts(run_id);
+create index if not exists idx_steps_run on run_steps(run_id);
 
 -- RLS
 alter table projects enable row level security;
@@ -73,6 +85,7 @@ alter table datasets enable row level security;
 alter table runs enable row level security;
 alter table run_artifacts enable row level security;
 alter table metrics enable row level security;
+alter table run_steps enable row level security;
 
 -- Projects policies
 drop policy if exists proj_select on projects;
@@ -134,6 +147,25 @@ create policy met_select on metrics for select
     where r.id = metrics.run_id and p.owner_id = auth.uid()
   ));
 
+drop policy if exists steps_select on run_steps;
+create policy steps_select on run_steps for select
+  using (exists (
+    select 1 from runs r join projects p on p.id = r.project_id
+    where r.id = run_steps.run_id and p.owner_id = auth.uid()
+  ));
+
+-- Optional: add runs.config_json if missing (idempotent)
+do $$
+begin
+  if not exists (
+    select 1 from information_schema.columns
+    where table_name = 'runs' and column_name = 'config_json'
+  ) then
+    alter table runs add column config_json jsonb;
+  end if;
+exception when others then null;
+end $$;
+
 -- Storage buckets (private)
 -- Safe to run multiple times; errors ignored if bucket exists.
 do $$
@@ -147,4 +179,3 @@ begin
   perform storage.create_bucket('artifacts', false);
 exception when others then null;
 end $$;
-
