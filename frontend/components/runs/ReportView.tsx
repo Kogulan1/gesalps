@@ -21,8 +21,12 @@ function gradeGoodStrong(ok: boolean | null | undefined, strength?: 'strong' | '
   return { label: 'Good', pill: 'bg-emerald-50 text-emerald-700' };
 }
 
-function cell(v: number | string | null | undefined) {
-  if (v === null || v === undefined || Number.isNaN(v)) return "—";
+function cell(v: number | string | null | undefined, digits = 3) {
+  if (v === null || v === undefined) return "N/A";
+  if (typeof v === 'number') {
+    if (Number.isNaN(v)) return "N/A";
+    return v.toFixed(digits);
+  }
   return String(v);
 }
 
@@ -62,45 +66,45 @@ export default function ReportView({ report }: { report: Report }) {
         <div className="overflow-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-neutral-900 text-white">
-                <th className="text-left px-3 py-2 border-b border-neutral-700">Test</th>
-                <th className="text-left px-3 py-2 border-b border-neutral-700">Result</th>
-                <th className="text-left px-3 py-2 border-b border-neutral-700">Threshold</th>
-                <th className="text-left px-3 py-2 border-b border-neutral-700">Status</th>
+              <tr className="bg-neutral-50 text-neutral-800">
+                <th className="text-left px-3 py-2 border-b" style={{ borderColor: 'var(--ges-border)' }}>Test</th>
+                <th className="text-left px-3 py-2 border-b" style={{ borderColor: 'var(--ges-border)' }}>Result</th>
+                <th className="text-left px-3 py-2 border-b" style={{ borderColor: 'var(--ges-border)' }}>Threshold</th>
+                <th className="text-left px-3 py-2 border-b" style={{ borderColor: 'var(--ges-border)' }}>Status</th>
               </tr>
             </thead>
             <tbody>
               <tr className="border-b" style={{ borderColor: 'var(--ges-border)' }}>
                 <td className="px-3 py-2">Membership Inference AUC</td>
-                <td className="px-3 py-2">{cell(p.mia_auc)}</td>
+                <td className="px-3 py-2">{cell(p.mia_auc, 3)}</td>
                 <td className="px-3 py-2">≤ 0.60</td>
                 <td className="px-3 py-2">
                   <span className={`inline-flex items-center gap-2 rounded-full px-2 py-0.5 text-xs ${statusLabel(passMIA).pill}`}>
                     <span className="w-2 h-2 rounded-full bg-current"></span>
-                    {statusLabel(passMIA).label === 'Pass' ? 'Accept' : statusLabel(passMIA).label}
+                    {statusLabel(passMIA).label}
                   </span>
                 </td>
               </tr>
               <tr className="border-b" style={{ borderColor: 'var(--ges-border)' }}>
                 <td className="px-3 py-2">Record Linkage Risk (%)</td>
-                <td className="px-3 py-2">{dupPct === null ? '—' : `${dupPct.toFixed(1)}%`}</td>
+                <td className="px-3 py-2">{dupPct === null ? 'N/A' : `${dupPct.toFixed(1)}%`}</td>
                 <td className="px-3 py-2">≤ 5%</td>
                 <td className="px-3 py-2">
                   <span className={`inline-flex items-center gap-2 rounded-full px-2 py-0.5 text-xs ${statusLabel(passDup).pill}`}>
                     <span className="w-2 h-2 rounded-full bg-current"></span>
-                    {statusLabel(passDup).label === 'Pass' ? 'Accept' : statusLabel(passDup).label}
+                    {statusLabel(passDup).label}
                   </span>
                 </td>
               </tr>
               <tr className="border-b" style={{ borderColor: 'var(--ges-border)' }}>
                 <td className="px-3 py-2">k-Anonymity (k ≥ 5)</td>
-                <td className="px-3 py-2">{cell(p.k_anon)}</td>
+                <td className="px-3 py-2">{cell(p.k_anon, 0)}</td>
                 <td className="px-3 py-2">k ≥ 5</td>
                 <td className="px-3 py-2 text-neutral-500">N/A</td>
               </tr>
               <tr>
                 <td className="px-3 py-2">Differential Privacy ε</td>
-                <td className="px-3 py-2">{cell(p.dp_epsilon)}</td>
+                <td className="px-3 py-2">{cell(p.dp_epsilon, 2)}</td>
                 <td className="px-3 py-2">≤ 2.0</td>
                 <td className="px-3 py-2 text-neutral-500">N/A</td>
               </tr>
@@ -115,17 +119,17 @@ export default function ReportView({ report }: { report: Report }) {
         <div className="overflow-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-neutral-900 text-white">
-                <th className="text-left px-3 py-2 border-b border-neutral-700">Metric</th>
-                <th className="text-left px-3 py-2 border-b border-neutral-700">Value</th>
-                <th className="text-left px-3 py-2 border-b border-neutral-700">Target</th>
-                <th className="text-left px-3 py-2 border-b border-neutral-700">Status</th>
+              <tr className="bg-neutral-50 text-neutral-800">
+                <th className="text-left px-3 py-2 border-b" style={{ borderColor: 'var(--ges-border)' }}>Metric</th>
+                <th className="text-left px-3 py-2 border-b" style={{ borderColor: 'var(--ges-border)' }}>Value</th>
+                <th className="text-left px-3 py-2 border-b" style={{ borderColor: 'var(--ges-border)' }}>Target</th>
+                <th className="text-left px-3 py-2 border-b" style={{ borderColor: 'var(--ges-border)' }}>Status</th>
               </tr>
             </thead>
             <tbody>
               <tr className="border-b" style={{ borderColor: 'var(--ges-border)' }}>
                 <td className="px-3 py-2">KS mean (lower is better)</td>
-                <td className="px-3 py-2">{cell(u.ks_mean)}</td>
+                <td className="px-3 py-2">{cell(u.ks_mean, 3)}</td>
                 <td className="px-3 py-2">≤ 0.10</td>
                 <td className="px-3 py-2">
                   {(() => { const g = gradeGoodStrong(passKS, ksStrength); return <span className={`inline-flex items-center gap-2 rounded-full px-2 py-0.5 text-xs ${g.pill}`}><span className="w-2 h-2 rounded-full bg-current"></span>{g.label}</span> })()}
@@ -133,7 +137,7 @@ export default function ReportView({ report }: { report: Report }) {
               </tr>
               <tr className="border-b" style={{ borderColor: 'var(--ges-border)' }}>
                 <td className="px-3 py-2">Correlation Δ (lower is better)</td>
-                <td className="px-3 py-2">{cell(u.corr_delta)}</td>
+                <td className="px-3 py-2">{cell(u.corr_delta, 3)}</td>
                 <td className="px-3 py-2">≤ 0.10</td>
                 <td className="px-3 py-2">
                   {(() => { const g = gradeGoodStrong(passCorr, corrStrength); return <span className={`inline-flex items-center gap-2 rounded-full px-2 py-0.5 text-xs ${g.pill}`}><span className="w-2 h-2 rounded-full bg-current"></span>{g.label}</span> })()}
@@ -141,7 +145,7 @@ export default function ReportView({ report }: { report: Report }) {
               </tr>
               <tr className="border-b" style={{ borderColor: 'var(--ges-border)' }}>
                 <td className="px-3 py-2">AUROC (synthetic)</td>
-                <td className="px-3 py-2">{cell(u.auroc)}</td>
+                <td className="px-3 py-2">{cell(u.auroc, 3)}</td>
                 <td className="px-3 py-2">≥ 0.80</td>
                 <td className="px-3 py-2">
                   {(() => { const g = gradeGoodStrong(passAUROC, aurocStrength); return <span className={`inline-flex items-center gap-2 rounded-full px-2 py-0.5 text-xs ${g.pill}`}><span className="w-2 h-2 rounded-full bg-current"></span>{g.label}</span> })()}
@@ -149,7 +153,7 @@ export default function ReportView({ report }: { report: Report }) {
               </tr>
               <tr>
                 <td className="px-3 py-2">Survival C-Index (synthetic)</td>
-                <td className="px-3 py-2">{cell(u.c_index)}</td>
+                <td className="px-3 py-2">{cell(u.c_index, 3)}</td>
                 <td className="px-3 py-2">≥ 0.70</td>
                 <td className="px-3 py-2">
                   {(() => { const g = gradeGoodStrong(passCIdx, cidxStrength); return <span className={`inline-flex items-center gap-2 rounded-full px-2 py-0.5 text-xs ${g.pill}`}><span className="w-2 h-2 rounded-full bg-current"></span>{g.label}</span> })()}

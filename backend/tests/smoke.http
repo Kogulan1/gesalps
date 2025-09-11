@@ -1,0 +1,85 @@
+@base = http://localhost:8000
+@token = REPLACE_WITH_SUPABASE_JWT
+
+### Create a project
+# @name createProject
+POST {{base}}/v1/projects
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "smoke-project" }
+
+> {% 
+  const js = JSON.parse(response.body);
+  client.global.set('project_id', js.id);
+%}
+
+### Upload a small CSV as dataset
+# @name uploadDataset
+POST {{base}}/v1/datasets/upload
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=bound
+
+--bound
+Content-Disposition: form-data; name="project_id"
+
+{{project_id}}
+--bound
+Content-Disposition: form-data; name="file"; filename="smoke.csv"
+Content-Type: text/csv
+
+< ./backend/tests/fixtures/smoke.csv
+--bound--
+
+> {% 
+  const js = JSON.parse(response.body);
+  client.global.set('dataset_id', js.dataset_id);
+%}
+
+### Start an agent run
+# @name startRun
+POST {{base}}/v1/runs
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "dataset_id": "{{dataset_id}}",
+  "method": "auto",
+  "mode": "agent",
+  "config_json": {
+    "preference": { "tradeoff": "balanced" }
+  }
+}
+
+> {% 
+  const js = JSON.parse(response.body);
+  client.global.set('run_id', js.run_id);
+%}
+
+### Poll run status (repeat until status == "succeeded")
+# @name runStatus
+GET {{base}}/v1/runs/{{run_id}}/status
+Authorization: Bearer {{token}}
+
+> {% 
+  const js = JSON.parse(response.body);
+  client.test('run status is valid', () => {
+    client.assert(['queued','running','succeeded','failed'].includes(js.status));
+  });
+%}
+
+### Fetch report JSON and validate keys
+# @name runReport
+GET {{base}}/v1/runs/{{run_id}}/report
+Authorization: Bearer {{token}}
+
+> {% 
+  const js = JSON.parse(response.body);
+  client.test('report has utility/privacy keys', () => {
+    client.assert(js && js.utility && js.privacy, 'missing utility/privacy');
+    client.assert(js.utility.hasOwnProperty('ks_mean'), 'missing utility.ks_mean');
+    client.assert(js.utility.hasOwnProperty('corr_delta'), 'missing utility.corr_delta');
+    client.assert(js.privacy.hasOwnProperty('mia_auc'), 'missing privacy.mia_auc');
+  });
+%}
+

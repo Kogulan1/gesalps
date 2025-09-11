@@ -11,6 +11,8 @@
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.45.4",
+    "clsx": "^2.1.1",
+    "lottie-react": "^2.4.1",
     "next": "15.5.2",
     "next-intl": "^4.3.5",
     "react": "19.1.0",
