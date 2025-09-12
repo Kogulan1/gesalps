@@ -8,7 +8,7 @@ export default function ReportPreview() {
           { label: "MIA AUC", value: "0.56" },
         ].map((m) => (
           <div key={m.label} className="rounded-2xl border p-6 text-center" style={{borderColor:'var(--ges-border)'}}>
-            <div className="text-xs uppercase text-neutral-500 dark:text-neutral-400">
+            <div className="text-xs uppercase" style={{ color: 'var(--ges-fg-muted)' }}>
               {m.label}
             </div>
             <div className="text-3xl font-semibold mt-1">{m.value}</div>
@@ -18,4 +18,3 @@ export default function ReportPreview() {
     </section>
   );
 }
-
