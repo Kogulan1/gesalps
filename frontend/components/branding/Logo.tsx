@@ -13,11 +13,11 @@ export function Logo({
   href?: string;
 }) {
   return (
-    <Link href={href} className={`flex items-center gap-2 ${className}`} aria-label="Gesalps home">
-      <Image src="/logo-gesalps-icon.svg" alt="Gesalps" width={size} height={size} priority />
+    <Link href={href} className={`flex items-center gap-2 ${className}`} aria-label="GESALP AI home">
+      <Image src="/logo-gesalps-icon.svg" alt="GESALP AI" width={size} height={size} priority />
       {variant === "full" && (
         <span className="font-semibold tracking-tight" style={{ color: "var(--ges-accent)", fontSize: 18 }}>
-          GESALPS
+          GESALP AI
         </span>
       )}
     </Link>

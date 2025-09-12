@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Gesalps – Synthetic clinical trial data",
-    template: "%s – Gesalps",
+    default: "GESALP AI – Synthetic clinical trial data",
+    template: "%s – GESALP AI",
   },
   description:
     "Generate trial-grade synthetic datasets with measurable privacy and utility.",
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     follow: true,
   },
   openGraph: {
-    title: "Gesalps",
+    title: "GESALP AI",
     description:
       "Synthetic clinical trial data with measurable privacy and utility.",
     type: "website",
