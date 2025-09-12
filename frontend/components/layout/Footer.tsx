@@ -11,7 +11,7 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 text-sm" style={{ color: "var(--ges-fg)" }}>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="col-span-2 md:col-span-1">
-            <div className="text-lg font-semibold">Gesalps</div>
+            <div className="text-lg font-semibold">GESALP AI</div>
             <p className="token-muted mt-2">Synthetic data for clinical trials.</p>
           </div>
           <div>
@@ -38,7 +38,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="mt-8 flex flex-wrap items-center gap-4 token-muted">
-          <div>{tFooter('copyright')}</div>
+          <div>© {new Date().getFullYear()} GESALP AI</div>
           <Link href={`/${locale}/privacy`} className="hover:underline">{tFooter('privacy')}</Link>
           <Link href={`/${locale}/terms`} className="hover:underline">{tFooter('terms')}</Link>
           <a href="mailto:support@gesalps.ai" className="hover:underline">{tFooter('contact')}</a>

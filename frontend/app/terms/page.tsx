@@ -8,7 +8,7 @@ export default function TermsPage() {
         This placeholder outlines acceptable use and service terms. Replace with your legal terms.
       </p>
       <p className="mt-2 text-neutral-600 dark:text-neutral-300">
-        By using Gesalps, you agree to follow applicable laws and not misuse the platform.
+        By using GESALP AI, you agree to follow applicable laws and not misuse the platform.
       </p>
     </div>
   );

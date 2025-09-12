@@ -10,7 +10,7 @@ import VerifyEmailBanner from "@/components/VerifyEmailBanner";
 
 
 export const metadata: Metadata = {
-  title: { default: "Gesalps – Synthetic clinical trial data", template: "%s – Gesalps" },
+  title: { default: "GESALP AI – Synthetic clinical trial data", template: "%s – GESALP AI" },
   description: "Generate trial-grade synthetic datasets with measurable privacy and utility.",
 };
 

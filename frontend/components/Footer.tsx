@@ -5,7 +5,7 @@ export default function Footer() {
     <footer className="border-t border-neutral-200 dark:border-neutral-800 py-12">
       <div className="mx-auto max-w-6xl px-4 grid grid-cols-2 md:grid-cols-4 gap-8 text-sm">
         <div className="col-span-2 md:col-span-1">
-          <div className="text-lg font-semibold">Gesalps</div>
+          <div className="text-lg font-semibold">GESALP AI</div>
           <p className="text-neutral-500 mt-2">Synthetic data for clinical trials.</p>
         </div>
         <div>
@@ -29,10 +29,9 @@ export default function Footer() {
             <li><Link href="/privacy" className="hover:underline">Privacy</Link></li>
             <li><Link href="/terms" className="hover:underline">Terms</Link></li>
           </ul>
-          <div className="mt-4 text-neutral-500">© {new Date().getFullYear()} Gesalps</div>
+          <div className="mt-4 text-neutral-500">© {new Date().getFullYear()} GESALP AI</div>
         </div>
       </div>
     </footer>
   );
 }
-

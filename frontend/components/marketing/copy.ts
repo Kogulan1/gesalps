@@ -1,5 +1,5 @@
 export const copy = {
-  brand: "Gesalps",
+  brand: "GESALP AI",
   hero: {
     title: "Clinical-grade synthetic data — on demand.",
     subtitle:
