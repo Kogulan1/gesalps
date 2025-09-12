@@ -4,7 +4,7 @@ function Col({ title, items }: { title: string; items: string[] }) {
   return (
     <div className="rounded-2xl border p-6" style={{borderColor:'var(--ges-border)'}}>
       <div className="text-sm font-medium">{title}</div>
-      <ul className="text-sm text-neutral-600 dark:text-neutral-300 mt-3 space-y-2">
+      <ul className="text-sm mt-3 space-y-2" style={{ color: 'var(--ges-fg-muted)' }}>
         {items.map((i) => (
           <li key={i}>• {i}</li>
         ))}
@@ -28,4 +28,3 @@ export default function Roadmap() {
     </section>
   );
 }
-

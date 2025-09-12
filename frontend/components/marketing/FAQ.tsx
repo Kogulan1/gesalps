@@ -13,7 +13,7 @@ export default function FAQ() {
                 <span>{q}</span>
                 <span className="transition-transform group-open:rotate-45">+</span>
               </summary>
-              <div className="px-4 pb-4 text-sm text-neutral-600 dark:text-neutral-300">
+              <div className="px-4 pb-4 text-sm" style={{ color: 'var(--ges-fg-muted)' }}>
                 {a}
               </div>
             </details>
@@ -23,4 +23,3 @@ export default function FAQ() {
     </section>
   );
 }
-

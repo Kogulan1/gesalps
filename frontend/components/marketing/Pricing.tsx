@@ -11,7 +11,7 @@ export default function Pricing() {
             <div key={t.name} className="rounded-2xl border p-6 flex flex-col" style={{borderColor:'var(--ges-border)'}}>
               <div className="font-medium">{t.name}</div>
               <div className="text-3xl font-semibold mt-1">{t.price}</div>
-              <ul className="text-sm text-neutral-600 dark:text-neutral-300 mt-4 space-y-2">
+              <ul className="text-sm mt-4 space-y-2" style={{ color: 'var(--ges-fg-muted)' }}>
                 {t.features.map((f) => (
                   <li key={f}>• {f}</li>
                 ))}
@@ -26,4 +26,3 @@ export default function Pricing() {
     </section>
   );
 }
-

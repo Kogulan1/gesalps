@@ -11,7 +11,7 @@
 
   /* Updated foreground + accents for contrast */
   --ges-fg: #0F172A;          /* slate-900 */
-  --ges-fg-muted: #334155;    /* slate-600 */
+  --ges-fg-muted: #1F2937;    /* slate-800 for stronger contrast */
   /* Use brand colors only (no blue text) */
   --ges-accent: #111827;      /* near-black for headings */
   --ges-accent-ink: #0F172A;  /* darker near-black */
@@ -64,3 +64,9 @@ h2 { font-weight: 700; }
 /* Links: use brand red */
 a { color: var(--ges-primary); }
 a:hover { color: var(--ges-primary-600); text-decoration: underline; }
+
+/* Dark mode variable overrides (if .dark class is used) */
+.dark {
+  --ges-fg: #F8FAFC;         /* near-white */
+  --ges-fg-muted: #CBD5E1;   /* slate-300 for readability on dark */
+}

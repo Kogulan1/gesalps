@@ -10,7 +10,7 @@ export default function Hero() {
           <h1 className="text-3xl md:text-5xl tracking-tight">
             {copy.hero.title}
           </h1>
-          <p className="mt-3 max-w-2xl mx-auto text-[17px] text-neutral-700 dark:text-neutral-300">
+          <p className="mt-3 max-w-2xl mx-auto text-[17px]" style={{ color: 'var(--ges-fg-muted)' }}>
             {copy.hero.subtitle}
           </p>
           <div className="mt-5 flex items-center justify-center gap-3">
@@ -27,7 +27,7 @@ export default function Hero() {
               {copy.hero.ctaSecondary}
             </Link>
           </div>
-          <div className="mt-4 text-sm text-neutral-600 dark:text-neutral-300">
+          <div className="mt-4 text-sm" style={{ color: 'var(--ges-fg-muted)' }}>
             <span className="mx-2">•</span> AUROC <strong>0.87</strong>
             <span className="mx-2">•</span> C‑Index <strong>0.74</strong>
             <span className="mx-2">•</span> MIA AUC <strong>0.56</strong>
