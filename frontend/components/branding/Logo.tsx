@@ -14,11 +14,14 @@ export function Logo({
 }) {
   return (
     <Link href={href} className={`flex items-center gap-2 ${className}`} aria-label="GESALP AI home">
-      <Image src="/logo-gesalps-icon.svg" alt="GESALP AI" width={size} height={size} priority />
-      {variant === "full" && (
-        <span className="font-semibold tracking-tight" style={{ color: "var(--ges-accent)", fontSize: 18 }}>
-          GESALP AI
-        </span>
+      {variant === "compact" ? (
+        <Image src="/logo-gesalps-icon.svg" alt="GESALP AI mark" width={size} height={size} priority />
+      ) : (
+        <>
+          <span className="font-semibold tracking-tight" style={{ color: "var(--ges-accent)", fontSize: 18 }}>GESALP</span>
+          <Image src="/logo-gesalps-icon.svg" alt="GESALP AI mark" width={size} height={size} priority />
+          <span className="font-semibold tracking-tight" style={{ color: "var(--ges-accent)", fontSize: 18 }}>AI</span>
+        </>
       )}
     </Link>
   );
