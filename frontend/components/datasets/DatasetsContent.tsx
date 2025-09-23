@@ -186,11 +186,9 @@ export function DatasetsContent() {
       setLoading(true);
       setError(null);
 
-      const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE || 'http://localhost:8000';
-      
-      if (!base) {
-        // Use mock data if no API base
-        const mockDatasets: Dataset[] = [
+      // For now, always use mock data to ensure it shows up
+      console.log('Using mock data for datasets in Datasets page');
+      const mockDatasets: Dataset[] = [
           {
             id: "ds-1",
             name: "Clinical Trial Data Alpha",
@@ -251,9 +249,11 @@ export function DatasetsContent() {
           }
         ];
         setDatasets(mockDatasets);
+        setLoading(false);
         return;
-      }
 
+      /* 
+      // API logic commented out for now - using mock data
       // Try to fetch from API, fallback to demo data on error
       try {
         const supabase = createSupabaseBrowserClient();
@@ -279,54 +279,9 @@ export function DatasetsContent() {
       } catch (apiError) {
         console.log('API failed, using mock data:', apiError);
         // Fallback to mock data
-        const mockDatasets: Dataset[] = [
-          {
-            id: "ds-1",
-            name: "Clinical Trial Data Alpha",
-            project_id: "proj-1",
-            project_name: "Clinical Trial Alpha",
-            file_name: "clinical_trial_alpha.csv",
-            file_size: 2048576,
-            rows: 1500,
-            columns: 25,
-            created_at: "2024-01-15T10:30:00Z",
-            last_modified: "2024-01-15T10:30:00Z",
-            status: "Ready",
-            runs_count: 3,
-            last_run: "2 hours ago"
-          },
-          {
-            id: "ds-2",
-            name: "Patient Demographics",
-            project_id: "proj-1", 
-            project_name: "Clinical Trial Alpha",
-            file_name: "patient_demographics.csv",
-            file_size: 1024000,
-            rows: 800,
-            columns: 15,
-            created_at: "2024-01-14T14:20:00Z",
-            last_modified: "2024-01-14T14:20:00Z",
-            status: "Ready",
-            runs_count: 1,
-            last_run: "1 day ago"
-          },
-          {
-            id: "ds-3",
-            name: "Synthetic Data Beta",
-            project_id: "proj-2",
-            project_name: "Synthetic Data Beta", 
-            file_name: "synthetic_beta.csv",
-            file_size: 512000,
-            rows: 300,
-            columns: 12,
-            created_at: "2024-01-10T09:15:00Z",
-            last_modified: "2024-01-10T09:15:00Z",
-            status: "Processing",
-            runs_count: 0
-          }
-        ];
-        setDatasets(mockDatasets);
+        setDatasets([...]);
       }
+      */
       
       setLoading(false);
     } catch (err) {
