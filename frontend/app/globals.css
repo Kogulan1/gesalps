@@ -5,20 +5,17 @@
   /* Palette */
   --ges-primary: #E30613; /* Swiss red */
   --ges-primary-600: #C60012;
-  --ges-bg: #FFFFFF;
   --ges-panel: #F9FAFB; /* gray-50 panel */
   --ges-border: #E5E7EB; /* gray-200 */
 
-  /* Updated foreground + accents for contrast */
-  --ges-fg: #0F172A;          /* slate-900 */
-  --ges-fg-muted: #1F2937;    /* slate-800 for stronger contrast */
-  /* Use brand colors only (no blue text) */
-  --ges-accent: #111827;      /* near-black for headings */
-  --ges-accent-ink: #0F172A;  /* darker near-black */
+  /* Light mode colors - DEFAULT */
+  --ges-bg: #FFFFFF;         /* white background */
+  --ges-fg: #000000;         /* black text */
+  --ges-fg-muted: #666666;   /* gray text */
 
   /* Badge tokens */
   --ges-badge-bg: #F1F5F9;    /* slate-100 */
-  --ges-badge-fg: #0F172A;    /* slate-900 */
+  --ges-badge-fg: #000000;    /* black */
 
   /* Typography */
   --ges-font-sans: var(--font-geist-sans);
@@ -30,15 +27,21 @@
   --font-mono: var(--ges-font-mono);
 }
 
-/* Base */
-html, body {
-  background: var(--ges-bg);
-  color: var(--ges-fg);
+/* Base styles */
+html {
   font-size: 16px;
+  scroll-behavior: smooth;
 }
 
 body {
   font-feature-settings: "tnum" 1; /* metric numerals */
+  background-color: white;
+  color: black;
+}
+
+html.dark body {
+  background-color: black;
+  color: white;
 }
 
 /* Utilities for tokens */
@@ -47,6 +50,28 @@ body {
 .token-panel { background: var(--ges-panel); }
 .token-border { border-color: var(--ges-border); }
 .btn-primary { background: var(--ges-primary); color: #fff; }
+
+/* Ensure button text colors are properly applied */
+.pricing-button {
+  color: inherit !important;
+}
+
+.pricing-button.bg-\[#E0342C\] {
+  color: white !important;
+}
+
+.pricing-button.bg-\[#E0342C\]:hover {
+  color: white !important;
+}
+
+/* Docs page button text color */
+.bg-\[#E0342C\] {
+  color: white !important;
+}
+
+.bg-\[#E0342C\]:hover {
+  color: white !important;
+}
 .btn-primary:hover { background: var(--ges-primary-600); }
 .btn-secondary { border: 1px solid var(--ges-border); background: transparent; }
 .btn-secondary:hover { background: var(--ges-panel); }
@@ -63,10 +88,207 @@ h2 { font-weight: 700; }
 /* Links contrast + hover */
 /* Links: use brand red */
 a { color: var(--ges-primary); }
-a:hover { color: var(--ges-primary-600); text-decoration: underline; }
+a:hover { color: var(--ges-primary-600); text-decoration: none; }
 
-/* Dark mode variable overrides (if .dark class is used) */
+/* Remove underlines on hover for all elements */
+*:hover {
+  text-decoration: none !important;
+}
+
+/* Ensure pricing button text is white on hover */
+.pricing-button:hover {
+  color: white !important;
+}
+
+/* User avatar gradient fix */
+.user-avatar-gradient {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: white !important;
+  border: none !important;
+}
+
+/* Force gradient on all avatar fallbacks - RED by default */
+[data-radix-avatar-fallback] {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: white !important;
+}
+
+/* Force gradient on all avatars in dashboard */
+.dashboard-avatar {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: white !important;
+}
+
+/* Override any conflicting styles */
+.avatar-fallback-red {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: white !important;
+  border: none !important;
+}
+
+/* Force gradient on all dashboard avatars */
+.dashboard-avatar-fallback {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: white !important;
+  border: none !important;
+}
+
+/* Nuclear option - override everything */
+div[class*="avatar"] {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: white !important;
+}
+
+/* Force gradient on all avatar fallbacks with maximum specificity */
+[data-radix-avatar-fallback].avatar-fallback-red,
+.avatar-fallback-red[data-radix-avatar-fallback],
+div.avatar-fallback-red,
+span.avatar-fallback-red {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Override any Tailwind classes */
+.bg-neutral-200,
+.bg-muted,
+.bg-gray-200,
+.bg-slate-200 {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+}
+
+/* Specific targeting for dashboard and marketing page avatars */
+button[class*="radix"] [data-radix-avatar-fallback],
+button[class*="radix"] .avatar-fallback-red,
+.dashboard-avatar [data-radix-avatar-fallback],
+.dashboard-avatar .avatar-fallback-red {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: white !important;
+  border: none !important;
+}
+
+/* Target the small header icon specifically */
+button[class*="radix"] .avatar-fallback-red,
+button[class*="radix"] [data-radix-avatar-fallback] {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: white !important;
+  border: none !important;
+}
+
+/* Force gradient on all avatar fallbacks in headers */
+header [data-radix-avatar-fallback],
+header .avatar-fallback-red {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: white !important;
+  border: none !important;
+}
+
+/* Nuclear option for small header icon */
+button[class*="radix"] .avatar-fallback-red[class*="avatar-fallback-red"] {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Target the specific small icon in global header */
+.relative.h-8.w-8 [data-radix-avatar-fallback] {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: white !important;
+  border: none !important;
+}
+
+/* Nuclear option - target all possible selectors */
+button[class*="radix"] div[class*="avatar-fallback"],
+button[class*="radix"] [data-radix-avatar-fallback],
+.relative.h-8.w-8 div[class*="avatar-fallback"],
+.relative.h-8.w-8 [data-radix-avatar-fallback] {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Force gradient on any div with avatar-fallback class */
+div[class*="avatar-fallback"] {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: white !important;
+  border: none !important;
+}
+
+/* Nuclear option for the specific header avatar button */
+button[class*="radix"] .relative.h-8.w-8 [data-radix-avatar-fallback],
+button[class*="radix"] .relative.h-8.w-8 div[class*="avatar-fallback"],
+.relative.h-8.w-8 [data-radix-avatar-fallback],
+.relative.h-8.w-8 div[class*="avatar-fallback"] {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Maximum specificity for header avatar */
+header button[class*="radix"] .relative.h-8.w-8 [data-radix-avatar-fallback],
+header button[class*="radix"] .relative.h-8.w-8 div[class*="avatar-fallback"],
+header .relative.h-8.w-8 [data-radix-avatar-fallback],
+header .relative.h-8.w-8 div[class*="avatar-fallback"],
+button.relative.h-8.w-8 [data-radix-avatar-fallback],
+button.relative.h-8.w-8 div[class*="avatar-fallback"] {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 50% !important;
+}
+
+/* Specific class for header avatar gradient - PURPLE ONLY for main header button */
+.header-avatar-gradient {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 50% !important;
+}
+
+/* Avatar styles - inline styles will override these */
+
+/* Vercel-style dropdown menu */
+[data-radix-dropdown-content] {
+  border-radius: 8px !important;
+  box-shadow: 0 10px 38px -10px rgba(22, 23, 24, 0.35), 0 10px 20px -15px rgba(22, 23, 24, 0.2) !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+/* Dropdown menu items */
+[data-radix-dropdown-menu-item] {
+  border-radius: 4px !important;
+  margin: 2px 4px !important;
+}
+
+[data-radix-dropdown-menu-item]:hover {
+  background-color: #f9fafb !important;
+}
+
+/* Icon styling for theme compatibility */
+.lucide {
+  color: inherit;
+  transition: color 0.2s ease;
+}
+
+/* Dark mode icon support (for future theme toggle) */
+.dark .lucide {
+  color: #e5e7eb;
+}
+
+/* Ensure icons are properly sized and aligned */
+[data-radix-dropdown-menu-item] .lucide {
+  flex-shrink: 0;
+}
+
+/* Dark mode variable overrides */
 .dark {
-  --ges-fg: #F8FAFC;         /* near-white */
+  --ges-bg: #0F172A;         /* slate-900 - dark background */
+  --ges-fg: #F8FAFC;         /* near-white text */
   --ges-fg-muted: #CBD5E1;   /* slate-300 for readability on dark */
 }

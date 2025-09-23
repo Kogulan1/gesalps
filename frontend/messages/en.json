@@ -95,5 +95,301 @@
     "metrics": "Metrics",
     "download": {"synthetic": "Download synthetic CSV", "report": "Download report"}
   },
-  "status": {"queued": "Queued", "running": "Running", "succeeded": "Succeeded", "failed": "Failed"}
+  "status": {"queued": "Queued", "running": "Running", "succeeded": "Succeeded", "failed": "Failed"  },
+  "dashboard": {
+    "header": {
+      "searchPlaceholder": "Q Find...",
+      "feedback": "Feedback",
+      "notifications": "Notifications",
+      "documentation": "Documentation",
+      "logout": "Log out"
+    },
+    "navigation": {
+      "overview": "Overview",
+      "integrations": "Integrations",
+      "deployments": "Deployments",
+      "activity": "Activity",
+      "domains": "Domains",
+      "usage": "Usage",
+      "settings": "Settings"
+    },
+    "content": {
+      "searchProjectsPlaceholder": "Q Search Projects...",
+      "addNew": "Add New...",
+      "projects": "Projects",
+      "usage": "Usage",
+      "last30Days": "Last 30 days",
+      "updatedJustNow": "Updated just now",
+      "upgrade": "Upgrade",
+      "recentActivity": "Recent Activity",
+      "noProjectsYet": "No projects yet",
+      "getStartedDescription": "Get started by creating your first project.",
+      "synthesisHours": "Synthesis Hours",
+      "dataPoints": "Data Points",
+      "privacyAudits": "Privacy Audits"
+    },
+    "addNew": {
+      "project": "Project",
+      "projectDescription": "Create a new synthetic data project",
+      "dataset": "Dataset", 
+      "datasetDescription": "Upload a new dataset",
+      "run": "Run",
+      "runDescription": "Start a new synthesis run",
+      "teamMember": "Team Member",
+      "teamMemberDescription": "Invite team members"
+    }
+  },
+  "site": {
+    "nav": {
+      "products": "Products",
+      "solutions": "Solutions", 
+      "resources": "Resources",
+      "enterprise": "Enterprise",
+      "docs": "Docs",
+      "pricing": "Pricing",
+      "contact": "Contact",
+      "dashboard": "Dashboard",
+      "accountSettings": "Account Settings",
+      "createTeam": "Create Team",
+      "theme": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System",
+      "signin": "Sign in",
+      "signup": "Sign up",
+      "logout": "Log out"
+    },
+    "hero": {
+      "title": "Clinical-grade synthetic data — with proof",
+      "subtitle": "Gesalp AI turns sensitive clinical tables into synthesist real data: realistic, privacy-safe datasets audited for utility and compliance. Built for sponsors, CROs, and AI teams.",
+      "cta": {
+        "getStarted": "Get started free",
+        "bookDemo": "Book a demo"
+      },
+      "meta": "HIPAA/GDPR-ready. On-prem or SaaS."
+    },
+    "metrics": {
+      "auroc": "AUROC",
+      "cindex": "C-Index", 
+      "mia": "MIA AUC",
+      "dp": "DP (ε)"
+    },
+    "chips": {
+      "trialPlanning": "Trial planning",
+      "cohortExploration": "Cohort exploration",
+      "realWorldEvidence": "Real-world evidence",
+      "modelDevelopment": "Model development",
+      "vendorDataSharing": "Vendor data sharing"
+    },
+    "features": {
+      "agent": {
+        "title": "Agent data scientist",
+        "body": "Our agent selects the right generator (GC/CTGAN/TVAE/diffusion), tunes hyper-params, and optimizes for your objective (privacy-first, utility-first, or balanced).",
+        "footnote": "Reproducible seeds & run cards."
+      },
+      "privacy": {
+        "title": "Privacy with proof",
+        "body": "Every dataset ships with an audit: DCR p01, MIA advantage, k-anonymity, and optional DP (ε, δ). Green-light gates block release until thresholds pass.",
+        "footnote": "Exportable PDF & JSON."
+      },
+      "trial": {
+        "title": "Trial-aware synthesis",
+        "body": "Survival/censoring aware. Supports longitudinal vitals/labs and irregular time-series.",
+        "footnote": "Tabular today; diffusion & transformers next."
+      },
+      "deploy": {
+        "title": "Deploy anywhere",
+        "body": "Use our SaaS or run on-prem. The on-prem engine only publishes when all privacy/utility gates are green.",
+        "footnote": ""
+      },
+      "governance": {
+        "title": "Governance & lineage",
+        "body": "Dataset cards capture source URI+hash, cohort ε, metrics, and post-processing steps for audit trails.",
+        "footnote": ""
+      },
+      "marketplace": {
+        "title": "Marketplace ready",
+        "body": "Publish to your catalog: consumers can use the data without owning the originals—Snowflake-style access controls.",
+        "footnote": ""
+      }
+    },
+    "steps": {
+      "title": "How it works",
+      "upload": {
+        "title": "Upload or connect",
+        "description": "Securely upload CSV/Parquet or connect your table."
+      },
+      "start": {
+        "title": "Click Start",
+        "description": "Agent chooses model + tuning; optional advanced settings."
+      },
+      "evaluate": {
+        "title": "Evaluate",
+        "description": "See privacy & utility metrics update in real time."
+      },
+      "deliver": {
+        "title": "Deliver",
+        "description": "Download CSV/Parquet + audit PDF/JSON, or publish to marketplace."
+      }
+    },
+    "whyGesalp": {
+      "title": "Why Gesalp",
+      "privacy": {
+        "title": "Measurable privacy",
+        "description": "Distance-to-closest-record, membership inference AUC, k-anon/ℓ-diversity, optional DP accounting."
+      },
+      "utility": {
+        "title": "Real utility",
+        "description": "TSTR/RTS, AUROC/AUPRC, drift (KS/AD/PSI), and correlation/MI delta—benchmarked vs. real baseline."
+      },
+      "enterprise": {
+        "title": "Enterprise-ready",
+        "description": "On-prem mode, SSO, role-based access, air-gapped deployments, and regulator-friendly reports."
+      }
+    },
+    "pricing": {
+      "title": "Pricing",
+      "research": {
+        "name": "Research",
+        "price": "Free",
+        "description": "Perfect for academic research",
+        "feature1": "1 project",
+        "feature2": "≤5k rows",
+        "feature3": "GC/CTGAN",
+        "feature4": "Basic privacy–utility report",
+        "button": "Get started"
+      },
+      "starter": {
+        "name": "Starter",
+        "price": "$199/mo",
+        "description": "For growing teams",
+        "feature1": "5 projects",
+        "feature2": "GC/CTGAN/TVAE",
+        "feature3": "Full utility suite",
+        "feature4": "Email support",
+        "button": "Choose plan"
+      },
+      "pharma": {
+        "name": "Pharma/Enterprise",
+        "price": "Contact",
+        "description": "For enterprise needs",
+        "feature1": "Unlimited projects",
+        "feature2": "Diffusion + DP",
+        "feature3": "Full privacy suite + audit PDF",
+        "feature4": "SSO & on-prem",
+        "button": "Contact sales"
+      }
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "privacy": {
+        "question": "How do you ensure privacy?",
+        "answer": "We generate new rows from learned distributions and audit with DCR/MIA/k-anon; optional DP records effective ε, δ."
+      },
+      "differentialPrivacy": {
+        "question": "Do you support Differential Privacy?",
+        "answer": "Yes—configurable. When enabled, runs include cohort ε summaries and stop-gates."
+      },
+      "onPrem": {
+        "question": "Can we run on-prem?",
+        "answer": "Yes. Air-gapped or VPC. On-prem only publishes when all gates pass."
+      },
+      "dataTypes": {
+        "question": "What data types are supported?",
+        "answer": "Tabular (categorical, numeric, dates), with support for longitudinal/time-series trial data."
+      },
+      "mlLabels": {
+        "question": "Is the output labeled for ML?",
+        "answer": "If labels exist in the source, we preserve distributions; TSTR reports quantify downstream performance."
+      }
+    },
+    "docs": {
+      "title": "Documentation",
+      "subtitle": "Our comprehensive documentation is currently under construction. We're working hard to bring you detailed guides, API references, and tutorials for the GESALP AI platform.",
+      "getNotified": "Get Notified",
+      "backToHome": "Back to Home",
+      "apiReference": {
+        "title": "API Reference",
+        "description": "Complete API documentation with examples"
+      },
+      "quickStart": {
+        "title": "Quick Start Guide",
+        "description": "Get up and running in minutes"
+      },
+      "tutorials": {
+        "title": "Tutorials",
+        "description": "Step-by-step tutorials and best practices"
+      }
+    },
+    "auth": {
+      "backToHome": "Back to home",
+      "signIn": {
+        "title": "Welcome back",
+        "subtitle": "Sign in to your account to continue",
+        "formTitle": "Sign in to your account",
+        "email": "Email address",
+        "emailPlaceholder": "Enter your email",
+        "password": "Password",
+        "passwordPlaceholder": "Enter your password",
+        "forgotPassword": "Forgot your password?",
+        "signIn": "Sign in",
+        "signingIn": "Signing in...",
+        "noAccount": "Don't have an account?",
+        "signUp": "Sign up"
+      },
+      "signUp": {
+        "title": "Create your account",
+        "subtitle": "Get started with GESALP AI today",
+        "formTitle": "Create your account",
+        "email": "Email address",
+        "emailPlaceholder": "Enter your email",
+        "password": "Password",
+        "passwordPlaceholder": "Create a password",
+        "passwordRequirements": "Must be at least 6 characters long",
+        "confirmPassword": "Confirm password",
+        "confirmPasswordPlaceholder": "Confirm your password",
+        "agreeToTerms": "I agree to the",
+        "termsOfService": "Terms of Service",
+        "and": "and",
+        "privacyPolicy": "Privacy Policy",
+        "createAccount": "Create account",
+        "creatingAccount": "Creating account...",
+        "haveAccount": "Already have an account?",
+        "signIn": "Sign in"
+      },
+      "errors": {
+        "fillAllFields": "Please fill in all fields",
+        "passwordsDontMatch": "Passwords don't match",
+        "passwordTooShort": "Password must be at least 6 characters long",
+        "agreeToTerms": "Please agree to the terms and conditions",
+        "signInFailed": "Sign in failed",
+        "signUpFailed": "Sign up failed"
+      },
+      "success": {
+        "signedIn": "Successfully signed in",
+        "checkEmail": "Check your email",
+        "checkEmailDescription": "We sent you a confirmation link to verify your account"
+      }
+    },
+    "footer": {
+      "product": {
+        "title": "Product",
+        "overview": "Overview",
+        "pricing": "Pricing",
+        "docs": "Docs",
+        "roadmap": "Roadmap"
+      },
+      "company": {
+        "title": "Company",
+        "contact": "Contact",
+        "blog": "Blog"
+      },
+      "legal": {
+        "title": "Legal",
+        "privacy": "Privacy",
+        "terms": "Terms"
+      },
+      "copyright": "© 2025 GESALP AI — Synthetic data for clinical research."
+    }
+  }
 }

@@ -1,32 +1,105 @@
 "use client";
+
 import * as React from "react";
+import { cn } from "@/lib/utils";
 
-type Tab = { value: string; label: string };
+const TabsContext = React.createContext<{
+  value?: string;
+  onValueChange?: (value: string) => void;
+}>({});
 
-export function Tabs({ tabs, value, onValueChange, className = "" }: { tabs: Tab[]; value: string; onValueChange: (v: string) => void; className?: string }) {
+const Tabs = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & {
+    value?: string;
+    onValueChange?: (value: string) => void;
+  }
+>(({ className, value, onValueChange, children, ...props }, ref) => {
+  const [selectedValue, setSelectedValue] = React.useState(value || "");
+
+  const handleValueChange = (newValue: string) => {
+    setSelectedValue(newValue);
+    onValueChange?.(newValue);
+  };
+
   return (
-    <div className={className}>
-      <div className="flex gap-2 border-b border-neutral-200 dark:border-neutral-800">
-        {tabs.map((t) => (
-          <button
-            key={t.value}
-            onClick={() => onValueChange(t.value)}
-            className={`px-3 py-2 text-sm rounded-t-lg border-b-2 -mb-[1px] ${
-              value === t.value
-                ? "border-neutral-900 text-neutral-900 dark:border-white dark:text-white"
-                : "border-transparent text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
+    <TabsContext.Provider value={{ value: selectedValue, onValueChange: handleValueChange }}>
+      <div
+        ref={ref}
+        className={cn("w-full", className)}
+        data-value={selectedValue}
+        {...props}
+      >
+        {children}
       </div>
-    </div>
+    </TabsContext.Provider>
   );
-}
+});
+Tabs.displayName = "Tabs";
 
-export function TabsContent({ when, value, children }: { when: string; value: string; children: React.ReactNode }) {
-  if (when !== value) return null;
-  return <div className="pt-4">{children}</div>;
-}
+const TabsList = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      "inline-flex h-10 items-center justify-center rounded-md bg-gray-100 p-1 text-gray-500",
+      className
+    )}
+    {...props}
+  />
+));
+TabsList.displayName = "TabsList";
 
+const TabsTrigger = React.forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    value: string;
+  }
+>(({ className, value, ...props }, ref) => {
+  const tabsContext = React.useContext(TabsContext);
+  const isSelected = tabsContext?.value === value;
+
+  return (
+    <button
+      ref={ref}
+      className={cn(
+        "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+        isSelected
+          ? "bg-white text-gray-950 shadow-sm"
+          : "text-gray-600 hover:text-gray-900",
+        className
+      )}
+      onClick={() => tabsContext?.onValueChange?.(value)}
+      {...props}
+    />
+  );
+});
+TabsTrigger.displayName = "TabsTrigger";
+
+const TabsContent = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & {
+    value: string;
+  }
+>(({ className, value, ...props }, ref) => {
+  const tabsContext = React.useContext(TabsContext);
+  const isSelected = tabsContext?.value === value;
+
+  if (!isSelected) return null;
+
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        "mt-2 ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2",
+        className
+      )}
+      {...props}
+    />
+  );
+});
+TabsContent.displayName = "TabsContent";
+
+export { Tabs, TabsList, TabsTrigger, TabsContent };

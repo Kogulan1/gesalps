@@ -23,7 +23,7 @@ export default function Navbar() {
           </nav>
         </div>
         <div className="flex items-center gap-2">
-          <LocaleSwitcher />
+          {/* <LocaleSwitcher /> - DISABLED FOR NOW */}
           {user ? (
             <Button asChild variant="outline" className="btn-secondary rounded-2xl">
               <Link href={`/${locale}/dashboard`}>{tNav('dashboard')}</Link>

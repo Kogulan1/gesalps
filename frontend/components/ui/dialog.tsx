@@ -6,7 +6,7 @@ export function Dialog({ open, onOpenChange, children }: { open: boolean; onOpen
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40" onClick={() => onOpenChange(false)} />
-      <div className="relative z-10 w-full max-w-lg rounded-2xl border border-neutral-200 bg-white p-6 shadow-xl dark:border-neutral-700 dark:bg-neutral-900">
+      <div className="relative z-10 w-full max-w-lg rounded-2xl border border-gray-200 bg-white p-6 shadow-xl">
         {children}
       </div>
     </div>
@@ -19,6 +19,14 @@ export function DialogHeader({ children }: { children: React.ReactNode }) {
 
 export function DialogTitle({ children }: { children: React.ReactNode }) {
   return <h3 className="text-lg font-semibold">{children}</h3>;
+}
+
+export function DialogContent({ children }: { children: React.ReactNode }) {
+  return <div className="w-full">{children}</div>;
+}
+
+export function DialogDescription({ children }: { children: React.ReactNode }) {
+  return <p className="text-sm text-gray-600">{children}</p>;
 }
 
 export function DialogFooter({ children }: { children: React.ReactNode }) {

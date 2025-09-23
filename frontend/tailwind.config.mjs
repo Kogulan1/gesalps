@@ -3,6 +3,7 @@
  * and to allow editor intellisense for custom colors.
  */
 export default {
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
@@ -14,6 +15,11 @@ export default {
           bg: 'var(--ges-bg)',
           panel: 'var(--ges-panel)',
           border: 'var(--ges-border)',
+        },
+        brand: {
+          red: '#E0342C',
+          black: '#0B0B0C',
+          white: '#FFFFFF',
         },
       },
       borderRadius: {
