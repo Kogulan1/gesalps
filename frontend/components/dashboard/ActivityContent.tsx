@@ -137,7 +137,7 @@ export function ActivityContent() {
 
   if (loading) {
     return (
-      <div className="flex-1 space-y-4 p-8 pt-6 bg-white text-black">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
         </div>
@@ -146,7 +146,7 @@ export function ActivityContent() {
   }
 
   return (
-    <div className="flex-1 space-y-4 p-8 pt-6 bg-white text-black">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Activity</h2>
         <p className="text-gray-600">Monitor all activity across your projects</p>

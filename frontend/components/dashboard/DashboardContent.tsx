@@ -301,7 +301,7 @@ export function DashboardContent() {
             </div>
 
             {/* View Toggle */}
-            <div className="flex items-center border border-gray-200 rounded-md">
+            <div className="flex items-center">
               <Button
                 variant={viewMode === 'list' ? 'default' : 'ghost'}
                 size="sm"

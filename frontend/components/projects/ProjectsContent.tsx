@@ -19,7 +19,10 @@ import {
   Settings,
   Clock,
   Database,
-  Activity
+  Activity,
+  Edit,
+  Archive,
+  Trash2
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -32,6 +35,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { RenameModal } from "@/components/common/RenameModal";
 import { CreateProjectModal } from "./CreateProjectModal";
+import { ProjectCard } from "@/components/dashboard/ProjectCard";
 
 export function ProjectsContent() {
   const t = useTranslations('dashboard');
@@ -201,6 +205,12 @@ export function ProjectsContent() {
     // TODO: Implement project delete
   };
 
+  const handleStartRun = (projectId: string) => {
+    console.log('Start run for project:', projectId);
+    // TODO: Implement start run - could navigate to runs page or open a modal
+    router.push(`/en/runs?project=${projectId}`);
+  };
+
   const handleRenameConfirm = async (newName: string) => {
     if (!renameModal.projectId) return;
 
@@ -301,7 +311,7 @@ export function ProjectsContent() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -359,7 +369,7 @@ export function ProjectsContent() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <div className="flex border rounded-md">
+          <div className="flex">
             <Button
               variant={viewMode === 'list' ? 'default' : 'ghost'}
               size="sm"
@@ -403,92 +413,17 @@ export function ProjectsContent() {
           )}
         </div>
       ) : (
-        <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
+        <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6' : 'space-y-4'}>
           {sortedProjects.map((project) => (
-            <Card key={project.id} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                      <Database className="h-5 w-5 text-red-600" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg">{project.name}</CardTitle>
-                      <p className="text-sm text-gray-600 mt-1">{project.description}</p>
-                    </div>
-                  </div>
-                  <Badge className={getStatusColor(project.status)}>
-                    {project.status}
-                  </Badge>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="pt-0">
-                <div className="space-y-3">
-                  <div className="flex items-center text-sm text-gray-500">
-                    <Clock className="h-4 w-4 mr-2" />
-                    Created {new Date(project.created_at).toLocaleDateString()}
-                  </div>
-                  
-                  <div className="flex items-center text-sm text-gray-500">
-                    <Activity className="h-4 w-4 mr-2" />
-                    Last activity: {project.last_activity}
-                  </div>
-                  
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500">
-                      {project.datasets?.length || 0} datasets • {project.datasets?.reduce((acc, d) => acc + (d.runs?.length || 0), 0) || 0} runs
-                    </span>
-                    <span className="text-gray-400 text-xs">
-                      ID: {project.id.slice(0, 8)}...
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between pt-3">
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleViewProject(project.id)}
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        View
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleViewProject(project.id)}
-                      >
-                        <Play className="h-4 w-4 mr-1" />
-                        Start Run
-                      </Button>
-                    </div>
-                    
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleProjectEdit(project.id)}>
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleProjectArchive(project.id)}>
-                          Archive
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => handleProjectDelete(project.id)}
-                          className="text-red-600"
-                        >
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <ProjectCard
+              key={project.id}
+              project={project}
+              onView={handleViewProject}
+              onRun={handleStartRun}
+              onEdit={handleProjectEdit}
+              onArchive={handleProjectArchive}
+              onDelete={handleProjectDelete}
+            />
           ))}
         </div>
       )}
