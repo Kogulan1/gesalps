@@ -21,7 +21,10 @@ import {
   Clock,
   Database,
   Activity,
-  FileText
+  FileText,
+  Edit,
+  Archive,
+  Trash2
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
@@ -422,7 +425,7 @@ export function DatasetsContent() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -501,7 +504,7 @@ export function DatasetsContent() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <div className="flex border rounded-md">
+          <div className="flex">
             <Button
               variant={viewMode === 'list' ? 'default' : 'ghost'}
               size="sm"
@@ -555,91 +558,75 @@ export function DatasetsContent() {
                 </Badge>
               </div>
               
-              <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-3'}>
+              <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4' : 'space-y-3'}>
                 {projectDatasets.map((dataset) => (
                   <Card key={dataset.id} className="hover:shadow-md transition-shadow">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
+                    <CardContent className="py-3">
+                      {/* First line: Dataset name and status */}
+                      <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <FileText className="h-5 w-5 text-blue-600" />
+                          <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center">
+                            <FileText className="h-3 w-3 text-blue-600" />
                           </div>
-                          <div>
-                            <CardTitle className="text-lg">{dataset.name}</CardTitle>
-                            <p className="text-sm text-gray-600 mt-1">{dataset.description}</p>
-                          </div>
+                          <span className="font-medium text-sm">{dataset.name}</span>
                         </div>
-                        <Badge className={getStatusColor(dataset.status)}>
+                        <Badge className={`${getStatusColor(dataset.status)} text-xs px-2 py-1`}>
                           {dataset.status}
                         </Badge>
                       </div>
-                    </CardHeader>
-                    
-                    <CardContent className="pt-0">
-                      <div className="space-y-3">
-                        <div className="flex items-center text-sm text-gray-500">
-                          <Clock className="h-4 w-4 mr-2" />
-                          Created {new Date(dataset.created_at).toLocaleDateString()}
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <span className="text-gray-500">Rows:</span>
-                            <span className="ml-2 font-medium">{dataset.rows?.toLocaleString() || 'N/A'}</span>
-                          </div>
-                          <div>
-                            <span className="text-gray-500">Columns:</span>
-                            <span className="ml-2 font-medium">{dataset.columns || 'N/A'}</span>
-                          </div>
-                          <div>
-                            <span className="text-gray-500">Size:</span>
-                            <span className="ml-2 font-medium">{dataset.size || 'N/A'}</span>
-                          </div>
-                          <div>
-                            <span className="text-gray-500">Runs:</span>
-                            <span className="ml-2 font-medium">{dataset.runs?.length || 0}</span>
+
+                      {/* Second line: Description, metrics, and actions */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <p className="text-xs text-gray-600 mb-1">{dataset.description}</p>
+                          <div className="flex items-center space-x-4 text-xs text-gray-500">
+                            <span>Rows: {dataset.rows?.toLocaleString() || 'N/A'}</span>
+                            <span>Columns: {dataset.columns || 'N/A'}</span>
+                            <span>Size: {dataset.size || 'N/A'}</span>
+                            <span>Runs: {dataset.runs?.length || 0}</span>
+                            <span>Created {new Date(dataset.created_at).toLocaleDateString()}</span>
                           </div>
                         </div>
                         
-                        <div className="flex items-center justify-between pt-3">
-                          <div className="flex space-x-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700"
-                              title="Preview"
-                              onClick={() => handlePreviewDataset(dataset)}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700"
-                              title="Run"
-                              onClick={() => handleStartRun(dataset)}
-                            >
-                              <Play className="h-4 w-4" />
-                            </Button>
-                          </div>
-                          
+                        <div className="flex items-center space-x-1 ml-4">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 text-gray-600 hover:text-gray-900"
+                            title="Preview"
+                            onClick={() => handlePreviewDataset(dataset)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 text-gray-600 hover:text-gray-900"
+                            title="Run"
+                            onClick={() => handleStartRun(dataset)}
+                          >
+                            <Play className="h-4 w-4" />
+                          </Button>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <Button variant="default" size="sm" className="bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 h-7 w-7 p-0 border-0">
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
+                            <DropdownMenuContent align="end" className="bg-white border-0 shadow-lg">
                               <DropdownMenuItem onClick={() => handleDatasetEdit(dataset.id)}>
+                                <Edit className="h-4 w-4 mr-2" />
                                 Edit
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleDatasetArchive(dataset.id)}>
+                                <Archive className="h-4 w-4 mr-2" />
                                 Archive
                               </DropdownMenuItem>
                               <DropdownMenuItem 
                                 onClick={() => handleDatasetDelete(dataset.id)}
                                 className="text-red-600"
                               >
+                                <Trash2 className="h-4 w-4 mr-2" />
                                 Delete
                               </DropdownMenuItem>
                             </DropdownMenuContent>

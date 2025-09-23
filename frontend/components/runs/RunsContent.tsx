@@ -23,7 +23,10 @@ import {
   Zap,
   CheckCircle,
   AlertCircle,
-  XCircle
+  XCircle,
+  Edit,
+  Archive,
+  Trash2
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
@@ -35,6 +38,51 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { RenameModal } from "@/components/common/RenameModal";
 import { ResultsModal } from "./ResultsModal";
+
+interface Run {
+  id: string;
+  name: string;
+  project_id: string;
+  project_name: string;
+  dataset_id: string;
+  dataset_name: string;
+  status: string;
+  method?: string;
+  started_at: string;
+  finished_at?: string;
+  duration?: number;
+  scores: {
+    auroc: number;
+    c_index: number;
+    mia_auc: number;
+    dp_epsilon: number;
+    privacy_score: number;
+    utility_score: number;
+  };
+  metrics: {
+    rows_generated: number;
+    columns_generated: number;
+    privacy_audit_passed: boolean;
+    utility_audit_passed: boolean;
+    privacy: {
+      mia_auc: number;
+      dup_rate: number;
+    };
+    utility: {
+      ks_mean: number;
+      corr_delta: number;
+    };
+  };
+  privacy?: {
+    mia_auc: number;
+    dup_rate: number;
+  };
+  utility?: {
+    ks_mean: number;
+    corr_delta: number;
+  };
+  created_at: string;
+}
 
 export function RunsContent() {
   const t = useTranslations('dashboard');
@@ -197,6 +245,24 @@ export function RunsContent() {
       default:
         return <AlertCircle className="h-4 w-4 text-gray-600" />;
     }
+  };
+
+  const handleRenameRun = (runId: string, currentName: string) => {
+    setRenameModal({
+      isOpen: true,
+      runId: runId,
+      currentName: currentName
+    });
+  };
+
+  const handleArchiveRun = (runId: string) => {
+    console.log('Archive run:', runId);
+    // TODO: Implement archive functionality
+  };
+
+  const handleDeleteRun = (runId: string) => {
+    console.log('Delete run:', runId);
+    // TODO: Implement delete functionality
   };
 
   const formatDuration = (duration: number) => {
@@ -604,9 +670,9 @@ export function RunsContent() {
     
     acc[projectId].datasets[datasetId].runs.push(run);
     return acc;
-  }, {} as Record<string, { 
+  }, {  } as Record<string, { 
     project: { id: string; name: string }; 
-    datasets: Record<string, { dataset: { id: string; name: string }; runs: DemoRun[] }> 
+    datasets: Record<string, { dataset: { id: string; name: string }; runs: Run[] }> 
   }>);
 
   const uniqueProjects = Array.from(new Set(runs.map(r => r.project_id).filter(Boolean)));
@@ -636,7 +702,7 @@ export function RunsContent() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -711,7 +777,7 @@ export function RunsContent() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <div className="flex border rounded-md">
+          <div className="flex">
             <Button
               variant={viewMode === 'list' ? 'default' : 'ghost'}
               size="sm"
@@ -750,111 +816,90 @@ export function RunsContent() {
         </div>
       ) : (
         <div className="space-y-6">
-          {Object.values(groupedRuns).map(({ project, datasets }) => (
+          {Object.values(groupedRuns).map(({ project, datasets }: { project: { id: string; name: string }; datasets: Record<string, { dataset: { id: string; name: string }; runs: Run[] }> }) => (
             <div key={project.id} className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900">{project.name}</h3>
-                <Badge variant="outline" className="text-sm">
+                <Badge className="text-sm border border-gray-300">
                   {Object.values(datasets).reduce((acc, d) => acc + d.runs.length, 0)} run{Object.values(datasets).reduce((acc, d) => acc + d.runs.length, 0) !== 1 ? 's' : ''}
                 </Badge>
               </div>
               
-              {Object.values(datasets).map(({ dataset, runs: datasetRuns }) => (
+              {Object.values(datasets).map(({ dataset, runs: datasetRuns }: { dataset: { id: string; name: string }; runs: Run[] }) => (
                 <div key={dataset.id} className="space-y-3">
                   <h4 className="text-md font-medium text-gray-700 ml-4">{dataset.name}</h4>
                   
-                  <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-3'}>
-                    {datasetRuns.map((run) => (
+                  <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4' : 'space-y-3'}>
+                    {datasetRuns.map((run: Run) => (
                       <Card key={run.id} className="hover:shadow-md transition-shadow">
-                        <CardHeader className="pb-3">
-                          <div className="flex items-start justify-between">
+                        <CardContent className="py-3">
+                          <div className="flex items-center justify-between">
+                            {/* Left side: Run name and status */}
                             <div className="flex items-center space-x-3">
-                              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                                <Play className="h-5 w-5 text-purple-600" />
+                              <div className="w-6 h-6 bg-purple-100 rounded flex items-center justify-center">
+                                <Play className="h-3 w-3 text-purple-600" />
                               </div>
-                              <div>
-                                <CardTitle className="text-lg">{run.name}</CardTitle>
-                                <p className="text-sm text-gray-600 mt-1">{run.method}</p>
+                              <div className="flex items-center space-x-2">
+                                <span className="font-medium text-sm">{run.name}</span>
+                                <Badge className={`${getStatusColor(run.status)} text-xs px-2 py-1`}>
+                                  {run.status}
+                                </Badge>
                               </div>
                             </div>
-                            <div className="flex items-center space-x-2">
-                              {getStatusIcon(run.status)}
-                              <Badge className={getStatusColor(run.status)}>
-                                {run.status}
-                              </Badge>
-                            </div>
-                          </div>
-                        </CardHeader>
-                        
-                        <CardContent className="pt-0">
-                          <div className="space-y-3">
-                            <div className="flex items-center text-sm text-gray-500">
-                              <Clock className="h-4 w-4 mr-2" />
-                              Started {new Date(run.started_at).toLocaleDateString()}
-                              {run.duration && (
-                                <span className="ml-2">
-                                  • {formatDuration(run.duration)}
-                                </span>
-                              )}
-                            </div>
-                            
-                            {/* Metric Lines */}
-                            <div className="flex items-center space-x-2">
+
+                            {/* Center: Metric lines */}
+                            <div className="flex items-center space-x-3">
                               <div className="flex items-center space-x-1">
                                 <Lock className="h-3 w-3 text-gray-500" />
                                 <div className="flex space-x-1">
-                                  <div className={`w-1 h-6 rounded ${getMetricColor(run.privacy?.mia_auc || 0, 0.5)}`} title={`MIA AUC: ${run.privacy?.mia_auc || 0}`}></div>
-                                  <div className={`w-1 h-6 rounded ${getMetricColor(run.privacy?.dup_rate || 0, 0.05)}`} title={`Dup Rate: ${run.privacy?.dup_rate || 0}`}></div>
+                                  <div className={`w-1 h-4 rounded ${getMetricColor(run.privacy?.mia_auc || run.metrics?.privacy?.mia_auc || 0, 0.5)}`} title={`MIA AUC: ${run.privacy?.mia_auc || run.metrics?.privacy?.mia_auc || 0}`}></div>
+                                  <div className={`w-1 h-4 rounded ${getMetricColor(run.privacy?.dup_rate || run.metrics?.privacy?.dup_rate || 0, 0.05)}`} title={`Dup Rate: ${run.privacy?.dup_rate || run.metrics?.privacy?.dup_rate || 0}`}></div>
                                 </div>
                               </div>
                               <div className="flex items-center space-x-1">
                                 <Zap className="h-3 w-3 text-gray-500" />
                                 <div className="flex space-x-1">
-                                  <div className={`w-1 h-6 rounded ${getMetricColor(run.utility?.ks_mean || 0, 0.1)}`} title={`KS Mean: ${run.utility?.ks_mean || 0}`}></div>
-                                  <div className={`w-1 h-6 rounded ${getMetricColor(run.utility?.corr_delta || 0, 0.15)}`} title={`Corr Delta: ${run.utility?.corr_delta || 0}`}></div>
+                                  <div className={`w-1 h-4 rounded ${getMetricColor(run.utility?.ks_mean || run.metrics?.utility?.ks_mean || 0, 0.1)}`} title={`KS Mean: ${run.utility?.ks_mean || run.metrics?.utility?.ks_mean || 0}`}></div>
+                                  <div className={`w-1 h-4 rounded ${getMetricColor(run.utility?.corr_delta || run.metrics?.utility?.corr_delta || 0, 0.15)}`} title={`Corr Delta: ${run.utility?.corr_delta || run.metrics?.utility?.corr_delta || 0}`}></div>
                                 </div>
                               </div>
                             </div>
-                            
-                            <div className="flex items-center justify-between pt-3">
-                              <div className="flex space-x-1">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700"
-                                  title="View Results"
-                                  onClick={() => handleViewResults(run.id, run.name)}
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700"
-                                  title="Download Report"
-                                  onClick={() => handleDownloadRun(run.id, run.name)}
-                                >
-                                  <Download className="h-4 w-4" />
-                                </Button>
-                              </div>
-                              
+
+                            {/* Right side: Action buttons */}
+                            <div className="flex items-center space-x-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleViewResults(run.id, run.name)}
+                                className="text-gray-600 hover:text-gray-900 h-7 w-7 p-0"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDownloadRun(run.id, run.name)}
+                                className="text-gray-600 hover:text-gray-900 h-7 w-7 p-0"
+                              >
+                                <Download className="h-4 w-4" />
+                              </Button>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                  <Button variant="default" size="sm" className="bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 h-7 w-7 p-0 border-0">
                                     <MoreHorizontal className="h-4 w-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem onClick={() => handleRunEdit(run.id)}>
-                                    Edit
+                                <DropdownMenuContent align="end" className="bg-white border-0 shadow-lg">
+                                  <DropdownMenuItem onClick={() => handleRenameRun(run.id, run.name)}>
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Rename
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleRunArchive(run.id)}>
+                                  <DropdownMenuItem onClick={() => handleArchiveRun(run.id)}>
+                                    <Archive className="h-4 w-4 mr-2" />
                                     Archive
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem 
-                                    onClick={() => handleRunDelete(run.id)}
-                                    className="text-red-600"
-                                  >
+                                  <DropdownMenuItem onClick={() => handleDeleteRun(run.id)} className="text-red-600">
+                                    <Trash2 className="h-4 w-4 mr-2" />
                                     Delete
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
