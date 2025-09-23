@@ -132,32 +132,32 @@ export function DashboardContent() {
           setProjects([
             {
               id: "proj-1",
-              name: "Clinical Trial Data",
+              name: "Clinical Trial Alpha",
               owner_id: "user-123",
-              created_at: "2024-01-15T10:00:00Z",
-              datasets_count: 2,
-              runs_count: 3,
+              created_at: "2024-01-15T10:30:00Z",
+              datasets_count: 3,
+              runs_count: 5,
               last_activity: "2 hours ago",
               status: "Active"
             },
             {
               id: "proj-2", 
-              name: "Real-World Evidence",
+              name: "Synthetic Data Beta",
               owner_id: "user-123",
-              created_at: "2024-01-10T09:00:00Z",
+              created_at: "2024-01-10T14:20:00Z",
               datasets_count: 1,
-              runs_count: 1,
-              last_activity: "1 hour ago",
-              status: "Running"
+              runs_count: 2,
+              last_activity: "1 day ago",
+              status: "Ready"
             },
             {
               id: "proj-3",
-              name: "Biomarker Study",
-              owner_id: "user-123", 
-              created_at: "2024-01-05T08:00:00Z",
-              datasets_count: 1,
+              name: "Research Project Gamma",
+              owner_id: "user-123",
+              created_at: "2024-01-05T09:15:00Z",
+              datasets_count: 0,
               runs_count: 0,
-              last_activity: "3 days ago",
+              last_activity: "No activity yet",
               status: "Ready"
             }
           ]);
@@ -186,32 +186,32 @@ export function DashboardContent() {
           setProjects([
             {
               id: "proj-1",
-              name: "Clinical Trial Data",
+              name: "Clinical Trial Alpha",
               owner_id: "user-123",
-              created_at: "2024-01-15T10:00:00Z",
-              datasets_count: 2,
-              runs_count: 3,
+              created_at: "2024-01-15T10:30:00Z",
+              datasets_count: 3,
+              runs_count: 5,
               last_activity: "2 hours ago",
               status: "Active"
             },
             {
               id: "proj-2", 
-              name: "Real-World Evidence",
+              name: "Synthetic Data Beta",
               owner_id: "user-123",
-              created_at: "2024-01-10T09:00:00Z",
+              created_at: "2024-01-10T14:20:00Z",
               datasets_count: 1,
-              runs_count: 1,
-              last_activity: "1 hour ago",
-              status: "Running"
+              runs_count: 2,
+              last_activity: "1 day ago",
+              status: "Ready"
             },
             {
               id: "proj-3",
-              name: "Biomarker Study",
-              owner_id: "user-123", 
-              created_at: "2024-01-05T08:00:00Z",
-              datasets_count: 1,
+              name: "Research Project Gamma",
+              owner_id: "user-123",
+              created_at: "2024-01-05T09:15:00Z",
+              datasets_count: 0,
               runs_count: 0,
-              last_activity: "3 days ago",
+              last_activity: "No activity yet",
               status: "Ready"
             }
           ]);
@@ -226,21 +226,34 @@ export function DashboardContent() {
         // Fallback to mock data
         setProjects([
           {
-            id: 1,
-            name: "Clinical Trial Data",
-            description: "Synthetic clinical trial dataset with privacy guarantees",
-            status: "Ready",
-            lastRun: "2 hours ago",
-            createdAt: "2024-01-15",
-            datasetSize: "15.2K records",
-            privacyLevel: "High",
-            metrics: {
-              auroc: 0.87,
-              cIndex: 0.74,
-              miaAuc: 0.56,
-              privacyScore: 92
-            },
-            tags: ["Clinical", "Trial", "Privacy-First"]
+            id: "proj-1",
+            name: "Clinical Trial Alpha",
+            owner_id: "user-123",
+            created_at: "2024-01-15T10:30:00Z",
+            datasets_count: 3,
+            runs_count: 5,
+            last_activity: "2 hours ago",
+            status: "Active"
+          },
+          {
+            id: "proj-2", 
+            name: "Synthetic Data Beta",
+            owner_id: "user-123",
+            created_at: "2024-01-10T14:20:00Z",
+            datasets_count: 1,
+            runs_count: 2,
+            last_activity: "1 day ago",
+            status: "Ready"
+          },
+          {
+            id: "proj-3",
+            name: "Research Project Gamma",
+            owner_id: "user-123",
+            created_at: "2024-01-05T09:15:00Z",
+            datasets_count: 0,
+            runs_count: 0,
+            last_activity: "No activity yet",
+            status: "Ready"
           }
         ]);
       } finally {
