@@ -1,0 +1,37 @@
+{
+  "builds": [
+    {
+      "src": "api/main.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/main.py"
+    },
+    {
+      "src": "/v1/(.*)",
+      "dest": "/api/main.py"
+    },
+    {
+      "src": "/dev/(.*)",
+      "dest": "/api/main.py"
+    },
+    {
+      "src": "/docs",
+      "dest": "/api/main.py"
+    },
+    {
+      "src": "/openapi.json",
+      "dest": "/api/main.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/api/main.py"
+    }
+  ],
+  "env": {
+    "PYTHONPATH": "."
+  }
+}

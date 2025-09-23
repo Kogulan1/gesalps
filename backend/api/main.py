@@ -112,7 +112,11 @@ async def require_user_dev(request: Request) -> Dict[str, Any]:
     return {"id": "00000000-0000-0000-0000-000000000001", "email": "dev@example.com"}
 
 # ---------- FastAPI app & CORS ----------
-app = FastAPI()
+app = FastAPI(
+    title="GESALP AI API",
+    description="Clinical-grade synthetic data generation API",
+    version="1.0.0"
+)
 cors_origins = [o.strip() for o in (os.getenv("CORS_ALLOW_ORIGINS") or "*").split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
