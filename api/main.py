@@ -1420,5 +1420,14 @@ def agent_plan(body: AgentPlanBody, user: Dict[str, Any] = Depends(require_user)
     plan = _agent_plan_internal(body.dataset_id, body.preference, body.goal, body.prompt)
     return {"plan": plan}
 
+# Add a simple test endpoint
+@app.get("/")
+async def root():
+    return {"message": "GESALP AI API is running!", "status": "ok"}
+
+@app.get("/health")
+async def health():
+    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+
 # Vercel handler
 handler = app
