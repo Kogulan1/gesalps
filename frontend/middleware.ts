@@ -9,23 +9,27 @@ export async function middleware(req: NextRequest) {
 
   // Redirect / -> /{locale}
   if (pathname === "/") {
-    const cookie = req.cookies.get("ges.locale")?.value;
-    const header = req.headers.get("accept-language") || "";
-    const preferred = cookie && locales.includes(cookie as any) ? cookie : header.split(",")[0]?.slice(0, 2);
-    const locale = locales.includes(preferred as any) ? preferred : "en";
-    return NextResponse.redirect(new URL(`/${locale}`, req.url));
+    // Always redirect to English by default
+    return NextResponse.redirect(new URL("/en", req.url));
   }
 
   const seg = pathname.split("/").filter(Boolean)[0];
   const isLocalized = locales.includes(seg as any);
   if (!isLocalized && pathname !== "/") {
-    const cookie = req.cookies.get("ges.locale")?.value;
-    const header = req.headers.get("accept-language") || "";
-    const preferred = cookie && locales.includes(cookie as any) ? cookie : header.split(",")[0]?.slice(0, 2);
-    const locale = locales.includes(preferred as any) ? preferred : "en";
-    return NextResponse.redirect(new URL(`/${locale}${pathname}`, req.url));
+    // Always redirect to English by default
+    return NextResponse.redirect(new URL(`/en${pathname}`, req.url));
   }
   const res = NextResponse.next();
+  
+  // Set default locale cookie to English if not set or if set to Italian
+  const currentLocale = req.cookies.get("ges.locale")?.value;
+  if (!currentLocale || currentLocale === "it") {
+    res.cookies.set("ges.locale", "en", { 
+      path: "/", 
+      maxAge: 31536000, // 1 year
+      httpOnly: false 
+    });
+  }
 
   // Build a Supabase client that reads from the incoming request cookies
   // and writes back to the response when refreshed.
@@ -55,6 +59,7 @@ export async function middleware(req: NextRequest) {
 
   // Only check user for routes we care about to avoid extra latency elsewhere.
   if (isAppRoute || isAuthRoute) {
+
     const { data, error } = await supabase.auth.getUser();
     const user = data?.user ?? null;
 

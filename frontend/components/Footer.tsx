@@ -11,23 +11,23 @@ export default function Footer() {
         <div>
           <div className="font-medium mb-2">Product</div>
           <ul className="space-y-1 text-neutral-600 dark:text-neutral-300">
-            <li><a href="#product" className="hover:underline">Overview</a></li>
-            <li><a href="#pricing" className="hover:underline">Pricing</a></li>
-            <li><a id="docs" href="#docs" className="hover:underline">Docs</a></li>
+            <li><a href="#product">Overview</a></li>
+            <li><a href="#pricing">Pricing</a></li>
+            <li><a id="docs" href="#docs">Docs</a></li>
           </ul>
         </div>
         <div>
           <div className="font-medium mb-2">Company</div>
           <ul className="space-y-1 text-neutral-600 dark:text-neutral-300">
-            <li><a href="mailto:sales@example.com" className="hover:underline">Contact</a></li>
-            <li><a href="#" className="hover:underline">Blog</a></li>
+            <li><a href="mailto:sales@example.com">Contact</a></li>
+            <li><a href="#">Blog</a></li>
           </ul>
         </div>
         <div>
           <div className="font-medium mb-2">Legal</div>
           <ul className="space-y-1 text-neutral-600 dark:text-neutral-300">
-            <li><Link href="/privacy" className="hover:underline">Privacy</Link></li>
-            <li><Link href="/terms" className="hover:underline">Terms</Link></li>
+            <li><Link href="/privacy">Privacy</Link></li>
+            <li><Link href="/terms">Terms</Link></li>
           </ul>
           <div className="mt-4 text-neutral-500">© {new Date().getFullYear()} GESALP AI</div>
         </div>

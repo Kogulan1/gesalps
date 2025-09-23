@@ -120,9 +120,263 @@
     }
   },
   "status": {
-    "queued": "Queued",
-    "running": "Running",
-    "succeeded": "Succeeded",
-    "failed": "Failed"
+    "queued": "En file d'attente",
+    "running": "En cours",
+    "succeeded": "Réussi",
+    "failed": "Échoué"
+  },
+  "site": {
+    "nav": {
+      "products": "Produits",
+      "solutions": "Solutions",
+      "resources": "Ressources",
+      "enterprise": "Enterprise",
+      "docs": "Documentation",
+      "pricing": "Tarifs",
+      "contact": "Contact",
+      "dashboard": "Tableau de bord",
+      "accountSettings": "Paramètres du compte",
+      "createTeam": "Créer une équipe",
+      "theme": "Thème",
+      "light": "Clair",
+      "dark": "Sombre",
+      "system": "Système",
+      "signin": "Se connecter",
+      "signup": "S'inscrire",
+      "logout": "Se déconnecter"
+    },
+    "hero": {
+      "title": "Données synthétiques de qualité clinique — avec preuve",
+      "subtitle": "Gesalp AI transforme les tableaux cliniques sensibles en données synthétiques réelles : des jeux de données réalistes et sécurisés pour la confidentialité, audités pour l'utilité et la conformité. Conçu pour les sponsors, CRO et équipes IA.",
+      "cta": {
+        "getStarted": "Commencer gratuitement",
+        "bookDemo": "Réserver une démo"
+      },
+      "meta": "Conforme HIPAA/RGPD. Sur site ou SaaS."
+    },
+    "metrics": {
+      "auroc": "AUROC",
+      "cindex": "C-Index",
+      "mia": "MIA AUC",
+      "dp": "DP (ε)"
+    },
+    "chips": {
+      "trialPlanning": "Planification d'essais",
+      "cohortExploration": "Exploration de cohortes",
+      "realWorldEvidence": "Preuves du monde réel",
+      "modelDevelopment": "Développement de modèles",
+      "vendorDataSharing": "Partage de données fournisseur"
+    },
+    "features": {
+      "agent": {
+        "title": "Agent data scientist",
+        "body": "Notre agent sélectionne le bon générateur (GC/CTGAN/TVAE/diffusion), règle les hyperparamètres et optimise pour votre objectif (privacy-first, utility-first, ou équilibré).",
+        "footnote": "Seeds reproductibles et cartes d'exécution."
+      },
+      "privacy": {
+        "title": "Confidentialité avec preuve",
+        "body": "Chaque jeu de données est livré avec un audit : DCR p01, avantage MIA, k-anonymité, et DP optionnel (ε, δ). Les portes vertes bloquent la libération jusqu'à ce que les seuils soient atteints.",
+        "footnote": "PDF et JSON exportables."
+      },
+      "trial": {
+        "title": "Synthèse consciente des essais",
+        "body": "Conscient de la survie/censure. Prend en charge les signes vitaux/laboratoires longitudinaux et les séries temporelles irrégulières.",
+        "footnote": "Tabulaire aujourd'hui ; diffusion et transformateurs ensuite."
+      },
+      "deploy": {
+        "title": "Déployer partout",
+        "body": "Utilisez notre SaaS ou exécutez sur site. Le moteur sur site ne publie que lorsque toutes les portes de confidentialité/utilité sont vertes.",
+        "footnote": ""
+      },
+      "governance": {
+        "title": "Gouvernance et lignée",
+        "body": "Les cartes de jeu de données capturent l'URI source+hash, le ε de cohorte, les métriques et les étapes de post-traitement pour les pistes d'audit.",
+        "footnote": ""
+      },
+      "marketplace": {
+        "title": "Prêt pour le marché",
+        "body": "Publiez dans votre catalogue : les consommateurs peuvent utiliser les données sans posséder les originaux—contrôles d'accès style Snowflake.",
+        "footnote": ""
+      }
+    },
+    "steps": {
+      "title": "Comment ça marche",
+      "upload": {
+        "title": "Télécharger ou connecter",
+        "description": "Téléchargement sécurisé CSV/Parquet ou connexion de votre tableau."
+      },
+      "start": {
+        "title": "Cliquer Démarrer",
+        "description": "L'agent choisit le modèle + réglage ; paramètres avancés optionnels."
+      },
+      "evaluate": {
+        "title": "Évaluer",
+        "description": "Voir les métriques de confidentialité et d'utilité se mettre à jour en temps réel."
+      },
+      "deliver": {
+        "title": "Livrer",
+        "description": "Télécharger CSV/Parquet + audit PDF/JSON, ou publier sur le marché."
+      }
+    },
+    "whyGesalp": {
+      "title": "Pourquoi Gesalp",
+      "privacy": {
+        "title": "Confidentialité mesurable",
+        "description": "Distance au record le plus proche, AUC d'inférence d'adhésion, k-anon/ℓ-diversité, comptabilité DP optionnelle."
+      },
+      "utility": {
+        "title": "Utilité réelle",
+        "description": "TSTR/RTS, AUROC/AUPRC, dérive (KS/AD/PSI), et delta de corrélation/MI—comparé à la baseline réelle."
+      },
+      "enterprise": {
+        "title": "Prêt pour l'entreprise",
+        "description": "Mode sur site, SSO, accès basé sur les rôles, déploiements isolés et rapports conviviaux pour les régulateurs."
+      }
+    },
+    "pricing": {
+      "title": "Tarifs",
+      "research": {
+        "name": "Recherche",
+        "price": "Gratuit",
+        "description": "Parfait pour la recherche académique",
+        "feature1": "1 projet",
+        "feature2": "≤5k lignes",
+        "feature3": "GC/CTGAN",
+        "feature4": "Rapport de confidentialité-utilité de base",
+        "button": "Commencer"
+      },
+      "starter": {
+        "name": "Starter",
+        "price": "199€/mois",
+        "description": "Pour les équipes en croissance",
+        "feature1": "5 projets",
+        "feature2": "GC/CTGAN/TVAE",
+        "feature3": "Suite d'utilité complète",
+        "feature4": "Support email",
+        "button": "Choisir le plan"
+      },
+      "pharma": {
+        "name": "Pharma/Enterprise",
+        "price": "Contact",
+        "description": "Pour les besoins d'entreprise",
+        "feature1": "Projets illimités",
+        "feature2": "Diffusion + DP",
+        "feature3": "Suite de confidentialité complète + audit PDF",
+        "feature4": "SSO et sur site",
+        "button": "Contacter les ventes"
+      }
+    },
+    "faq": {
+      "title": "Questions fréquemment posées",
+      "privacy": {
+        "question": "Comment assurez-vous la confidentialité ?",
+        "answer": "Nous générons de nouvelles lignes à partir de distributions apprises et auditons avec DCR/MIA/k-anon ; enregistrements DP optionnels ε, δ effectifs."
+      },
+      "differentialPrivacy": {
+        "question": "Supportez-vous la confidentialité différentielle ?",
+        "answer": "Oui—configurable. Lorsqu'activé, les exécutions incluent des résumés ε de cohorte et des portes d'arrêt."
+      },
+      "onPrem": {
+        "question": "Pouvons-nous exécuter sur site ?",
+        "answer": "Oui. Isolé ou VPC. Sur site ne publie que lorsque toutes les portes passent."
+      },
+      "dataTypes": {
+        "question": "Quels types de données sont supportés ?",
+        "answer": "Tabulaire (catégoriel, numérique, dates), avec support pour les données d'essai longitudinales/séries temporelles."
+      },
+      "mlLabels": {
+        "question": "La sortie est-elle étiquetée pour le ML ?",
+        "answer": "Si des étiquettes existent dans la source, nous préservons les distributions ; les rapports TSTR quantifient les performances en aval."
+      }
+    },
+    "docs": {
+      "title": "Documentation",
+      "subtitle": "Notre documentation complète est actuellement en construction. Nous travaillons dur pour vous apporter des guides détaillés, des références API et des tutoriels pour la plateforme GESALP AI.",
+      "getNotified": "Être notifié",
+      "backToHome": "Retour à l'accueil",
+      "apiReference": {
+        "title": "Référence API",
+        "description": "Documentation API complète avec exemples"
+      },
+      "quickStart": {
+        "title": "Guide de démarrage rapide",
+        "description": "Opérationnel en quelques minutes"
+      },
+      "tutorials": {
+        "title": "Tutoriels",
+        "description": "Tutoriels étape par étape et meilleures pratiques"
+      }
+    }
+  },
+  "auth": {
+    "backToHome": "Retour à l'accueil",
+    "signIn": {
+      "title": "Bon retour",
+      "subtitle": "Connectez-vous à votre compte pour continuer",
+      "formTitle": "Se connecter à votre compte",
+      "email": "Adresse e-mail",
+      "emailPlaceholder": "Entrez votre e-mail",
+      "password": "Mot de passe",
+      "passwordPlaceholder": "Entrez votre mot de passe",
+      "forgotPassword": "Mot de passe oublié ?",
+      "signIn": "Se connecter",
+      "signingIn": "Connexion en cours...",
+      "noAccount": "Pas de compte ?",
+      "signUp": "S'inscrire"
+    },
+    "signUp": {
+      "title": "Créer votre compte",
+      "subtitle": "Commencez avec GESALP AI dès aujourd'hui",
+      "formTitle": "Créer votre compte",
+      "email": "Adresse e-mail",
+      "emailPlaceholder": "Entrez votre e-mail",
+      "password": "Mot de passe",
+      "passwordPlaceholder": "Créer un mot de passe",
+      "passwordRequirements": "Doit contenir au moins 6 caractères",
+      "confirmPassword": "Confirmer le mot de passe",
+      "confirmPasswordPlaceholder": "Confirmez votre mot de passe",
+      "agreeToTerms": "J'accepte les",
+      "termsOfService": "Conditions d'utilisation",
+      "and": "et la",
+      "privacyPolicy": "Politique de confidentialité",
+      "createAccount": "Créer le compte",
+      "creatingAccount": "Création du compte...",
+      "haveAccount": "Déjà un compte ?",
+      "signIn": "Se connecter"
+    },
+    "errors": {
+      "fillAllFields": "Veuillez remplir tous les champs",
+      "passwordsDontMatch": "Les mots de passe ne correspondent pas",
+      "passwordTooShort": "Le mot de passe doit contenir au moins 6 caractères",
+      "agreeToTerms": "Veuillez accepter les conditions",
+      "signInFailed": "Échec de la connexion",
+      "signUpFailed": "Échec de l'inscription"
+    },
+    "success": {
+      "signedIn": "Connexion réussie",
+      "checkEmail": "Vérifiez votre e-mail",
+      "checkEmailDescription": "Nous vous avons envoyé un lien de confirmation pour vérifier votre compte"
+    }
+  },
+  "footer": {
+      "product": {
+        "title": "Produit",
+        "overview": "Aperçu",
+        "pricing": "Tarifs",
+        "docs": "Documentation",
+        "roadmap": "Feuille de route"
+      },
+      "company": {
+        "title": "Entreprise",
+        "contact": "Contact",
+        "blog": "Blog"
+      },
+      "legal": {
+        "title": "Légal",
+        "privacy": "Confidentialité",
+        "terms": "Conditions"
+      },
+      "copyright": "© 2025 GESALP AI — Données synthétiques pour la recherche clinique."
+    }
   }
 }

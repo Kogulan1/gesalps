@@ -124,5 +124,259 @@
     "running": "Läuft",
     "succeeded": "Erfolgreich",
     "failed": "Fehlgeschlagen"
+  },
+  "site": {
+    "nav": {
+      "products": "Produkte",
+      "solutions": "Lösungen",
+      "resources": "Ressourcen",
+      "enterprise": "Enterprise",
+      "docs": "Dokumentation",
+      "pricing": "Preise",
+      "contact": "Kontakt",
+      "dashboard": "Dashboard",
+      "accountSettings": "Kontoeinstellungen",
+      "createTeam": "Team erstellen",
+      "theme": "Design",
+      "light": "Hell",
+      "dark": "Dunkel",
+      "system": "System",
+      "signin": "Anmelden",
+      "signup": "Registrieren",
+      "logout": "Abmelden"
+    },
+    "hero": {
+      "title": "Klinische synthetische Daten — mit Nachweis",
+      "subtitle": "Gesalp AI verwandelt sensible klinische Tabellen in synthetische echte Daten: realistische, datenschutzsichere Datensätze, die auf Nutzen und Compliance geprüft wurden. Entwickelt für Sponsoren, CROs und KI-Teams.",
+      "cta": {
+        "getStarted": "Kostenlos starten",
+        "bookDemo": "Demo buchen"
+      },
+      "meta": "HIPAA/DSGVO-konform. On-Premise oder SaaS."
+    },
+    "metrics": {
+      "auroc": "AUROC",
+      "cindex": "C-Index",
+      "mia": "MIA AUC",
+      "dp": "DP (ε)"
+    },
+    "chips": {
+      "trialPlanning": "Studienplanung",
+      "cohortExploration": "Kohortenexploration",
+      "realWorldEvidence": "Real-World-Evidenz",
+      "modelDevelopment": "Modellentwicklung",
+      "vendorDataSharing": "Anbieter-Datenaustausch"
+    },
+    "features": {
+      "agent": {
+        "title": "Agent-Datenwissenschaftler",
+        "body": "Unser Agent wählt den richtigen Generator (GC/CTGAN/TVAE/Diffusion), stimmt Hyperparameter ab und optimiert für Ihr Ziel (datenschutzorientiert, nutzenorientiert oder ausgewogen).",
+        "footnote": "Reproduzierbare Seeds & Run-Karten."
+      },
+      "privacy": {
+        "title": "Datenschutz mit Nachweis",
+        "body": "Jeder Datensatz wird mit einem Audit geliefert: DCR p01, MIA-Vorteil, k-Anonymität und optional DP (ε, δ). Grünlicht-Gates blockieren die Freigabe, bis Schwellenwerte erreicht sind.",
+        "footnote": "Exportierbare PDF & JSON."
+      },
+      "trial": {
+        "title": "Studienbewusste Synthese",
+        "body": "Überlebens-/Zensur-bewusst. Unterstützt longitudinale Vital-/Laborwerte und unregelmäßige Zeitreihen.",
+        "footnote": "Tabellarisch heute; Diffusion & Transformer als nächstes."
+      },
+      "deploy": {
+        "title": "Überall bereitstellen",
+        "body": "Nutzen Sie unsere SaaS oder führen Sie on-premise aus. Die On-Premise-Engine veröffentlicht nur, wenn alle Datenschutz-/Nutzengates grün sind.",
+        "footnote": ""
+      },
+      "governance": {
+        "title": "Governance & Herkunft",
+        "body": "Datensatz-Karten erfassen Quell-URI+Hash, Kohorten-ε, Metriken und Nachbearbeitungsschritte für Audit-Trails.",
+        "footnote": ""
+      },
+      "marketplace": {
+        "title": "Marktplatz-bereit",
+        "body": "Veröffentlichen Sie in Ihrem Katalog: Verbraucher können die Daten nutzen, ohne die Originale zu besitzen—Snowflake-ähnliche Zugriffskontrollen.",
+        "footnote": ""
+      }
+    },
+    "steps": {
+      "title": "So funktioniert es",
+      "upload": {
+        "title": "Hochladen oder verbinden",
+        "description": "Sichere CSV/Parquet-Upload oder Tabellenverbindung."
+      },
+      "start": {
+        "title": "Start klicken",
+        "description": "Agent wählt Modell + Tuning; optionale erweiterte Einstellungen."
+      },
+      "evaluate": {
+        "title": "Bewerten",
+        "description": "Sehen Sie Datenschutz- und Nutzenmetriken in Echtzeit aktualisiert."
+      },
+      "deliver": {
+        "title": "Liefern",
+        "description": "CSV/Parquet + Audit PDF/JSON herunterladen oder im Marktplatz veröffentlichen."
+      }
+    },
+    "whyGesalp": {
+      "title": "Warum Gesalp",
+      "privacy": {
+        "title": "Messbarer Datenschutz",
+        "description": "Abstand zum nächsten Datensatz, Mitgliedschafts-Inferenz AUC, k-Anon/ℓ-Diversität, optionale DP-Buchführung."
+      },
+      "utility": {
+        "title": "Echter Nutzen",
+        "description": "TSTR/RTS, AUROC/AUPRC, Drift (KS/AD/PSI) und Korrelations-/MI-Delta—gegen echte Baseline verglichen."
+      },
+      "enterprise": {
+        "title": "Enterprise-bereit",
+        "description": "On-Premise-Modus, SSO, rollenbasierte Zugriffe, luftgekoppelte Bereitstellungen und regulatorfreundliche Berichte."
+      }
+    },
+    "pricing": {
+      "title": "Preise",
+      "research": {
+        "name": "Forschung",
+        "price": "Kostenlos",
+        "description": "Perfekt für akademische Forschung",
+        "feature1": "1 Projekt",
+        "feature2": "≤5k Zeilen",
+        "feature3": "GC/CTGAN",
+        "feature4": "Grundlegender Datenschutz-Nutzen-Bericht",
+        "button": "Loslegen"
+      },
+      "starter": {
+        "name": "Starter",
+        "price": "199€/Monat",
+        "description": "Für wachsende Teams",
+        "feature1": "5 Projekte",
+        "feature2": "GC/CTGAN/TVAE",
+        "feature3": "Vollständige Nutzen-Suite",
+        "feature4": "E-Mail-Support",
+        "button": "Plan wählen"
+      },
+      "pharma": {
+        "name": "Pharma/Enterprise",
+        "price": "Kontakt",
+        "description": "Für Enterprise-Bedürfnisse",
+        "feature1": "Unbegrenzte Projekte",
+        "feature2": "Diffusion + DP",
+        "feature3": "Vollständige Datenschutz-Suite + Audit PDF",
+        "feature4": "SSO & On-Premise",
+        "button": "Vertrieb kontaktieren"
+      }
+    },
+    "faq": {
+      "title": "Häufig gestellte Fragen",
+      "privacy": {
+        "question": "Wie stellen Sie Datenschutz sicher?",
+        "answer": "Wir generieren neue Zeilen aus gelernten Verteilungen und prüfen mit DCR/MIA/k-Anon; optionale DP-Aufzeichnungen effektive ε, δ."
+      },
+      "differentialPrivacy": {
+        "question": "Unterstützen Sie Differential Privacy?",
+        "answer": "Ja—konfigurierbar. Wenn aktiviert, enthalten Läufe Kohorten-ε-Zusammenfassungen und Stopp-Gates."
+      },
+      "onPrem": {
+        "question": "Können wir on-premise laufen?",
+        "answer": "Ja. Luftgekoppelt oder VPC. On-Premise veröffentlicht nur, wenn alle Gates bestehen."
+      },
+      "dataTypes": {
+        "question": "Welche Datentypen werden unterstützt?",
+        "answer": "Tabellarisch (kategorisch, numerisch, Daten), mit Unterstützung für longitudinale/Zeitreihen-Studiendaten."
+      },
+      "mlLabels": {
+        "question": "Ist die Ausgabe für ML gelabelt?",
+        "answer": "Wenn Labels in der Quelle existieren, bewahren wir Verteilungen; TSTR-Berichte quantifizieren Downstream-Leistung."
+      }
+    },
+    "docs": {
+      "title": "Dokumentation",
+      "subtitle": "Unsere umfassende Dokumentation befindet sich derzeit im Aufbau. Wir arbeiten hart daran, Ihnen detaillierte Anleitungen, API-Referenzen und Tutorials für die GESALP AI-Plattform zu bieten.",
+      "getNotified": "Benachrichtigt werden",
+      "backToHome": "Zurück zur Startseite",
+      "apiReference": {
+        "title": "API-Referenz",
+        "description": "Vollständige API-Dokumentation mit Beispielen"
+      },
+      "quickStart": {
+        "title": "Schnellstart-Anleitung",
+        "description": "In wenigen Minuten einsatzbereit"
+      },
+      "tutorials": {
+        "title": "Tutorials",
+        "description": "Schritt-für-Schritt-Tutorials und Best Practices"
+      }
+    }
+  },
+  "auth": {
+    "backToHome": "Zurück zur Startseite",
+    "signIn": {
+      "title": "Willkommen zurück",
+      "subtitle": "Melden Sie sich in Ihrem Konto an, um fortzufahren",
+      "formTitle": "Bei Ihrem Konto anmelden",
+      "email": "E-Mail-Adresse",
+      "emailPlaceholder": "Geben Sie Ihre E-Mail ein",
+      "password": "Passwort",
+      "passwordPlaceholder": "Geben Sie Ihr Passwort ein",
+      "forgotPassword": "Passwort vergessen?",
+      "signIn": "Anmelden",
+      "signingIn": "Anmeldung läuft...",
+      "noAccount": "Noch kein Konto?",
+      "signUp": "Registrieren"
+    },
+    "signUp": {
+      "title": "Konto erstellen",
+      "subtitle": "Starten Sie noch heute mit GESALP AI",
+      "formTitle": "Ihr Konto erstellen",
+      "email": "E-Mail-Adresse",
+      "emailPlaceholder": "Geben Sie Ihre E-Mail ein",
+      "password": "Passwort",
+      "passwordPlaceholder": "Passwort erstellen",
+      "passwordRequirements": "Muss mindestens 6 Zeichen lang sein",
+      "confirmPassword": "Passwort bestätigen",
+      "confirmPasswordPlaceholder": "Bestätigen Sie Ihr Passwort",
+      "agreeToTerms": "Ich stimme den",
+      "termsOfService": "Nutzungsbedingungen",
+      "and": "und der",
+      "privacyPolicy": "Datenschutzrichtlinie",
+      "createAccount": "Konto erstellen",
+      "creatingAccount": "Konto wird erstellt...",
+      "haveAccount": "Bereits ein Konto?",
+      "signIn": "Anmelden"
+    },
+    "errors": {
+      "fillAllFields": "Bitte füllen Sie alle Felder aus",
+      "passwordsDontMatch": "Passwörter stimmen nicht überein",
+      "passwordTooShort": "Passwort muss mindestens 6 Zeichen lang sein",
+      "agreeToTerms": "Bitte stimmen Sie den Bedingungen zu",
+      "signInFailed": "Anmeldung fehlgeschlagen",
+      "signUpFailed": "Registrierung fehlgeschlagen"
+    },
+    "success": {
+      "signedIn": "Erfolgreich angemeldet",
+      "checkEmail": "E-Mail prüfen",
+      "checkEmailDescription": "Wir haben Ihnen einen Bestätigungslink gesendet, um Ihr Konto zu verifizieren"
+    }
+  },
+  "footer": {
+      "product": {
+        "title": "Produkt",
+        "overview": "Überblick",
+        "pricing": "Preise",
+        "docs": "Dokumentation",
+        "roadmap": "Roadmap"
+      },
+      "company": {
+        "title": "Unternehmen",
+        "contact": "Kontakt",
+        "blog": "Blog"
+      },
+      "legal": {
+        "title": "Rechtliches",
+        "privacy": "Datenschutz",
+        "terms": "Bedingungen"
+      },
+      "copyright": "© 2025 GESALP AI — Synthetische Daten für klinische Forschung."
+    }
   }
 }

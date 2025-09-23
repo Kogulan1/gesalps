@@ -40,13 +40,54 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-neutral-50 text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100`}>
-        <ToasterProvider>
-          <AuthProvider>
-            {children}
-          </AuthProvider>
-        </ToasterProvider>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Force avatar gradient on page load
+              function forceAvatarGradient() {
+                // Target all possible avatar selectors
+                const selectors = [
+                  '[data-radix-avatar-fallback]',
+                  'div[class*="avatar-fallback"]',
+                  'button[class*="radix"] div[class*="avatar-fallback"]',
+                  'header [data-radix-avatar-fallback]',
+                  '.relative.h-8.w-8 [data-radix-avatar-fallback]'
+                ];
+                
+                selectors.forEach(selector => {
+                  const elements = document.querySelectorAll(selector);
+                  elements.forEach((element) => {
+                    element.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+                    element.style.color = 'white';
+                    element.style.border = 'none';
+                    element.style.boxShadow = 'none';
+                  });
+                });
+              }
+              
+              // Run immediately
+              forceAvatarGradient();
+              
+              // Run after DOM is ready
+              if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', forceAvatarGradient);
+              }
+              
+              // Run after a delay to catch dynamically loaded elements
+              setTimeout(forceAvatarGradient, 100);
+              setTimeout(forceAvatarGradient, 500);
+            `,
+          }}
+        />
+      </head>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+          <ToasterProvider>
+            <AuthProvider>
+              {children}
+            </AuthProvider>
+          </ToasterProvider>
       </body>
     </html>
   );

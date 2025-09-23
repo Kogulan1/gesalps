@@ -17,31 +17,31 @@ export default function Footer() {
           <div>
             <div className="font-medium mb-2">Product</div>
             <ul className="space-y-1 token-muted">
-              <li><a href="#product" className="hover:underline">{tNav('product')}</a></li>
-              <li><a href="#pricing" className="hover:underline">{tNav('pricing')}</a></li>
-              <li><Link id="docs" href={`/${locale}/docs`} className="hover:underline">{tNav('docs')}</Link></li>
+              <li><a href="#product">{tNav('product')}</a></li>
+              <li><a href="#pricing">{tNav('pricing')}</a></li>
+              <li><Link id="docs" href={`/${locale}/docs`}>{tNav('docs')}</Link></li>
             </ul>
           </div>
           <div>
             <div className="font-medium mb-2">Company</div>
             <ul className="space-y-1 token-muted">
-              <li><a href="mailto:sales@gesalps.ai" className="hover:underline">Contact</a></li>
-              <li><a href="#" className="hover:underline">Blog</a></li>
+              <li><a href="mailto:sales@gesalps.ai">Contact</a></li>
+              <li><a href="#">Blog</a></li>
             </ul>
           </div>
           <div>
             <div className="font-medium mb-2">Legal</div>
             <ul className="space-y-1 token-muted">
-              <li><Link href={`/${locale}/privacy`} className="hover:underline">{tFooter('privacy')}</Link></li>
-              <li><Link href={`/${locale}/terms`} className="hover:underline">{tFooter('terms')}</Link></li>
+              <li><Link href={`/${locale}/privacy`}>{tFooter('privacy')}</Link></li>
+              <li><Link href={`/${locale}/terms`}>{tFooter('terms')}</Link></li>
             </ul>
           </div>
         </div>
         <div className="mt-8 flex flex-wrap items-center gap-4 token-muted">
           <div>© {new Date().getFullYear()} GESALP AI</div>
-          <Link href={`/${locale}/privacy`} className="hover:underline">{tFooter('privacy')}</Link>
-          <Link href={`/${locale}/terms`} className="hover:underline">{tFooter('terms')}</Link>
-          <a href="mailto:support@gesalps.ai" className="hover:underline">{tFooter('contact')}</a>
+          <Link href={`/${locale}/privacy`}>{tFooter('privacy')}</Link>
+          <Link href={`/${locale}/terms`}>{tFooter('terms')}</Link>
+          <a href="mailto:support@gesalps.ai">{tFooter('contact')}</a>
         </div>
       </div>
     </footer>
