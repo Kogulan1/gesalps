@@ -36,6 +36,7 @@ interface ProjectCardProps {
     last_activity: string;
     status: "Active" | "Running" | "Ready" | "Failed";
   };
+  viewMode?: 'grid' | 'list';
   onView?: (id: string) => void;
   onRun?: (id: string) => void;
   onDownload?: (id: string) => void;
@@ -47,6 +48,7 @@ interface ProjectCardProps {
 
 export function ProjectCard({ 
   project, 
+  viewMode = 'list',
   onView, 
   onRun, 
   onDownload, 
@@ -75,8 +77,8 @@ export function ProjectCard({
 
   return (
     <Card className="hover:shadow-md transition-shadow border-gray-200">
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between mb-4">
+      <CardContent className={viewMode === 'grid' ? 'p-2' : 'p-3'}>
+        <div className={`flex items-start justify-between ${viewMode === 'grid' ? 'mb-1' : 'mb-2'}`}>
           <div className="flex items-start space-x-3">
             <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center shadow-sm">
               <Database className="h-5 w-5 text-gray-600" />
@@ -108,69 +110,117 @@ export function ProjectCard({
             </div>
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
+          {viewMode === 'list' ? (
+            <div className="flex items-center space-x-1">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => onView?.(project.id)}
+                className="h-8 w-8 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              >
+                <Eye className="h-4 w-4" />
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-white border-gray-200">
-              <DropdownMenuItem onClick={() => onView?.(project.id)} className="text-black hover:bg-gray-50">
-                <Eye className="mr-2 h-4 w-4" /> View Project
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onRun?.(project.id)} className="text-black hover:bg-gray-50">
-                <Play className="mr-2 h-4 w-4" /> Start Run
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onDownload?.(project.id)} className="text-black hover:bg-gray-50">
-                <Download className="mr-2 h-4 w-4" /> Download
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => {
-                console.log('Edit clicked for project:', project.id);
-                onEdit?.(project.id);
-              }} className="text-black hover:bg-gray-50">
-                <Edit className="mr-2 h-4 w-4" /> Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onSettings?.(project.id)} className="text-black hover:bg-gray-50">
-                <Settings className="mr-2 h-4 w-4" /> Settings
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onArchive?.(project.id)} className="text-black hover:bg-gray-50">
-                <Archive className="mr-2 h-4 w-4" /> Archive
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onDelete?.(project.id)} className="text-red-600 hover:bg-red-50">
-                <Trash2 className="mr-2 h-4 w-4" /> Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => onRun?.(project.id)}
+                className="h-8 w-8 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              >
+                <Play className="h-4 w-4" />
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-8 w-8 p-0">
+                    <span className="sr-only">Open menu</span>
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-white border-gray-200">
+                  <DropdownMenuItem onClick={() => onView?.(project.id)} className="text-black hover:bg-gray-50">
+                    <Eye className="mr-2 h-4 w-4" /> View Project
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onRun?.(project.id)} className="text-black hover:bg-gray-50">
+                    <Play className="mr-2 h-4 w-4" /> Start Run
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onDownload?.(project.id)} className="text-black hover:bg-gray-50">
+                    <Download className="mr-2 h-4 w-4" /> Download
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => {
+                    console.log('Edit clicked for project:', project.id);
+                    onEdit?.(project.id);
+                  }} className="text-black hover:bg-gray-50">
+                    <Edit className="mr-2 h-4 w-4" /> Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onSettings?.(project.id)} className="text-black hover:bg-gray-50">
+                    <Settings className="mr-2 h-4 w-4" /> Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onArchive?.(project.id)} className="text-black hover:bg-gray-50">
+                    <Archive className="mr-2 h-4 w-4" /> Archive
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onDelete?.(project.id)} className="text-red-600 hover:bg-red-50">
+                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          ) : (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-white border-gray-200">
+                <DropdownMenuItem onClick={() => onView?.(project.id)} className="text-black hover:bg-gray-50">
+                  <Eye className="mr-2 h-4 w-4" /> View Project
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onRun?.(project.id)} className="text-black hover:bg-gray-50">
+                  <Play className="mr-2 h-4 w-4" /> Start Run
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onDownload?.(project.id)} className="text-black hover:bg-gray-50">
+                  <Download className="mr-2 h-4 w-4" /> Download
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => {
+                  console.log('Edit clicked for project:', project.id);
+                  onEdit?.(project.id);
+                }} className="text-black hover:bg-gray-50">
+                  <Edit className="mr-2 h-4 w-4" /> Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onSettings?.(project.id)} className="text-black hover:bg-gray-50">
+                  <Settings className="mr-2 h-4 w-4" /> Settings
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onArchive?.(project.id)} className="text-black hover:bg-gray-50">
+                  <Archive className="mr-2 h-4 w-4" /> Archive
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onDelete?.(project.id)} className="text-red-600 hover:bg-red-50">
+                  <Trash2 className="mr-2 h-4 w-4" /> Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+        {viewMode === 'grid' && (
+          <div className="flex items-center justify-end space-x-1 mt-1">
             <Button 
-              variant="outline" 
+              variant="ghost" 
               size="sm" 
               onClick={() => onView?.(project.id)}
-              className="text-gray-700 border-gray-300 hover:bg-gray-50"
+              className="h-8 w-8 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
             >
-              <Eye className="h-4 w-4 mr-2" />
-              View
+              <Eye className="h-4 w-4" />
             </Button>
             <Button 
-              variant="outline" 
+              variant="ghost" 
               size="sm" 
               onClick={() => onRun?.(project.id)}
-              className="text-gray-700 border-gray-300 hover:bg-gray-50"
+              className="h-8 w-8 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
             >
-              <Play className="h-4 w-4 mr-2" />
-              Start Run
+              <Play className="h-4 w-4" />
             </Button>
           </div>
-          
-          <div className="flex items-center space-x-2 text-xs text-gray-500">
-            <TrendingUp className="h-3 w-3" />
-            <span>Project ID: {project.id.slice(0, 8)}...</span>
-          </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );
