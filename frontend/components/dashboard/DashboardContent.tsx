@@ -371,6 +371,7 @@ export function DashboardContent() {
                       <ProjectCard
                         key={project.id}
                         project={project}
+                        viewMode={viewMode}
                         onView={handleViewProject}
                         onRun={(id) => console.log('Run project:', id)}
                         onDownload={(id) => console.log('Download project:', id)}
