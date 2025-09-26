@@ -117,7 +117,19 @@ app = FastAPI(
     description="Clinical-grade synthetic data generation API",
     version="1.0.0"
 )
-cors_origins = [o.strip() for o in (os.getenv("CORS_ALLOW_ORIGINS") or "*").split(",") if o.strip()]
+# Build CORS origin list with sensible defaults for local dev.
+cors_env = os.getenv("CORS_ALLOW_ORIGINS") or "*"
+cors_origins = [o.strip() for o in cors_env.split(",") if o.strip()]
+
+# Always allow localhost dev origins when not using wildcard.
+if cors_origins and cors_origins != ["*"]:
+    dev_origins = {"http://localhost:3000", "https://localhost:3000"}
+    for origin in dev_origins:
+        if origin not in cors_origins:
+            cors_origins.append(origin)
+
+if not cors_origins:
+    cors_origins = ["*"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
