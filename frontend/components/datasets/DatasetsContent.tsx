@@ -39,9 +39,89 @@ import { FileUploadModal } from "./FileUploadModal";
 import { RunExecutionModal } from "./RunExecutionModal";
 import { ResultsModal } from "./ResultsModal";
 
+type DemoDataset = {
+  id: string;
+  name: string;
+  project_id?: string;
+  project_name?: string;
+  description?: string;
+  file_name?: string;
+  file_size?: number;
+  rows?: number;
+  columns?: number;
+  created_at: string;
+  last_modified?: string;
+  status: string;
+  runs_count?: number;
+  last_run?: string;
+  size?: string;
+};
+
+const DEMO_DATASETS: DemoDataset[] = [
+  {
+    id: "ds-1",
+    name: "Clinical Trial Data Alpha",
+    project_id: "proj-1",
+    project_name: "Clinical Trial Alpha",
+    file_name: "clinical_trial_alpha.csv",
+    file_size: 2048576,
+    rows: 1500,
+    columns: 25,
+    created_at: "2024-01-15T10:30:00Z",
+    last_modified: "2024-01-15T10:30:00Z",
+    status: "Ready",
+    runs_count: 3,
+    last_run: "2 hours ago"
+  },
+  {
+    id: "ds-2",
+    name: "Patient Demographics",
+    project_id: "proj-1",
+    project_name: "Clinical Trial Alpha",
+    file_name: "patient_demographics.csv",
+    file_size: 1024000,
+    rows: 800,
+    columns: 15,
+    created_at: "2024-01-14T14:20:00Z",
+    last_modified: "2024-01-14T14:20:00Z",
+    status: "Ready",
+    runs_count: 1,
+    last_run: "1 day ago"
+  },
+  {
+    id: "ds-3",
+    name: "Synthetic Data Beta",
+    project_id: "proj-2",
+    project_name: "Synthetic Data Beta",
+    file_name: "synthetic_beta.csv",
+    file_size: 512000,
+    rows: 300,
+    columns: 12,
+    created_at: "2024-01-10T09:15:00Z",
+    last_modified: "2024-01-10T09:15:00Z",
+    status: "Processing",
+    runs_count: 0,
+    last_run: "Just now"
+  },
+  {
+    id: "ds-4",
+    name: "Research Data Gamma",
+    project_id: "proj-3",
+    project_name: "Research Project Gamma",
+    file_name: "research_gamma.csv",
+    file_size: 3072000,
+    rows: 2000,
+    columns: 30,
+    created_at: "2024-01-05T11:45:00Z",
+    last_modified: "2024-01-05T11:45:00Z",
+    status: "Failed",
+    runs_count: 0
+  }
+];
+
 export function DatasetsContent() {
   const t = useTranslations('dashboard');
-  const [datasets, setDatasets] = useState<Dataset[]>([]);
+  const [datasets, setDatasets] = useState<DemoDataset[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -83,6 +163,7 @@ export function DatasetsContent() {
     runId: null,
     runName: ""
   });
+  const [usingDemoData, setUsingDemoData] = useState(false);
 
   const handleDatasetEdit = (datasetId: string) => {
     const dataset = datasets.find(d => d.id === datasetId);
@@ -182,117 +263,53 @@ export function DatasetsContent() {
   }, []);
 
   const fetchDatasets = async () => {
+    setLoading(true);
+    setError(null);
+
+    const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
+
     try {
-      setLoading(true);
-      setError(null);
-
-      // For now, always use mock data to ensure it shows up
-      console.log('Using mock data for datasets in Datasets page');
-      const mockDatasets: Dataset[] = [
-          {
-            id: "ds-1",
-            name: "Clinical Trial Data Alpha",
-            project_id: "proj-1",
-            project_name: "Clinical Trial Alpha",
-            file_name: "clinical_trial_alpha.csv",
-            file_size: 2048576, // 2MB
-            rows: 1500,
-            columns: 25,
-            created_at: "2024-01-15T10:30:00Z",
-            last_modified: "2024-01-15T10:30:00Z",
-            status: "Ready",
-            runs_count: 3,
-            last_run: "2 hours ago"
-          },
-          {
-            id: "ds-2",
-            name: "Patient Demographics",
-            project_id: "proj-1", 
-            project_name: "Clinical Trial Alpha",
-            file_name: "patient_demographics.csv",
-            file_size: 1024000, // 1MB
-            rows: 800,
-            columns: 15,
-            created_at: "2024-01-14T14:20:00Z",
-            last_modified: "2024-01-14T14:20:00Z",
-            status: "Ready",
-            runs_count: 1,
-            last_run: "1 day ago"
-          },
-          {
-            id: "ds-3",
-            name: "Synthetic Data Beta",
-            project_id: "proj-2",
-            project_name: "Synthetic Data Beta", 
-            file_name: "synthetic_beta.csv",
-            file_size: 512000, // 512KB
-            rows: 300,
-            columns: 12,
-            created_at: "2024-01-10T09:15:00Z",
-            last_modified: "2024-01-10T09:15:00Z",
-            status: "Processing",
-            runs_count: 0
-          },
-          {
-            id: "ds-4",
-            name: "Research Data Gamma",
-            project_id: "proj-3",
-            project_name: "Research Project Gamma",
-            file_name: "research_gamma.csv", 
-            file_size: 3072000, // 3MB
-            rows: 2000,
-            columns: 30,
-            created_at: "2024-01-05T11:45:00Z",
-            last_modified: "2024-01-05T11:45:00Z",
-            status: "Failed",
-            runs_count: 0
-          }
-        ];
-        setDatasets(mockDatasets);
-        setLoading(false);
-        return;
-
-      /* 
-      // API logic commented out for now - using mock data
-      // Try to fetch from API, fallback to demo data on error
-      try {
-        const supabase = createSupabaseBrowserClient();
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session?.access_token) {
-          throw new Error('No authentication token available');
-        }
-
-        const response = await fetch(`${base}/v1/datasets`, {
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status}`);
-        }
-
-        const data = await response.json();
-        setDatasets(data);
-      } catch (apiError) {
-        console.log('API failed, using mock data:', apiError);
-        // Fallback to mock data
-        setDatasets([...]);
+      if (!base) {
+        throw new Error('Backend API base URL not configured');
       }
-      */
-      
-      setLoading(false);
+
+      const supabase = createSupabaseBrowserClient();
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        throw new Error('No authentication token available');
+      }
+
+      const response = await fetch(`${base}/v1/datasets`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (!Array.isArray(data)) {
+        throw new Error('Unexpected API response shape');
+      }
+
+      setDatasets(data as DemoDataset[]);
+      setUsingDemoData(false);
     } catch (err) {
-      console.error('Error fetching datasets:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch datasets');
+      console.warn('Datasets API unavailable, falling back to demo data:', err);
+      setDatasets(DEMO_DATASETS);
+      setUsingDemoData(true);
+    } finally {
       setLoading(false);
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
+  const getStatusColor = (status: string | undefined) => {
+    const normalized = (status || '').toLowerCase();
+    switch (normalized) {
       case 'ready':
         return 'bg-green-100 text-green-800';
       case 'processing':
@@ -306,18 +323,23 @@ export function DatasetsContent() {
     }
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
+  const formatFileSize = (bytes?: number) => {
+    if (!bytes) return '—';
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const searchLower = searchQuery.trim().toLowerCase();
+
   const filteredDatasets = datasets.filter(dataset => {
-    const matchesSearch = dataset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         dataset.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || dataset.status.toLowerCase() === filterStatus;
+    const description = (dataset.description || '').toLowerCase();
+    const nameMatches = dataset.name.toLowerCase().includes(searchLower);
+    const descMatches = description.includes(searchLower);
+    const statusMatches = (dataset.status || '').toLowerCase();
+    const matchesSearch = searchLower === '' ? true : (nameMatches || descMatches);
+    const matchesStatus = filterStatus === 'all' || statusMatches === filterStatus;
     const matchesProject = filterProject === 'all' || dataset.project_id === filterProject;
     return matchesSearch && matchesStatus && matchesProject;
   });
@@ -364,7 +386,7 @@ export function DatasetsContent() {
     );
   }
 
-  if (error) {
+  if (error && datasets.length === 0) {
     return (
       <div className="text-center py-12">
         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -381,6 +403,11 @@ export function DatasetsContent() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      {usingDemoData && (
+        <div className="rounded-md border border-dashed border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
+          Showing demo datasets while the backend API is unavailable.
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

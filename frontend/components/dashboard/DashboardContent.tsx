@@ -11,6 +11,39 @@ import { useTranslations } from "next-intl";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
 import { useRouter } from "next/navigation";
 
+const DEMO_PROJECTS = [
+  {
+    id: "proj-1",
+    name: "Clinical Trial Alpha",
+    owner_id: "user-123",
+    created_at: "2024-01-15T10:30:00Z",
+    datasets_count: 3,
+    runs_count: 5,
+    last_activity: "2 hours ago",
+    status: "Active"
+  },
+  {
+    id: "proj-2",
+    name: "Synthetic Data Beta",
+    owner_id: "user-123",
+    created_at: "2024-01-10T14:20:00Z",
+    datasets_count: 1,
+    runs_count: 2,
+    last_activity: "1 day ago",
+    status: "Ready"
+  },
+  {
+    id: "proj-3",
+    name: "Research Project Gamma",
+    owner_id: "user-123",
+    created_at: "2024-01-05T09:15:00Z",
+    datasets_count: 0,
+    runs_count: 0,
+    last_activity: "No activity yet",
+    status: "Ready"
+  }
+];
+
 export function DashboardContent() {
   const t = useTranslations('dashboard');
   const router = useRouter();
@@ -18,6 +51,7 @@ export function DashboardContent() {
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [usingDemoData, setUsingDemoData] = useState(false);
   const [renameModal, setRenameModal] = useState<{
     isOpen: boolean;
     projectId: string | null;
@@ -123,53 +157,19 @@ export function DashboardContent() {
   // Fetch projects from API
   useEffect(() => {
     const fetchProjects = async () => {
-      try {
-        setLoading(true);
-        const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
-        
-        // For now, always use mock data to ensure it shows up
-        console.log('Using mock data for projects in Overview');
-        setProjects([
-          {
-            id: "proj-1",
-            name: "Clinical Trial Alpha",
-            owner_id: "user-123",
-            created_at: "2024-01-15T10:30:00Z",
-            datasets_count: 3,
-            runs_count: 5,
-            last_activity: "2 hours ago",
-            status: "Active"
-          },
-          {
-            id: "proj-2", 
-            name: "Synthetic Data Beta",
-            owner_id: "user-123",
-            created_at: "2024-01-10T14:20:00Z",
-            datasets_count: 1,
-            runs_count: 2,
-            last_activity: "1 day ago",
-            status: "Ready"
-          },
-          {
-            id: "proj-3",
-            name: "Research Project Gamma",
-            owner_id: "user-123",
-            created_at: "2024-01-05T09:15:00Z",
-            datasets_count: 0,
-            runs_count: 0,
-            last_activity: "No activity yet",
-            status: "Ready"
-          }
-        ]);
-        setLoading(false);
-        return;
+      setLoading(true);
+      setError(null);
 
-        /* 
-        // API logic commented out for now - using mock data
-        // Get the current session token from Supabase
+      const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
+
+      try {
+        if (!base) {
+          throw new Error('Backend API base URL not configured');
+        }
+
         const supabase = createSupabaseBrowserClient();
         const { data: { session } } = await supabase.auth.getSession();
-        
+
         if (!session?.access_token) {
           throw new Error('No authentication token available');
         }
@@ -182,24 +182,20 @@ export function DashboardContent() {
         });
 
         if (!response.ok) {
-          // If API fails (like 401 Unauthorized or 500 Internal Server Error), use mock data
-          console.warn(`API returned ${response.status}, using mock data`);
-          setProjects([...]);
-          return;
+          throw new Error(`API error: ${response.status}`);
         }
 
         const data = await response.json();
+        if (!Array.isArray(data)) {
+          throw new Error('Unexpected API response shape');
+        }
+
         setProjects(data);
+        setUsingDemoData(false);
       } catch (err) {
-        console.error('Error fetching projects:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch projects');
-        // Fallback to mock data
-        setProjects([...]);
-      }
-        */
-      } catch (err) {
-        console.error('Error in fetchProjects:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch projects');
+        console.warn('Dashboard projects API unavailable, falling back to demo data:', err);
+        setProjects(DEMO_PROJECTS);
+        setUsingDemoData(true);
       } finally {
         setLoading(false);
       }
@@ -241,9 +237,39 @@ export function DashboardContent() {
     projectsArray: projects
   });
 
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="flex items-center gap-3 text-gray-600">
+          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-400" />
+          Loading dashboard...
+        </div>
+      </div>
+    );
+  }
+
+  if (error && projects.length === 0) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 text-2xl text-red-500">
+            ⚠
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900">Unable to load projects</h3>
+          <p className="mt-2 text-gray-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto px-6 py-8">
+        {usingDemoData && (
+          <div className="mb-6 rounded-md border border-dashed border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
+            Showing demo projects while the backend API is unavailable.
+          </div>
+        )}
         {/* Main Content Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
