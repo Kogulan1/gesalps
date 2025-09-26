@@ -37,6 +37,39 @@ import { RenameModal } from "@/components/common/RenameModal";
 import { CreateProjectModal } from "./CreateProjectModal";
 import { ProjectCard } from "@/components/dashboard/ProjectCard";
 
+const DEMO_PROJECTS = [
+  {
+    id: "proj-1",
+    name: "Clinical Trial Alpha",
+    owner_id: "user-123",
+    created_at: "2024-01-15T10:30:00Z",
+    datasets_count: 3,
+    runs_count: 5,
+    last_activity: "2 hours ago",
+    status: "Active"
+  },
+  {
+    id: "proj-2",
+    name: "Synthetic Data Beta",
+    owner_id: "user-123",
+    created_at: "2024-01-10T14:20:00Z",
+    datasets_count: 1,
+    runs_count: 2,
+    last_activity: "1 day ago",
+    status: "Ready"
+  },
+  {
+    id: "proj-3",
+    name: "Research Project Gamma",
+    owner_id: "user-123",
+    created_at: "2024-01-05T09:15:00Z",
+    datasets_count: 0,
+    runs_count: 0,
+    last_activity: "No activity yet",
+    status: "Ready"
+  }
+];
+
 export function ProjectsContent() {
   const t = useTranslations('dashboard');
   const router = useRouter();
@@ -48,6 +81,7 @@ export function ProjectsContent() {
   const [sortBy, setSortBy] = useState<'name' | 'created' | 'activity'>('created');
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'ready' | 'running' | 'failed'>('all');
   const [showCreateProject, setShowCreateProject] = useState(false);
+  const [usingDemoData, setUsingDemoData] = useState(false);
   const [renameModal, setRenameModal] = useState<{
     isOpen: boolean;
     projectId: string | null;
@@ -63,83 +97,46 @@ export function ProjectsContent() {
   }, []);
 
   const fetchProjects = async () => {
+    setLoading(true);
+    setError(null);
+
+    const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
+
     try {
-      setLoading(true);
-      setError(null);
-
-      // For now, always use mock data to ensure it shows up
-      console.log('Using mock data for projects in Projects page');
-      const mockProjects = [
-        {
-          id: "proj-1",
-          name: "Clinical Trial Alpha",
-          owner_id: "user-123",
-          created_at: "2024-01-15T10:30:00Z",
-          datasets_count: 3,
-          runs_count: 5,
-          last_activity: "2 hours ago",
-          status: "Active"
-        },
-        {
-          id: "proj-2", 
-          name: "Synthetic Data Beta",
-          owner_id: "user-123",
-          created_at: "2024-01-10T14:20:00Z",
-          datasets_count: 1,
-          runs_count: 2,
-          last_activity: "1 day ago",
-          status: "Ready"
-        },
-        {
-          id: "proj-3",
-          name: "Research Project Gamma",
-          owner_id: "user-123",
-          created_at: "2024-01-05T09:15:00Z",
-          datasets_count: 0,
-          runs_count: 0,
-          last_activity: "No activity yet",
-          status: "Ready"
-        }
-      ];
-      setProjects(mockProjects);
-      setLoading(false);
-      return;
-
-      /* 
-      // API logic commented out for now - using mock data
-      // Try to fetch from API, fallback to demo data on error
-      try {
-        const supabase = createSupabaseBrowserClient();
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session?.access_token) {
-          throw new Error('No authentication token available');
-        }
-
-        const response = await fetch(`${base}/v1/projects`, {
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status}`);
-        }
-
-        const data = await response.json();
-        setProjects(data);
-      } catch (apiError) {
-        console.log('API failed, using mock data:', apiError);
-        // Fallback to mock data
-        setProjects([...]);
+      if (!base) {
+        throw new Error('Backend API base URL not configured');
       }
-      */
-      
-      setLoading(false);
+
+      const supabase = createSupabaseBrowserClient();
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        throw new Error('No authentication token available');
+      }
+
+      const response = await fetch(`${base}/v1/projects`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (!Array.isArray(data)) {
+        throw new Error('Unexpected API response shape');
+      }
+
+      setProjects(data);
+      setUsingDemoData(false);
     } catch (err) {
-      console.error('Error fetching projects:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch projects');
+      console.warn('Projects API unavailable, falling back to demo data:', err);
+      setProjects(DEMO_PROJECTS);
+      setUsingDemoData(true);
+    } finally {
       setLoading(false);
     }
   };
@@ -264,7 +261,7 @@ export function ProjectsContent() {
     );
   }
 
-  if (error) {
+  if (error && projects.length === 0) {
     return (
       <div className="text-center py-12">
         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -281,6 +278,11 @@ export function ProjectsContent() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      {usingDemoData && (
+        <div className="rounded-md border border-dashed border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
+          Showing demo projects while the backend API is unavailable.
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

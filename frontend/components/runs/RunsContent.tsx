@@ -84,11 +84,155 @@ interface Run {
   created_at: string;
 }
 
+const DEMO_RUNS: Run[] = [
+  {
+    id: "run-1",
+    name: "Synthesis Run Alpha",
+    project_id: "proj-1",
+    project_name: "Clinical Trial Alpha",
+    dataset_id: "ds-1",
+    dataset_name: "Clinical Trial Data Alpha",
+    status: "Completed",
+    started_at: "2024-01-15T10:30:00Z",
+    finished_at: "2024-01-15T10:30:05Z",
+    duration: 1,
+    scores: {
+      auroc: 0.87,
+      c_index: 0.74,
+      mia_auc: 0.56,
+      dp_epsilon: 1.2,
+      privacy_score: 0.85,
+      utility_score: 0.78
+    },
+    metrics: {
+      rows_generated: 1500,
+      columns_generated: 25,
+      privacy_audit_passed: true,
+      utility_audit_passed: true,
+      privacy: {
+        mia_auc: 0.56,
+        dup_rate: 0.03
+      },
+      utility: {
+        ks_mean: 0.08,
+        corr_delta: 0.12
+      }
+    },
+    created_at: "2024-01-15T10:30:00Z"
+  },
+  {
+    id: "run-2",
+    name: "Patient Data Synthesis",
+    project_id: "proj-1",
+    project_name: "Clinical Trial Alpha",
+    dataset_id: "ds-2",
+    dataset_name: "Patient Demographics",
+    status: "Running",
+    started_at: "2024-01-16T09:15:00Z",
+    finished_at: "2024-01-16T09:15:03Z",
+    duration: 1,
+    scores: {
+      auroc: 0.82,
+      c_index: 0.71,
+      mia_auc: 0.58,
+      dp_epsilon: 0.8,
+      privacy_score: 0.88,
+      utility_score: 0.75
+    },
+    metrics: {
+      rows_generated: 800,
+      columns_generated: 15,
+      privacy_audit_passed: true,
+      utility_audit_passed: false,
+      privacy: {
+        mia_auc: 0.58,
+        dup_rate: 0.02
+      },
+      utility: {
+        ks_mean: 0.12,
+        corr_delta: 0.15
+      }
+    },
+    created_at: "2024-01-16T09:15:00Z"
+  },
+  {
+    id: "run-3",
+    name: "Synthetic Data Generation",
+    project_id: "proj-2",
+    project_name: "Synthetic Data Beta",
+    dataset_id: "ds-3",
+    dataset_name: "Synthetic Data Beta",
+    status: "Failed",
+    started_at: "2024-01-10T09:15:00Z",
+    finished_at: "2024-01-10T09:15:02Z",
+    duration: 1,
+    scores: {
+      auroc: 0,
+      c_index: 0,
+      mia_auc: 0,
+      dp_epsilon: 0,
+      privacy_score: 0,
+      utility_score: 0
+    },
+    metrics: {
+      rows_generated: 0,
+      columns_generated: 0,
+      privacy_audit_passed: false,
+      utility_audit_passed: false,
+      privacy: {
+        mia_auc: 0,
+        dup_rate: 0
+      },
+      utility: {
+        ks_mean: 0,
+        corr_delta: 0
+      }
+    },
+    created_at: "2024-01-10T09:15:00Z"
+  },
+  {
+    id: "run-4",
+    name: "Research Data Synthesis",
+    project_id: "proj-3",
+    project_name: "Research Project Gamma",
+    dataset_id: "ds-4",
+    dataset_name: "Research Data Gamma",
+    status: "Completed",
+    started_at: "2024-01-05T11:45:00Z",
+    finished_at: "2024-01-05T11:45:08Z",
+    duration: 1,
+    scores: {
+      auroc: 0.91,
+      c_index: 0.79,
+      mia_auc: 0.52,
+      dp_epsilon: 1.5,
+      privacy_score: 0.92,
+      utility_score: 0.85
+    },
+    metrics: {
+      rows_generated: 2000,
+      columns_generated: 30,
+      privacy_audit_passed: true,
+      utility_audit_passed: true,
+      privacy: {
+        mia_auc: 0.52,
+        dup_rate: 0.01
+      },
+      utility: {
+        ks_mean: 0.06,
+        corr_delta: 0.08
+      }
+    },
+    created_at: "2024-01-05T11:45:00Z"
+  }
+];
+
 export function RunsContent() {
   const t = useTranslations('dashboard');
   const [runs, setRuns] = useState<Run[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [usingDemoData, setUsingDemoData] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [sortBy, setSortBy] = useState<'name' | 'created' | 'status' | 'duration'>('created');
@@ -217,8 +361,9 @@ export function RunsContent() {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
+  const getStatusColor = (status: string | undefined) => {
+    const normalized = (status || '').toLowerCase();
+    switch (normalized) {
       case 'completed':
         return 'bg-green-100 text-green-800';
       case 'running':
@@ -232,8 +377,9 @@ export function RunsContent() {
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status.toLowerCase()) {
+  const getStatusIcon = (status: string | undefined) => {
+    const normalized = (status || '').toLowerCase();
+    switch (normalized) {
       case 'completed':
         return <CheckCircle className="h-4 w-4 text-green-600" />;
       case 'running':
@@ -287,343 +433,62 @@ export function RunsContent() {
   }, []);
 
   const fetchRuns = async () => {
+    setLoading(true);
+    setError(null);
+
+    const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
+
     try {
-      setLoading(true);
-      setError(null);
-
-      const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE || 'http://localhost:8000';
-      
       if (!base) {
-        // Use mock data if no API base
-        const mockRuns: Run[] = [
-          {
-            id: "run-1",
-            name: "Synthesis Run Alpha",
-            project_id: "proj-1",
-            project_name: "Clinical Trial Alpha",
-            dataset_id: "ds-1",
-            dataset_name: "Clinical Trial Data Alpha",
-            status: "Completed",
-            started_at: "2024-01-15T10:30:00Z",
-            finished_at: "2024-01-15T10:30:05Z",
-            duration: 1,
-            scores: {
-              auroc: 0.87,
-              c_index: 0.74,
-              mia_auc: 0.56,
-              dp_epsilon: 1.2,
-              privacy_score: 0.85,
-              utility_score: 0.78
-            },
-            metrics: {
-              rows_generated: 1500,
-              columns_generated: 25,
-              privacy_audit_passed: true,
-              utility_audit_passed: true,
-              privacy: {
-                mia_auc: 0.56,
-                dup_rate: 0.03
-              },
-              utility: {
-                ks_mean: 0.08,
-                corr_delta: 0.12
-              }
-            },
-            created_at: "2024-01-15T10:30:00Z"
-          },
-          {
-            id: "run-2",
-            name: "Patient Data Synthesis",
-            project_id: "proj-1",
-            project_name: "Clinical Trial Alpha",
-            dataset_id: "ds-2",
-            dataset_name: "Patient Demographics",
-            status: "Running",
-            started_at: "2024-01-16T09:15:00Z",
-            finished_at: "2024-01-16T09:15:03Z",
-            duration: 1,
-            scores: {
-              auroc: 0.82,
-              c_index: 0.71,
-              mia_auc: 0.58,
-              dp_epsilon: 0.8,
-              privacy_score: 0.88,
-              utility_score: 0.75
-            },
-            metrics: {
-              rows_generated: 800,
-              columns_generated: 15,
-              privacy_audit_passed: true,
-              utility_audit_passed: false,
-              privacy: {
-                mia_auc: 0.58,
-                dup_rate: 0.02
-              },
-              utility: {
-                ks_mean: 0.12,
-                corr_delta: 0.15
-              }
-            },
-            created_at: "2024-01-16T09:15:00Z"
-          },
-          {
-            id: "run-3",
-            name: "Synthetic Data Generation",
-            project_id: "proj-2",
-            project_name: "Synthetic Data Beta",
-            dataset_id: "ds-3",
-            dataset_name: "Synthetic Data Beta",
-            status: "Failed",
-            started_at: "2024-01-10T09:15:00Z",
-            finished_at: "2024-01-10T09:15:02Z",
-            duration: 1,
-            scores: {
-              auroc: 0.0,
-              c_index: 0.0,
-              mia_auc: 0.0,
-              dp_epsilon: 0.0,
-              privacy_score: 0.0,
-              utility_score: 0.0
-            },
-            metrics: {
-              rows_generated: 0,
-              columns_generated: 0,
-              privacy_audit_passed: false,
-              utility_audit_passed: false,
-              privacy: {
-                mia_auc: 0.0,
-                dup_rate: 0.0
-              },
-              utility: {
-                ks_mean: 0.0,
-                corr_delta: 0.0
-              }
-            },
-            created_at: "2024-01-10T09:15:00Z"
-          },
-          {
-            id: "run-4",
-            name: "Research Data Synthesis",
-            project_id: "proj-3",
-            project_name: "Research Project Gamma",
-            dataset_id: "ds-4",
-            dataset_name: "Research Data Gamma",
-            status: "Completed",
-            started_at: "2024-01-05T11:45:00Z",
-            finished_at: "2024-01-05T11:45:08Z",
-            duration: 1,
-            scores: {
-              auroc: 0.91,
-              c_index: 0.79,
-              mia_auc: 0.52,
-              dp_epsilon: 1.5,
-              privacy_score: 0.92,
-              utility_score: 0.85
-            },
-            metrics: {
-              rows_generated: 2000,
-              columns_generated: 30,
-              privacy_audit_passed: true,
-              utility_audit_passed: true,
-              privacy: {
-                mia_auc: 0.52,
-                dup_rate: 0.01
-              },
-              utility: {
-                ks_mean: 0.06,
-                corr_delta: 0.08
-              }
-            },
-            created_at: "2024-01-05T11:45:00Z"
-          }
-        ];
-        setRuns(mockRuns);
-        return;
+        throw new Error('Backend API base URL not configured');
       }
 
-      // Try to fetch from API, fallback to demo data on error
-      try {
-        const supabase = createSupabaseBrowserClient();
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session?.access_token) {
-          throw new Error('No authentication token available');
-        }
+      const supabase = createSupabaseBrowserClient();
+      const { data: { session } } = await supabase.auth.getSession();
 
-        const response = await fetch(`${base}/dev/runs`, {
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status}`);
-        }
-
-        const data = await response.json();
-        setRuns(data);
-      } catch (apiError) {
-        console.log('API failed, using mock data:', apiError);
-        // Fallback to mock data
-        const mockRuns: Run[] = [
-          {
-            id: "run-1",
-            name: "Synthesis Run Alpha",
-            project_id: "proj-1",
-            project_name: "Clinical Trial Alpha",
-            dataset_id: "ds-1",
-            dataset_name: "Clinical Trial Data Alpha",
-            status: "Completed",
-            started_at: "2024-01-15T10:30:00Z",
-            finished_at: "2024-01-15T10:30:05Z",
-            duration: 1,
-            scores: {
-              auroc: 0.87,
-              c_index: 0.74,
-              mia_auc: 0.56,
-              dp_epsilon: 1.2,
-              privacy_score: 0.85,
-              utility_score: 0.78
-            },
-            metrics: {
-              rows_generated: 1500,
-              columns_generated: 25,
-              privacy_audit_passed: true,
-              utility_audit_passed: true,
-              privacy: {
-                mia_auc: 0.56,
-                dup_rate: 0.03
-              },
-              utility: {
-                ks_mean: 0.08,
-                corr_delta: 0.12
-              }
-            },
-            created_at: "2024-01-15T10:30:00Z"
-          },
-          {
-            id: "run-2",
-            name: "Patient Data Synthesis",
-            project_id: "proj-1",
-            project_name: "Clinical Trial Alpha",
-            dataset_id: "ds-2",
-            dataset_name: "Patient Demographics",
-            status: "Running",
-            started_at: "2024-01-16T09:15:00Z",
-            finished_at: "2024-01-16T09:15:03Z",
-            duration: 1,
-            scores: {
-              auroc: 0.82,
-              c_index: 0.71,
-              mia_auc: 0.58,
-              dp_epsilon: 0.8,
-              privacy_score: 0.88,
-              utility_score: 0.75
-            },
-            metrics: {
-              rows_generated: 800,
-              columns_generated: 15,
-              privacy_audit_passed: true,
-              utility_audit_passed: false,
-              privacy: {
-                mia_auc: 0.58,
-                dup_rate: 0.02
-              },
-              utility: {
-                ks_mean: 0.12,
-                corr_delta: 0.15
-              }
-            },
-            created_at: "2024-01-16T09:15:00Z"
-          },
-          {
-            id: "run-3",
-            name: "Synthetic Data Generation",
-            project_id: "proj-2",
-            project_name: "Synthetic Data Beta",
-            dataset_id: "ds-3",
-            dataset_name: "Synthetic Data Beta",
-            status: "Failed",
-            started_at: "2024-01-10T09:15:00Z",
-            finished_at: "2024-01-10T09:15:02Z",
-            duration: 1,
-            scores: {
-              auroc: 0.0,
-              c_index: 0.0,
-              mia_auc: 0.0,
-              dp_epsilon: 0.0,
-              privacy_score: 0.0,
-              utility_score: 0.0
-            },
-            metrics: {
-              rows_generated: 0,
-              columns_generated: 0,
-              privacy_audit_passed: false,
-              utility_audit_passed: false,
-              privacy: {
-                mia_auc: 0.0,
-                dup_rate: 0.0
-              },
-              utility: {
-                ks_mean: 0.0,
-                corr_delta: 0.0
-              }
-            },
-            created_at: "2024-01-10T09:15:00Z"
-          },
-          {
-            id: "run-4",
-            name: "Research Data Synthesis",
-            project_id: "proj-3",
-            project_name: "Research Project Gamma",
-            dataset_id: "ds-4",
-            dataset_name: "Research Data Gamma",
-            status: "Completed",
-            started_at: "2024-01-05T11:45:00Z",
-            finished_at: "2024-01-05T11:45:08Z",
-            duration: 1,
-            scores: {
-              auroc: 0.91,
-              c_index: 0.79,
-              mia_auc: 0.52,
-              dp_epsilon: 1.5,
-              privacy_score: 0.92,
-              utility_score: 0.85
-            },
-            metrics: {
-              rows_generated: 2000,
-              columns_generated: 30,
-              privacy_audit_passed: true,
-              utility_audit_passed: true,
-              privacy: {
-                mia_auc: 0.52,
-                dup_rate: 0.01
-              },
-              utility: {
-                ks_mean: 0.06,
-                corr_delta: 0.08
-              }
-            },
-            created_at: "2024-01-05T11:45:00Z"
-          }
-        ];
-        setRuns(mockRuns);
+      if (!session?.access_token) {
+        throw new Error('No authentication token available');
       }
-      
-      setLoading(false);
+
+      const response = await fetch(`${base}/dev/runs`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (!Array.isArray(data)) {
+        throw new Error('Unexpected API response shape');
+      }
+
+      setRuns(data as Run[]);
+      setUsingDemoData(false);
     } catch (err) {
-      console.error('Error fetching runs:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch runs');
+      console.warn('Runs API unavailable, falling back to demo data:', err);
+      setRuns(DEMO_RUNS);
+      setUsingDemoData(true);
+    } finally {
       setLoading(false);
     }
   };
 
+  const searchLower = searchQuery.trim().toLowerCase();
+
   const filteredRuns = runs.filter(run => {
-    const matchesSearch = run.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         run.project_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         run.dataset_name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || run.status.toLowerCase() === filterStatus;
+    const name = (run.name || '').toLowerCase();
+    const projectName = (run.project_name || '').toLowerCase();
+    const datasetName = (run.dataset_name || '').toLowerCase();
+    const status = (run.status || '').toLowerCase();
+    const matchesSearch = searchLower === '' ||
+      name.includes(searchLower) ||
+      projectName.includes(searchLower) ||
+      datasetName.includes(searchLower);
+    const matchesStatus = filterStatus === 'all' || status === filterStatus;
     const matchesProject = filterProject === 'all' || run.project_id === filterProject;
     return matchesSearch && matchesStatus && matchesProject;
   });
@@ -635,7 +500,7 @@ export function RunsContent() {
       case 'created':
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       case 'status':
-        return a.status.localeCompare(b.status);
+        return (a.status || '').localeCompare(b.status || '');
       case 'duration':
         return (b.duration || 0) - (a.duration || 0);
       default:
@@ -686,7 +551,7 @@ export function RunsContent() {
     );
   }
 
-  if (error) {
+  if (error && runs.length === 0) {
     return (
       <div className="text-center py-12">
         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -703,6 +568,11 @@ export function RunsContent() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      {usingDemoData && (
+        <div className="rounded-md border border-dashed border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
+          Showing demo runs while the backend API is unavailable.
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
