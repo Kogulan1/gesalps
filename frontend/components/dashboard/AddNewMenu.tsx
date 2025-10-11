@@ -11,15 +11,19 @@ import {
 import { Plus, ChevronDown, Database, Play, FileText, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { CreateProjectModal } from "./CreateProjectModal";
+import { FileUploadModal } from "../datasets/FileUploadModal";
 
 interface AddNewMenuProps {
   onProjectCreated?: (project: any) => void;
+  onDatasetUploaded?: () => void;
+  projects?: Array<{id: string; name: string}>;
 }
 
-export function AddNewMenu({ onProjectCreated }: AddNewMenuProps) {
+export function AddNewMenu({ onProjectCreated, onDatasetUploaded, projects = [] }: AddNewMenuProps) {
   const t = useTranslations('dashboard');
   const [isOpen, setIsOpen] = useState(false);
   const [showCreateProject, setShowCreateProject] = useState(false);
+  const [showUploadDataset, setShowUploadDataset] = useState(false);
 
   const handleMenuAction = (action: string) => {
     setIsOpen(false);
@@ -29,12 +33,11 @@ export function AddNewMenu({ onProjectCreated }: AddNewMenuProps) {
         setShowCreateProject(true);
         break;
       case 'dataset':
-        // TODO: Implement dataset upload
-        console.log('Create dataset');
+        setShowUploadDataset(true);
         break;
       case 'run':
-        // TODO: Implement run creation
-        console.log('Create run');
+        // Navigate to datasets page where user can start a run
+        window.location.href = '/en/datasets';
         break;
       case 'team':
         // TODO: Implement team member invitation
@@ -46,6 +49,11 @@ export function AddNewMenu({ onProjectCreated }: AddNewMenuProps) {
   const handleProjectCreated = (project: any) => {
     onProjectCreated?.(project);
     setShowCreateProject(false);
+  };
+
+  const handleDatasetUploaded = () => {
+    onDatasetUploaded?.();
+    setShowUploadDataset(false);
   };
 
   const menuItems = [
@@ -104,6 +112,13 @@ export function AddNewMenu({ onProjectCreated }: AddNewMenuProps) {
         isOpen={showCreateProject}
         onClose={() => setShowCreateProject(false)}
         onCreate={handleProjectCreated}
+      />
+
+      <FileUploadModal
+        isOpen={showUploadDataset}
+        onClose={() => setShowUploadDataset(false)}
+        onSuccess={handleDatasetUploaded}
+        projects={projects}
       />
     </>
   );
