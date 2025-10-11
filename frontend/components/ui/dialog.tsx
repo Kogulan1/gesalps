@@ -1,12 +1,12 @@
 "use client";
 import * as React from "react";
 
-export function Dialog({ open, onOpenChange, children }: { open: boolean; onOpenChange: (v: boolean) => void; children: React.ReactNode }) {
+export function Dialog({ open, onOpenChange, children, className }: { open: boolean; onOpenChange: (v: boolean) => void; children: React.ReactNode; className?: string }) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40" onClick={() => onOpenChange(false)} />
-      <div className="relative z-10 w-full max-w-lg rounded-2xl border border-gray-200 bg-white p-6 shadow-xl">
+      <div className={`relative z-10 w-full rounded-2xl border border-gray-200 bg-white p-6 shadow-xl ${className || 'max-w-lg'}`}>
         {children}
       </div>
     </div>

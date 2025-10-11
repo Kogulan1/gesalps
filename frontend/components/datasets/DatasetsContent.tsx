@@ -55,6 +55,14 @@ type DemoDataset = {
   runs_count?: number;
   last_run?: string;
   size?: string;
+  runs?: Array<{
+    id: string;
+    name: string;
+    method: string;
+    status: string;
+    created_at: string;
+    privacy_level: string;
+  }>;
 };
 
 const DEMO_DATASETS: DemoDataset[] = [
@@ -71,7 +79,25 @@ const DEMO_DATASETS: DemoDataset[] = [
     last_modified: "2024-01-15T10:30:00Z",
     status: "Ready",
     runs_count: 3,
-    last_run: "2 hours ago"
+    last_run: "2 hours ago",
+    runs: [
+      {
+        id: "run-1",
+        name: "High Privacy Synthesis",
+        method: "DP-GAN",
+        status: "completed",
+        created_at: "2 hours ago",
+        privacy_level: "High"
+      },
+      {
+        id: "run-2",
+        name: "Fast Generation",
+        method: "TabDDPM",
+        status: "running",
+        created_at: "30 min ago",
+        privacy_level: "Medium"
+      }
+    ]
   },
   {
     id: "ds-2",
@@ -86,7 +112,17 @@ const DEMO_DATASETS: DemoDataset[] = [
     last_modified: "2024-01-14T14:20:00Z",
     status: "Ready",
     runs_count: 1,
-    last_run: "1 day ago"
+    last_run: "1 day ago",
+    runs: [
+      {
+        id: "run-3",
+        name: "Privacy-First Run",
+        method: "PATE-GAN",
+        status: "completed",
+        created_at: "1 day ago",
+        privacy_level: "Very High"
+      }
+    ]
   },
   {
     id: "ds-3",
@@ -101,7 +137,8 @@ const DEMO_DATASETS: DemoDataset[] = [
     last_modified: "2024-01-10T09:15:00Z",
     status: "Processing",
     runs_count: 0,
-    last_run: "Just now"
+    last_run: "Just now",
+    runs: []
   },
   {
     id: "ds-4",
@@ -115,7 +152,8 @@ const DEMO_DATASETS: DemoDataset[] = [
     created_at: "2024-01-05T11:45:00Z",
     last_modified: "2024-01-05T11:45:00Z",
     status: "Failed",
-    runs_count: 0
+    runs_count: 0,
+    runs: []
   }
 ];
 
@@ -164,6 +202,7 @@ export function DatasetsContent() {
     runName: ""
   });
   const [usingDemoData, setUsingDemoData] = useState(false);
+  const [projects, setProjects] = useState<Array<{id: string; name: string}>>([]);
 
   const handleDatasetEdit = (datasetId: string) => {
     const dataset = datasets.find(d => d.id === datasetId);
@@ -260,7 +299,45 @@ export function DatasetsContent() {
 
   useEffect(() => {
     fetchDatasets();
+    fetchProjects();
   }, []);
+
+  const fetchProjects = async () => {
+    const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
+    
+    try {
+      if (!base) {
+        throw new Error('Backend API base URL not configured');
+      }
+
+      const supabase = createSupabaseBrowserClient();
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        throw new Error('No authentication token available');
+      }
+
+      const response = await fetch(`${base}/v1/projects`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setProjects(data.map(p => ({ id: p.id, name: p.name })));
+      }
+    } catch (err) {
+      console.warn('Projects API unavailable:', err);
+      // Set empty array as fallback
+      setProjects([]);
+    }
+  };
 
   const fetchDatasets = async () => {
     setLoading(true);
@@ -646,30 +723,65 @@ export function DatasetsContent() {
                       </div>
 
                       {viewMode === 'grid' && (
-                        <div className="flex items-center justify-between mt-2">
-                          <Badge className={`${getStatusColor(dataset.status)} text-xs px-2 py-1`}>
-                            {dataset.status}
-                          </Badge>
-                          <div className="flex items-center space-x-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0 text-gray-600 hover:text-gray-900"
-                              title="Preview"
-                              onClick={() => handlePreviewDataset(dataset)}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 w-7 p-0 text-gray-600 hover:text-gray-900"
-                              title="Run"
-                              onClick={() => handleStartRun(dataset)}
-                            >
-                              <Play className="h-4 w-4" />
-                            </Button>
+                        <div className="mt-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Badge className={`${getStatusColor(dataset.status)} text-xs px-2 py-1`}>
+                              {dataset.status}
+                            </Badge>
+                            <div className="flex items-center space-x-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0 text-gray-600 hover:text-gray-900"
+                                title="Preview"
+                                onClick={() => handlePreviewDataset(dataset)}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0 text-gray-600 hover:text-gray-900"
+                                title="Run"
+                                onClick={() => handleStartRun(dataset)}
+                              >
+                                <Play className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
+                          
+                          {/* Recent Runs */}
+                          {dataset.runs && dataset.runs.length > 0 && (
+                            <div className="space-y-1">
+                              <div className="text-xs text-gray-500 font-medium">Recent Runs</div>
+                              <div className="space-y-1">
+                                {dataset.runs.slice(0, 2).map((run: any, index: number) => (
+                                  <div key={index} className="flex items-center justify-between text-xs">
+                                    <div className="flex items-center space-x-2">
+                                      <div className={`w-2 h-2 rounded-full ${
+                                        run.status === 'completed' ? 'bg-green-500' :
+                                        run.status === 'running' ? 'bg-blue-500' :
+                                        run.status === 'failed' ? 'bg-red-500' :
+                                        'bg-gray-400'
+                                      }`} />
+                                      <span className="text-gray-700 truncate">{run.name}</span>
+                                    </div>
+                                    <div className="flex items-center space-x-1">
+                                      <Badge variant="outline" className="text-xs">
+                                        {run.method}
+                                      </Badge>
+                                      <span className="text-gray-500">{run.created_at}</span>
+                                    </div>
+                                  </div>
+                                ))}
+                                {dataset.runs.length > 2 && (
+                                  <div className="text-xs text-gray-500">
+                                    +{dataset.runs.length - 2} more runs
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                     </CardContent>
@@ -696,7 +808,7 @@ export function DatasetsContent() {
         isOpen={uploadModal}
         onClose={() => setUploadModal(false)}
         onSuccess={handleUploadSuccess}
-        projects={uniqueProjects}
+        projects={projects}
       />
 
       <RunExecutionModal

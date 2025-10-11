@@ -305,7 +305,14 @@ export function DashboardContent() {
           </div>
 
           {/* Add New Button */}
-          <AddNewMenu onProjectCreated={handleProjectCreated} />
+          <AddNewMenu 
+            onProjectCreated={handleProjectCreated}
+            onDatasetUploaded={() => {
+              // Refresh projects to get updated dataset counts
+              window.location.reload();
+            }}
+            projects={projects.map(p => ({ id: p.id, name: p.name }))}
+          />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

@@ -9,11 +9,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import FileDropzone from "@/components/files/FileDropzone";
 
+interface Project {
+  id: string;
+  name: string;
+}
+
 interface FileUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  projects: string[];
+  projects: Project[];
 }
 
 export function FileUploadModal({ isOpen, onClose, onSuccess, projects }: FileUploadModalProps) {
@@ -29,16 +34,45 @@ export function FileUploadModal({ isOpen, onClose, onSuccess, projects }: FileUp
 
     setLoading(true);
     try {
-      // TODO: Implement file upload logic
-      console.log('Uploading dataset:', { selectedProject, datasetName, description, file });
+      const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || 'http://localhost:8000';
       
-      // Simulate upload
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Get authentication token
+      const { createSupabaseBrowserClient } = await import('@/lib/supabase/browserClient');
+      const supabase = createSupabaseBrowserClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('No authentication token available');
+      }
+
+      // Prepare form data
+      const formData = new FormData();
+      formData.append('project_id', selectedProject);
+      formData.append('file', file);
+
+      console.log('Uploading dataset:', { selectedProject, datasetName, description, file: file.name });
+      
+      const response = await fetch(`${base}/v1/datasets/upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || `Upload failed: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('Upload successful:', result);
       
       onSuccess();
       handleClose();
     } catch (error) {
       console.error('Error uploading dataset:', error);
+      alert(`Upload failed: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -70,9 +104,9 @@ export function FileUploadModal({ isOpen, onClose, onSuccess, projects }: FileUp
                 <SelectValue placeholder="Select a project" />
               </SelectTrigger>
               <SelectContent>
-                {projects.map((projectId) => (
-                  <SelectItem key={projectId} value={projectId}>
-                    Project {projectId}
+                {projects.map((project) => (
+                  <SelectItem key={project.id} value={project.id}>
+                    {project.name}
                   </SelectItem>
                 ))}
               </SelectContent>
