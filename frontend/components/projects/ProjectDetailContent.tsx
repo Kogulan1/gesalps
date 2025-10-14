@@ -95,109 +95,78 @@ export function ProjectDetailContent() {
       setLoading(true);
       setError(null);
 
-      // Mock data for now - replace with actual API calls
-      const mockProject: Project = {
-        id: projectId,
-        name: "Clinical Trial Alpha",
-        description: "Synthetic data generation for clinical trial research",
-        owner_id: "user-123",
-        created_at: "2024-01-15T10:30:00Z",
-        updated_at: "2024-01-16T14:20:00Z",
-        status: "Active",
-        datasets_count: 3,
-        runs_count: 5,
-        last_activity: "2 hours ago"
+      const supabase = createSupabaseBrowserClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
+
+      const baseUrl = process.env.NEXT_PUBLIC_BACKEND_API_BASE || 'http://localhost:8000';
+      const response = await fetch(`${baseUrl}/v1/projects/${projectId}`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch project: ${response.statusText}`);
+      }
+
+      const projectData = await response.json();
+      
+      // Transform the API response to match our interface
+      const transformedProject: Project = {
+        id: projectData.id,
+        name: projectData.name,
+        description: projectData.description || "No description provided",
+        owner_id: projectData.owner_id,
+        created_at: projectData.created_at,
+        updated_at: projectData.updated_at,
+        status: projectData.status,
+        datasets_count: projectData.datasets_count,
+        runs_count: projectData.runs_count,
+        last_activity: projectData.last_activity
       };
 
-      const mockDatasets: Dataset[] = [
-        {
-          id: "ds-1",
-          name: "Clinical Trial Data Alpha",
-          file_name: "clinical_trial_alpha.csv",
-          file_size: 2048576,
-          rows: 1500,
-          columns: 25,
-          created_at: "2024-01-15T10:30:00Z",
-          status: "Ready",
-          runs_count: 3
-        },
-        {
-          id: "ds-2",
-          name: "Patient Demographics",
-          file_name: "patient_demographics.csv",
-          file_size: 1024000,
-          rows: 800,
-          columns: 15,
-          created_at: "2024-01-14T14:20:00Z",
-          status: "Ready",
-          runs_count: 1
-        },
-        {
-          id: "ds-3",
-          name: "Treatment Outcomes",
-          file_name: "treatment_outcomes.csv",
-          file_size: 1536000,
-          rows: 1200,
-          columns: 20,
-          created_at: "2024-01-13T09:15:00Z",
-          status: "Processing",
-          runs_count: 0
-        }
-      ];
+      // Transform datasets
+      const transformedDatasets: Dataset[] = (projectData.datasets || []).map((ds: any) => ({
+        id: ds.id,
+        name: ds.name,
+        file_name: ds.file_name,
+        file_size: ds.file_size || 0,
+        rows: ds.rows || 0,
+        columns: ds.columns || 0,
+        created_at: ds.created_at,
+        status: ds.status || "Ready",
+        runs_count: 0 // This would need to be calculated separately
+      }));
 
-      const mockRuns: Run[] = [
-        {
-          id: "run-1",
-          name: "Synthesis Run Alpha",
-          dataset_name: "Clinical Trial Data Alpha",
-          status: "Completed",
-          started_at: "2024-01-15T10:30:00Z",
-          completed_at: "2024-01-15T11:45:00Z",
-          duration: 75,
-          scores: {
-            auroc: 0.87,
-            c_index: 0.74,
-            mia_auc: 0.56,
-            privacy_score: 0.85,
-            utility_score: 0.78
-          }
-        },
-        {
-          id: "run-2",
-          name: "Patient Data Synthesis",
-          dataset_name: "Patient Demographics",
-          status: "Running",
-          started_at: "2024-01-16T09:15:00Z",
-          duration: 45,
-          scores: {
-            auroc: 0.0,
-            c_index: 0.0,
-            mia_auc: 0.0,
-            privacy_score: 0.0,
-            utility_score: 0.0
-          }
-        },
-        {
-          id: "run-3",
-          name: "Outcome Analysis",
-          dataset_name: "Treatment Outcomes",
-          status: "Failed",
-          started_at: "2024-01-13T09:15:00Z",
-          completed_at: "2024-01-13T10:30:00Z",
-          duration: 75,
-          scores: {
-            auroc: 0.0,
-            c_index: 0.0,
-            mia_auc: 0.0,
-            privacy_score: 0.0,
-            utility_score: 0.0
-          }
+      // Transform runs
+      const transformedRuns: Run[] = (projectData.runs || []).map((run: any) => ({
+        id: run.id,
+        name: run.name,
+        dataset_name: "Unknown Dataset", // Would need to join with datasets
+        status: run.status === "succeeded" ? "Completed" : 
+                run.status === "running" ? "Running" :
+                run.status === "failed" ? "Failed" : "Queued",
+        started_at: run.started_at,
+        completed_at: run.finished_at,
+        duration: run.finished_at && run.started_at ? 
+          Math.round((new Date(run.finished_at).getTime() - new Date(run.started_at).getTime()) / 60000) : undefined,
+        scores: {
+          auroc: 0.0,
+          c_index: 0.0,
+          mia_auc: 0.0,
+          privacy_score: 0.0,
+          utility_score: 0.0
         }
-      ];
+      }));
 
-      setProject(mockProject);
-      setDatasets(mockDatasets);
-      setRuns(mockRuns);
+      setProject(transformedProject);
+      setDatasets(transformedDatasets);
+      setRuns(transformedRuns);
     } catch (err) {
       console.error('Error fetching project data:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch project data');
@@ -325,11 +294,18 @@ export function ProjectDetailContent() {
             </div>
 
             <div className="flex items-center space-x-2">
-              <Button variant="outline" className="text-gray-700 border-gray-300 hover:bg-gray-50">
+              <Button 
+                variant="outline" 
+                className="text-gray-700 border-gray-300 hover:bg-gray-50"
+                onClick={() => router.push(`/en/datasets?project=${projectId}`)}
+              >
                 <Upload className="h-4 w-4 mr-2" />
                 Upload Dataset
               </Button>
-              <Button className="bg-red-600 hover:bg-red-700 text-white">
+              <Button 
+                className="bg-red-600 hover:bg-red-700 text-white"
+                onClick={() => router.push(`/en/datasets?project=${projectId}`)}
+              >
                 <Play className="h-4 w-4 mr-2" />
                 Start Run
               </Button>
@@ -378,7 +354,10 @@ export function ProjectDetailContent() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Success Rate</p>
-                  <p className="text-2xl font-bold text-black">87%</p>
+                  <p className="text-2xl font-bold text-black">
+                    {project.runs_count > 0 ? 
+                      Math.round((runs.filter(r => r.status === "Completed").length / project.runs_count) * 100) : 0}%
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -478,7 +457,10 @@ export function ProjectDetailContent() {
           <TabsContent value="datasets" className="space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-black">Datasets in this project</h3>
-              <Button className="bg-red-600 hover:bg-red-700 text-white">
+              <Button 
+                className="bg-red-600 hover:bg-red-700 text-white"
+                onClick={() => router.push(`/en/datasets?project=${projectId}`)}
+              >
                 <Upload className="h-4 w-4 mr-2" />
                 Upload Dataset
               </Button>
@@ -512,11 +494,24 @@ export function ProjectDetailContent() {
 
                     <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                       <div className="flex items-center space-x-2">
-                        <Button variant="outline" size="sm" className="text-gray-700 border-gray-300 hover:bg-gray-50">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="text-gray-700 border-gray-300 hover:bg-gray-50"
+                          onClick={() => {
+                            // TODO: Open dataset preview modal
+                            alert('Dataset preview feature coming soon!');
+                          }}
+                        >
                           <Eye className="h-4 w-4 mr-2" />
                           View
                         </Button>
-                        <Button variant="outline" size="sm" className="text-gray-700 border-gray-300 hover:bg-gray-50">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="text-gray-700 border-gray-300 hover:bg-gray-50"
+                          onClick={() => router.push(`/en/runs?dataset=${dataset.id}`)}
+                        >
                           <Play className="h-4 w-4 mr-2" />
                           Run
                         </Button>
@@ -533,7 +528,10 @@ export function ProjectDetailContent() {
           <TabsContent value="runs" className="space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-black">Runs in this project</h3>
-              <Button className="bg-red-600 hover:bg-red-700 text-white">
+              <Button 
+                className="bg-red-600 hover:bg-red-700 text-white"
+                onClick={() => router.push(`/en/datasets?project=${projectId}`)}
+              >
                 <Play className="h-4 w-4 mr-2" />
                 Start New Run
               </Button>
@@ -597,11 +595,27 @@ export function ProjectDetailContent() {
 
                     <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                       <div className="flex items-center space-x-2">
-                        <Button variant="outline" size="sm" className="text-gray-700 border-gray-300 hover:bg-gray-50">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="text-gray-700 border-gray-300 hover:bg-gray-50"
+                          onClick={() => {
+                            // TODO: Open run results modal
+                            alert('Run results feature coming soon!');
+                          }}
+                        >
                           <Eye className="h-4 w-4 mr-2" />
                           View
                         </Button>
-                        <Button variant="outline" size="sm" className="text-gray-700 border-gray-300 hover:bg-gray-50">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="text-gray-700 border-gray-300 hover:bg-gray-50"
+                          onClick={() => {
+                            // TODO: Download run artifacts
+                            alert('Download feature coming soon!');
+                          }}
+                        >
                           <Download className="h-4 w-4 mr-2" />
                           Download
                         </Button>
