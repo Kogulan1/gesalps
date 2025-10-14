@@ -81,6 +81,7 @@ export function ProjectDetailContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
+  const [usingMockData, setUsingMockData] = useState(false);
 
   const projectId = params.id as string;
 
@@ -89,6 +90,112 @@ export function ProjectDetailContent() {
       fetchProjectData();
     }
   }, [projectId]);
+
+  const fetchMockProjectData = () => {
+    // Mock data for demo when project doesn't exist in database
+    const mockProject: Project = {
+      id: projectId,
+      name: "Clinical Trial Alpha",
+      description: "Synthetic data generation for clinical trial research",
+      owner_id: "user-123",
+      created_at: "2024-01-15T10:30:00Z",
+      updated_at: "2024-01-16T14:20:00Z",
+      status: "Active",
+      datasets_count: 3,
+      runs_count: 5,
+      last_activity: "2 hours ago"
+    };
+
+    const mockDatasets: Dataset[] = [
+      {
+        id: "ds-1",
+        name: "Clinical Trial Data Alpha",
+        file_name: "clinical_trial_alpha.csv",
+        file_size: 2048576,
+        rows: 1500,
+        columns: 25,
+        created_at: "2024-01-15T10:30:00Z",
+        status: "Ready",
+        runs_count: 3
+      },
+      {
+        id: "ds-2",
+        name: "Patient Demographics",
+        file_name: "patient_demographics.csv",
+        file_size: 1024000,
+        rows: 800,
+        columns: 15,
+        created_at: "2024-01-14T14:20:00Z",
+        status: "Ready",
+        runs_count: 1
+      },
+      {
+        id: "ds-3",
+        name: "Treatment Outcomes",
+        file_name: "treatment_outcomes.csv",
+        file_size: 1536000,
+        rows: 1200,
+        columns: 20,
+        created_at: "2024-01-13T09:15:00Z",
+        status: "Processing",
+        runs_count: 0
+      }
+    ];
+
+    const mockRuns: Run[] = [
+      {
+        id: "run-1",
+        name: "Synthesis Run Alpha",
+        dataset_name: "Clinical Trial Data Alpha",
+        status: "Completed",
+        started_at: "2024-01-15T10:30:00Z",
+        completed_at: "2024-01-15T11:45:00Z",
+        duration: 75,
+        scores: {
+          auroc: 0.87,
+          c_index: 0.74,
+          mia_auc: 0.56,
+          privacy_score: 0.85,
+          utility_score: 0.78
+        }
+      },
+      {
+        id: "run-2",
+        name: "Patient Data Synthesis",
+        dataset_name: "Patient Demographics",
+        status: "Running",
+        started_at: "2024-01-16T09:15:00Z",
+        duration: 45,
+        scores: {
+          auroc: 0.0,
+          c_index: 0.0,
+          mia_auc: 0.0,
+          privacy_score: 0.0,
+          utility_score: 0.0
+        }
+      },
+      {
+        id: "run-3",
+        name: "Outcome Analysis",
+        dataset_name: "Treatment Outcomes",
+        status: "Failed",
+        started_at: "2024-01-13T09:15:00Z",
+        completed_at: "2024-01-13T10:30:00Z",
+        duration: 75,
+        scores: {
+          auroc: 0.0,
+          c_index: 0.0,
+          mia_auc: 0.0,
+          privacy_score: 0.0,
+          utility_score: 0.0
+        }
+      }
+    ];
+
+    setProject(mockProject);
+    setDatasets(mockDatasets);
+    setRuns(mockRuns);
+  };
 
   const fetchProjectData = async () => {
     try {
@@ -111,6 +218,12 @@ export function ProjectDetailContent() {
       });
 
       if (!response.ok) {
+        if (response.status === 404) {
+          // Project not found in database, use mock data for demo
+          console.log('Project not found in database, using mock data for demo');
+          setUsingMockData(true);
+          return fetchMockProjectData();
+        }
         throw new Error(`Failed to fetch project: ${response.statusText}`);
       }
 
@@ -248,6 +361,11 @@ export function ProjectDetailContent() {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {usingMockData && (
+          <div className="mb-6 rounded-md border border-dashed border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
+            Showing demo project data while the backend API is unavailable or project not found in database.
+          </div>
+        )}
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-4 mb-4">
