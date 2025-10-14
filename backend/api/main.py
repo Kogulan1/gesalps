@@ -123,7 +123,7 @@ cors_origins = [o.strip() for o in cors_env.split(",") if o.strip()]
 
 # Always allow localhost dev origins when not using wildcard.
 if cors_origins and cors_origins != ["*"]:
-    dev_origins = {"http://localhost:3000", "https://localhost:3000"}
+    dev_origins = {"http://localhost:3000", "https://localhost:3000", "http://localhost:3001", "https://localhost:3001"}
     for origin in dev_origins:
         if origin not in cors_origins:
             cors_origins.append(origin)
@@ -247,6 +247,66 @@ def create_project(p: CreateProject, user: Dict[str, Any] = Depends(require_user
     if res.data is None:
         raise HTTPException(status_code=500, detail=str(res.error))
     return res.data[0]
+
+@app.get("/v1/projects/{project_id}")
+def get_project(project_id: str, user: Dict[str, Any] = Depends(require_user)):
+    """Get a specific project with detailed information."""
+    # Get project details
+    res = supabase.table("projects").select("id, name, owner_id, created_at, updated_at").eq("id", project_id).eq("owner_id", user["id"]).single().execute()
+    if res.data is None:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    project = res.data
+    
+    # Get datasets count and details
+    datasets_res = supabase.table("datasets").select("id, name, file_name, file_size, rows, columns, created_at, status").eq("project_id", project_id).order("created_at", desc=True).execute()
+    datasets = datasets_res.data or []
+    datasets_count = len(datasets)
+    
+    # Get runs count and details
+    runs_res = supabase.table("runs").select("id, name, status, started_at, finished_at, method").eq("project_id", project_id).order("started_at", desc=True).execute()
+    runs = runs_res.data or []
+    runs_count = len(runs)
+    
+    # Calculate last activity
+    last_activity = "No activity yet"
+    if runs_count > 0:
+        latest_run = runs[0]
+        if latest_run.get("finished_at"):
+            last_run_time = datetime.fromisoformat(latest_run["finished_at"].replace('Z', '+00:00'))
+        elif latest_run.get("started_at"):
+            last_run_time = datetime.fromisoformat(latest_run["started_at"].replace('Z', '+00:00'))
+        else:
+            last_run_time = None
+            
+        if last_run_time:
+            now = datetime.now(timezone.utc)
+            diff = now - last_run_time
+            if diff.days > 0:
+                last_activity = f"{diff.days} day{'s' if diff.days > 1 else ''} ago"
+            elif diff.seconds > 3600:
+                hours = diff.seconds // 3600
+                last_activity = f"{hours} hour{'s' if hours > 1 else ''} ago"
+            elif diff.seconds > 60:
+                minutes = diff.seconds // 60
+                last_activity = f"{minutes} minute{'s' if minutes > 1 else ''} ago"
+            else:
+                last_activity = "Just now"
+    
+    # Calculate success rate
+    completed_runs = [r for r in runs if r.get("status") == "succeeded"]
+    success_rate = (len(completed_runs) / runs_count * 100) if runs_count > 0 else 0
+    
+    return {
+        **project,
+        "datasets_count": datasets_count,
+        "runs_count": runs_count,
+        "last_activity": last_activity,
+        "status": "Active" if runs_count > 0 else "Ready",
+        "success_rate": round(success_rate, 1),
+        "datasets": datasets,
+        "runs": runs
+    }
 
 @app.put("/v1/projects/{project_id}/rename")
 def rename_project(project_id: str, body: RenameBody, user: Dict[str, Any] = Depends(require_user)):
