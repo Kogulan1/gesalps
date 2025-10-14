@@ -6,43 +6,13 @@ import { Button } from "@/components/ui/button";
 import { AddNewMenu } from "./AddNewMenu";
 import { ProjectCard } from "./ProjectCard";
 import { RenameModal } from "@/components/ui/rename-modal";
-import { Search, Grid, List, MoreHorizontal, ExternalLink, Github } from "lucide-react";
+import { ViewModeToggle } from "@/components/common/ViewModeToggle";
+import { LoadingState, EmptyState, ErrorState } from "@/components/common/StateComponents";
+import { MoreHorizontal, ExternalLink, Github, Activity } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
 import { useRouter } from "next/navigation";
-
-const DEMO_PROJECTS = [
-  {
-    id: "proj-1",
-    name: "Clinical Trial Alpha",
-    owner_id: "user-123",
-    created_at: "2024-01-15T10:30:00Z",
-    datasets_count: 3,
-    runs_count: 5,
-    last_activity: "2 hours ago",
-    status: "Active"
-  },
-  {
-    id: "proj-2",
-    name: "Synthetic Data Beta",
-    owner_id: "user-123",
-    created_at: "2024-01-10T14:20:00Z",
-    datasets_count: 1,
-    runs_count: 2,
-    last_activity: "1 day ago",
-    status: "Ready"
-  },
-  {
-    id: "proj-3",
-    name: "Research Project Gamma",
-    owner_id: "user-123",
-    created_at: "2024-01-05T09:15:00Z",
-    datasets_count: 0,
-    runs_count: 0,
-    last_activity: "No activity yet",
-    status: "Ready"
-  }
-];
+import { DEMO_PROJECTS } from "@/lib/constants/demoData";
 
 export function DashboardContent() {
   const t = useTranslations('dashboard');
@@ -84,14 +54,49 @@ export function DashboardContent() {
     }
   };
 
-  const handleProjectArchive = (projectId: string) => {
-    console.log('Archive project:', projectId);
-    // TODO: Implement project archive
+  const handleStartRun = (projectId: string) => {
+    // Navigate to datasets page with project filter
+    router.push(`/en/datasets?project=${projectId}`);
   };
 
-  const handleProjectDelete = (projectId: string) => {
-    console.log('Delete project:', projectId);
-    // TODO: Implement project delete
+  const handleProjectDelete = async (projectId: string) => {
+    if (!confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE || 'http://localhost:8000';
+      
+      if (!base) {
+        throw new Error('API base URL not configured');
+      }
+
+      const supabase = createSupabaseBrowserClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('No authentication token available');
+      }
+
+      const response = await fetch(`${base}/v1/projects/${projectId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete project: ${response.statusText}`);
+      }
+
+      // Remove project from local state
+      setProjects(prev => prev.filter(project => project.id !== projectId));
+      
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      alert('Failed to delete project. Please try again.');
+    }
   };
 
   const handleRenameConfirm = async (newName: string) => {
@@ -238,28 +243,11 @@ export function DashboardContent() {
   });
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="flex items-center gap-3 text-gray-600">
-          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-400" />
-          Loading dashboard...
-        </div>
-      </div>
-    );
+    return <LoadingState message="Loading dashboard..." />;
   }
 
   if (error && projects.length === 0) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 text-2xl text-red-500">
-            ⚠
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900">Unable to load projects</h3>
-          <p className="mt-2 text-gray-600">{error}</p>
-        </div>
-      </div>
-    );
+    return <ErrorState message={error} onRetry={() => window.location.reload()} />;
   }
 
   return (
@@ -273,35 +261,11 @@ export function DashboardContent() {
         {/* Main Content Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Q Search Projects..."
-                className="pl-10 pr-4 py-2 w-80 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-
             {/* View Toggle */}
-            <div className="flex items-center">
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className="rounded-r-none"
-              >
-                <List className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('grid')}
-                className="rounded-l-none"
-              >
-                <Grid className="h-4 w-4" />
-              </Button>
-            </div>
+            <ViewModeToggle 
+              viewMode={viewMode} 
+              onViewModeChange={setViewMode}
+            />
           </div>
 
           {/* Add New Button */}
@@ -342,7 +306,13 @@ export function DashboardContent() {
                     </div>
                   </div>
                 ))}
-                <Button className="w-full bg-black hover:bg-gray-800 text-white">
+                <Button 
+                  className="w-full bg-black hover:bg-gray-800 text-white"
+                  onClick={() => {
+                    // For now, show an alert. In a real app, this would open a pricing modal or redirect to billing
+                    alert('Upgrade Plan feature coming soon! This would redirect to billing/pricing page.');
+                  }}
+                >
                   Upgrade Plan
                 </Button>
               </CardContent>
@@ -354,13 +324,36 @@ export function DashboardContent() {
                 <CardTitle className="text-lg">Recent Activity</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl text-gray-400">@</span>
-                  </div>
-                  <p className="text-sm text-gray-500">
-                    Recent synthesis runs and activities will appear here.
-                  </p>
+                <div className="space-y-4">
+                  {projects.length > 0 ? (
+                    projects.slice(0, 3).map((project, index) => (
+                      <div key={project.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                          <Activity className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900">
+                            {project.status === 'Active' ? 'Project active' : 'Project created'}
+                          </p>
+                          <p className="text-xs text-gray-500 truncate">
+                            {project.name}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            {project.last_activity}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span className="text-2xl text-gray-400">@</span>
+                      </div>
+                      <p className="text-sm text-gray-500">
+                        Recent synthesis runs and activities will appear here.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -390,14 +383,10 @@ export function DashboardContent() {
                     </Button>
                   </div>
                 ) : projects.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <span className="text-2xl text-gray-400">@</span>
-                    </div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No projects yet</h3>
-                    <p className="text-gray-500 mb-4">Get started by creating your first project.</p>
-                    <AddNewMenu onProjectCreated={handleProjectCreated} />
-                  </div>
+                  <EmptyState 
+                    title="No projects yet"
+                    description="Get started by creating your first project."
+                  />
                 ) : (
                   <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-6' : 'space-y-4'}>
                     {projects.map((project) => (
@@ -406,11 +395,8 @@ export function DashboardContent() {
                         project={project}
                         viewMode={viewMode}
                         onView={handleViewProject}
-                        onRun={(id) => console.log('Run project:', id)}
-                        onDownload={(id) => console.log('Download project:', id)}
-                        onSettings={(id) => console.log('Settings project:', id)}
+                        onRun={handleStartRun}
                         onEdit={handleProjectEdit}
-                        onArchive={handleProjectArchive}
                         onDelete={handleProjectDelete}
                       />
                     ))}
