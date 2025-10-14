@@ -7,8 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { 
   Search, 
-  Grid3X3, 
-  List, 
   Plus,
   Filter,
   SortAsc,
@@ -36,39 +34,9 @@ import {
 import { RenameModal } from "@/components/common/RenameModal";
 import { CreateProjectModal } from "./CreateProjectModal";
 import { ProjectCard } from "@/components/dashboard/ProjectCard";
-
-const DEMO_PROJECTS = [
-  {
-    id: "proj-1",
-    name: "Clinical Trial Alpha",
-    owner_id: "user-123",
-    created_at: "2024-01-15T10:30:00Z",
-    datasets_count: 3,
-    runs_count: 5,
-    last_activity: "2 hours ago",
-    status: "Active"
-  },
-  {
-    id: "proj-2",
-    name: "Synthetic Data Beta",
-    owner_id: "user-123",
-    created_at: "2024-01-10T14:20:00Z",
-    datasets_count: 1,
-    runs_count: 2,
-    last_activity: "1 day ago",
-    status: "Ready"
-  },
-  {
-    id: "proj-3",
-    name: "Research Project Gamma",
-    owner_id: "user-123",
-    created_at: "2024-01-05T09:15:00Z",
-    datasets_count: 0,
-    runs_count: 0,
-    last_activity: "No activity yet",
-    status: "Ready"
-  }
-];
+import { ViewModeToggle } from "@/components/common/ViewModeToggle";
+import { LoadingState, EmptyState, ErrorState } from "@/components/common/StateComponents";
+import { DEMO_PROJECTS } from "@/lib/constants/demoData";
 
 export function ProjectsContent() {
   const t = useTranslations('dashboard');
@@ -173,8 +141,8 @@ export function ProjectsContent() {
 
   const handleStartRun = (projectId: string) => {
     console.log('Start run for project:', projectId);
-    // TODO: Implement start run - could navigate to runs page or open a modal
-    router.push(`/en/runs?project=${projectId}`);
+    // Navigate to datasets page with project filter to select datasets for running
+    router.push(`/en/datasets?project=${projectId}`);
   };
 
   const handleRenameConfirm = async (newName: string) => {
@@ -253,27 +221,11 @@ export function ProjectsContent() {
   });
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-        <span className="ml-2 text-gray-600">Loading projects...</span>
-      </div>
-    );
+    return <LoadingState message="Loading projects..." />;
   }
 
   if (error && projects.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <span className="text-2xl text-red-500">⚠</span>
-        </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Error loading projects</h3>
-        <p className="text-gray-500 mb-4">{error}</p>
-        <Button onClick={fetchProjects} variant="outline">
-          Try Again
-        </Button>
-      </div>
-    );
+    return <ErrorState message={error} onRetry={fetchProjects} />;
   }
 
   return (
@@ -340,49 +292,26 @@ export function ProjectsContent() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <div className="flex">
-            <Button
-              variant={viewMode === 'list' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('list')}
-              className="rounded-r-none"
-            >
-              <List className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={viewMode === 'grid' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('grid')}
-              className="rounded-l-none"
-            >
-              <Grid3X3 className="h-4 w-4" />
-            </Button>
-          </div>
+          <ViewModeToggle 
+            viewMode={viewMode} 
+            onViewModeChange={setViewMode}
+          />
         </div>
       </div>
 
       {/* Projects List */}
       {sortedProjects.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-2xl text-gray-400">@</span>
-          </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            {searchQuery || filterStatus !== 'all' ? 'No projects found' : 'No projects yet'}
-          </h3>
-          <p className="text-gray-500 mb-4">
-            {searchQuery || filterStatus !== 'all' 
-              ? 'Try adjusting your search or filter criteria'
-              : 'Get started by creating your first project'
-            }
-          </p>
-          {!searchQuery && filterStatus === 'all' && (
-            <Button onClick={() => setShowCreateProject(true)} className="bg-red-600 hover:bg-red-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Create Project
-            </Button>
-          )}
-        </div>
+        <EmptyState 
+          title={searchQuery || filterStatus !== 'all' ? 'No projects found' : 'No projects yet'}
+          description={searchQuery || filterStatus !== 'all' 
+            ? 'Try adjusting your search or filter criteria'
+            : 'Get started by creating your first project'
+          }
+          action={!searchQuery && filterStatus === 'all' ? {
+            label: "Create Project",
+            onClick: () => setShowCreateProject(true)
+          } : undefined}
+        />
       ) : (
         <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6' : 'space-y-4'}>
           {sortedProjects.map((project) => (
