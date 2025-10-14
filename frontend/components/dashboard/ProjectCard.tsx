@@ -7,15 +7,12 @@ import {
   ExternalLink, 
   MoreHorizontal, 
   Play, 
-  Download, 
   Eye, 
-  Settings,
   Clock,
   Database,
   Activity,
   TrendingUp,
   Trash2,
-  Archive,
   Edit
 } from "lucide-react";
 import {
@@ -39,10 +36,7 @@ interface ProjectCardProps {
   viewMode?: 'grid' | 'list';
   onView?: (id: string) => void;
   onRun?: (id: string) => void;
-  onDownload?: (id: string) => void;
-  onSettings?: (id: string) => void;
   onEdit?: (id: string) => void;
-  onArchive?: (id: string) => void;
   onDelete?: (id: string) => void;
 }
 
@@ -51,10 +45,7 @@ export function ProjectCard({
   viewMode = 'list',
   onView, 
   onRun, 
-  onDownload, 
-  onSettings,
   onEdit,
-  onArchive,
   onDelete
 }: ProjectCardProps) {
   const getStatusColor = (status: string) => {
@@ -136,26 +127,8 @@ export function ProjectCard({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-white border-gray-200">
-                  <DropdownMenuItem onClick={() => onView?.(project.id)} className="text-black hover:bg-gray-50">
-                    <Eye className="mr-2 h-4 w-4" /> View Project
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onRun?.(project.id)} className="text-black hover:bg-gray-50">
-                    <Play className="mr-2 h-4 w-4" /> Start Run
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onDownload?.(project.id)} className="text-black hover:bg-gray-50">
-                    <Download className="mr-2 h-4 w-4" /> Download
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => {
-                    console.log('Edit clicked for project:', project.id);
-                    onEdit?.(project.id);
-                  }} className="text-black hover:bg-gray-50">
+                  <DropdownMenuItem onClick={() => onEdit?.(project.id)} className="text-black hover:bg-gray-50">
                     <Edit className="mr-2 h-4 w-4" /> Edit
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onSettings?.(project.id)} className="text-black hover:bg-gray-50">
-                    <Settings className="mr-2 h-4 w-4" /> Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onArchive?.(project.id)} className="text-black hover:bg-gray-50">
-                    <Archive className="mr-2 h-4 w-4" /> Archive
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onDelete?.(project.id)} className="text-red-600 hover:bg-red-50">
                     <Trash2 className="mr-2 h-4 w-4" /> Delete
@@ -172,26 +145,8 @@ export function ProjectCard({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="bg-white border-gray-200">
-                <DropdownMenuItem onClick={() => onView?.(project.id)} className="text-black hover:bg-gray-50">
-                  <Eye className="mr-2 h-4 w-4" /> View Project
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onRun?.(project.id)} className="text-black hover:bg-gray-50">
-                  <Play className="mr-2 h-4 w-4" /> Start Run
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onDownload?.(project.id)} className="text-black hover:bg-gray-50">
-                  <Download className="mr-2 h-4 w-4" /> Download
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {
-                  console.log('Edit clicked for project:', project.id);
-                  onEdit?.(project.id);
-                }} className="text-black hover:bg-gray-50">
+                <DropdownMenuItem onClick={() => onEdit?.(project.id)} className="text-black hover:bg-gray-50">
                   <Edit className="mr-2 h-4 w-4" /> Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onSettings?.(project.id)} className="text-black hover:bg-gray-50">
-                  <Settings className="mr-2 h-4 w-4" /> Settings
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onArchive?.(project.id)} className="text-black hover:bg-gray-50">
-                  <Archive className="mr-2 h-4 w-4" /> Archive
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onDelete?.(project.id)} className="text-red-600 hover:bg-red-50">
                   <Trash2 className="mr-2 h-4 w-4" /> Delete
