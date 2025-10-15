@@ -46,7 +46,7 @@ export default function ContactPage() {
                     Business Address
                   </h3>
                   <p className="text-slate-600">
-                    Gesalp AI<br />
+                    Kogulan Natarajan<br />
                     Business Domiciliation<br />
                     6 rue d'Armaillé, 75017 Paris<br />
                     France
