@@ -43,13 +43,16 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                    Office Location
+                    Business Address
                   </h3>
                   <p className="text-slate-600">
-                    Kogulan Natarajan<br />
-                    Domcile Address<br />
+                    Gesalp AI<br />
+                    Business Domiciliation<br />
                     6 rue d'Armaillé, 75017 Paris<br />
                     France
+                  </p>
+                  <p className="text-sm text-slate-500 mt-2">
+                    Registered business address via Les Tricolores
                   </p>
                 </div>
               </div>
