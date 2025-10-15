@@ -84,9 +84,7 @@ export default function Roadmap() {
                 {/* Card */}
                 <div className="bg-white rounded-lg border border-slate-200 p-6 hover:shadow-md transition-all duration-200">
                   {/* Number */}
-                  <div className={`w-8 h-8 text-white rounded-full flex items-center justify-center text-sm font-bold mx-auto mb-4 ${
-                    milestone.status === "completed" ? "bg-red-500" : "bg-red-300"
-                  }`}>
+                  <div className="w-8 h-8 bg-slate-900 text-white rounded-full flex items-center justify-center text-sm font-bold mx-auto mb-4">
                     {milestone.id}
                   </div>
 
