@@ -35,35 +35,21 @@ export default function ContactPage() {
               <div className="space-y-6">
                 <div>
                   <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                    General Inquiries
+                    Contact Email
                   </h3>
                   <p className="text-slate-600">
-                    hello@gesalp.ai
+                    info@gesalpai.ch
                   </p>
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                    Sales & Partnerships
+                    Office Location
                   </h3>
                   <p className="text-slate-600">
-                    sales@gesalp.ai
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                    Technical Support
-                  </h3>
-                  <p className="text-slate-600">
-                    support@gesalp.ai
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-slate-900 mb-2">
-                    Office
-                  </h3>
-                  <p className="text-slate-600">
-                    San Francisco, CA<br />
-                    United States
+                    Kogulan Natarajan<br />
+                    Domcile Address<br />
+                    6 rue d'Armaillé, 75017 Paris<br />
+                    France
                   </p>
                 </div>
               </div>
