@@ -185,7 +185,7 @@ export default function ContactPage() {
             </a>
             <a
               href="/en/docs"
-              className="inline-flex items-center px-8 py-3 text-white font-semibold rounded-lg hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20 transition-colors duration-200 border border-white/20"
+              className="inline-flex items-center px-8 py-3 text-white font-semibold rounded-lg hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/20 transition-colors duration-200 border border-white/30 hover:border-white/50"
             >
               View Documentation
             </a>
