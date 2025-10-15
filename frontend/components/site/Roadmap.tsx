@@ -77,12 +77,16 @@ export default function Roadmap() {
                 className="relative group text-center"
               >
                 {/* Timeline connector */}
-                <div className="hidden lg:block absolute top-12 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-slate-300 rounded-full z-10"></div>
+                <div className={`hidden lg:block absolute top-12 left-1/2 transform -translate-x-1/2 w-4 h-4 rounded-full z-10 ${
+                  milestone.status === "completed" ? "bg-red-500" : "bg-red-300"
+                }`}></div>
                 
                 {/* Card */}
                 <div className="bg-white rounded-lg border border-slate-200 p-6 hover:shadow-md transition-all duration-200">
                   {/* Number */}
-                  <div className="w-8 h-8 bg-slate-900 text-white rounded-full flex items-center justify-center text-sm font-bold mx-auto mb-4">
+                  <div className={`w-8 h-8 text-white rounded-full flex items-center justify-center text-sm font-bold mx-auto mb-4 ${
+                    milestone.status === "completed" ? "bg-red-500" : "bg-red-300"
+                  }`}>
                     {milestone.id}
                   </div>
 
@@ -114,7 +118,7 @@ export default function Roadmap() {
             
             <Link
               href="/en/docs"
-              className="inline-flex items-center px-6 py-3 text-slate-600 font-medium rounded-lg hover:text-slate-900 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition-colors duration-200"
+              className="inline-flex items-center px-6 py-3 text-slate-900 font-medium rounded-lg hover:text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 transition-colors duration-200 border border-slate-300"
               aria-label="View documentation for more information"
             >
               View Documentation
