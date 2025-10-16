@@ -14,6 +14,7 @@ export default function ContactPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [generatedEmail, setGeneratedEmail] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -36,28 +37,13 @@ Message:
 ${formData.message}
       `;
 
-      // Create mailto link
-      const mailtoLink = `mailto:info@gesalpai.ch?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      // Generate the email content for display
+      const emailContent = `To: info@gesalpai.ch
+Subject: ${subject}
+
+${body}`;
       
-      // Try multiple methods to open the email client
-      try {
-        // Method 1: Direct window.location
-        window.location.href = mailtoLink;
-      } catch (error) {
-        try {
-          // Method 2: window.open
-          window.open(mailtoLink, '_self');
-        } catch (error2) {
-          // Method 3: Create a temporary link and click it
-          const link = document.createElement('a');
-          link.href = mailtoLink;
-          link.target = '_blank';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        }
-      }
-      
+      setGeneratedEmail(emailContent);
       setSubmitStatus('success');
       
       // Reset form
@@ -74,6 +60,15 @@ ${formData.message}
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(generatedEmail);
+      alert('Email content copied to clipboard!');
+    } catch (err) {
+      console.error('Failed to copy: ', err);
     }
   };
   return (
@@ -136,12 +131,30 @@ ${formData.message}
               <form onSubmit={handleSubmit} className="space-y-6">
                 {submitStatus === 'success' && (
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                    <p className="text-green-800 text-sm mb-2">
-                      Thank you! Your email client should have opened with a pre-filled message to info@gesalpai.ch
+                    <p className="text-green-800 text-sm mb-3 font-medium">
+                      ✅ Thank you! Your message has been prepared. Please copy the email below and send it to info@gesalpai.ch
                     </p>
-                    <p className="text-green-700 text-xs">
-                      If your email client didn't open, you can manually send an email to info@gesalpai.ch with your message.
-                    </p>
+                    
+                    <div className="bg-white border border-green-200 rounded-lg p-3 mb-3">
+                      <pre className="text-xs text-gray-700 whitespace-pre-wrap font-mono">
+                        {generatedEmail}
+                      </pre>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <button
+                        onClick={copyToClipboard}
+                        className="bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700 transition-colors"
+                      >
+                        📋 Copy Email
+                      </button>
+                      <a 
+                        href="mailto:info@gesalpai.ch" 
+                        className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 transition-colors inline-block"
+                      >
+                        📧 Open Email Client
+                      </a>
+                    </div>
                   </div>
                 )}
                 
