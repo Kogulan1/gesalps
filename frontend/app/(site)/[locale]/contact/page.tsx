@@ -25,8 +25,6 @@ export default function ContactPage() {
     setSubmitStatus('idle');
 
     try {
-      // For now, we'll use a simple mailto link as a fallback
-      // In production, you'd want to use a service like EmailJS, Formspree, or your own API
       const subject = `Contact Form: ${formData.subject || 'General Inquiry'}`;
       const body = `
 Name: ${formData.firstName} ${formData.lastName}
@@ -40,7 +38,25 @@ ${formData.message}
 
       // Create mailto link
       const mailtoLink = `mailto:info@gesalpai.ch?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      window.open(mailtoLink, '_blank');
+      
+      // Try multiple methods to open the email client
+      try {
+        // Method 1: Direct window.location
+        window.location.href = mailtoLink;
+      } catch (error) {
+        try {
+          // Method 2: window.open
+          window.open(mailtoLink, '_self');
+        } catch (error2) {
+          // Method 3: Create a temporary link and click it
+          const link = document.createElement('a');
+          link.href = mailtoLink;
+          link.target = '_blank';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      }
       
       setSubmitStatus('success');
       
@@ -120,8 +136,11 @@ ${formData.message}
               <form onSubmit={handleSubmit} className="space-y-6">
                 {submitStatus === 'success' && (
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                    <p className="text-green-800 text-sm">
-                      Thank you! Your message has been prepared. Please check your email client to send it to info@gesalpai.ch
+                    <p className="text-green-800 text-sm mb-2">
+                      Thank you! Your email client should have opened with a pre-filled message to info@gesalpai.ch
+                    </p>
+                    <p className="text-green-700 text-xs">
+                      If your email client didn't open, you can manually send an email to info@gesalpai.ch with your message.
                     </p>
                   </div>
                 )}
@@ -229,14 +248,26 @@ ${formData.message}
                     placeholder="Tell us about your synthetic data needs..."
                   ></textarea>
                 </div>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full bg-red-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ color: 'white' }}
-                >
-                  {isSubmitting ? 'Preparing Message...' : 'Send Message'}
-                </button>
+                <div className="space-y-3">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full bg-red-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{ color: 'white' }}
+                  >
+                    {isSubmitting ? 'Preparing Message...' : 'Send Message'}
+                  </button>
+                  
+                  <div className="text-center">
+                    <p className="text-sm text-slate-500 mb-2">Or send directly to:</p>
+                    <a 
+                      href="mailto:info@gesalpai.ch" 
+                      className="text-red-600 hover:text-red-700 font-medium text-sm underline"
+                    >
+                      info@gesalpai.ch
+                    </a>
+                  </div>
+                </div>
               </form>
             </div>
           </div>
