@@ -8,8 +8,6 @@ import { Input } from "@/components/ui/input";
 import { DatasetPreviewModal } from "./DatasetPreviewModal";
 import { 
   Search, 
-  Grid3X3, 
-  List, 
   Plus,
   Filter,
   SortAsc,
@@ -38,6 +36,9 @@ import { RenameModal } from "@/components/common/RenameModal";
 import { FileUploadModal } from "./FileUploadModal";
 import { RunExecutionModal } from "./RunExecutionModal";
 import { ResultsModal } from "./ResultsModal";
+import { ViewModeToggle } from "@/components/common/ViewModeToggle";
+import { LoadingState, EmptyState, ErrorState } from "@/components/common/StateComponents";
+import { DEMO_DATASETS } from "@/lib/constants/demoData";
 
 type DemoDataset = {
   id: string;
@@ -64,98 +65,6 @@ type DemoDataset = {
     privacy_level: string;
   }>;
 };
-
-const DEMO_DATASETS: DemoDataset[] = [
-  {
-    id: "ds-1",
-    name: "Clinical Trial Data Alpha",
-    project_id: "proj-1",
-    project_name: "Clinical Trial Alpha",
-    file_name: "clinical_trial_alpha.csv",
-    file_size: 2048576,
-    rows: 1500,
-    columns: 25,
-    created_at: "2024-01-15T10:30:00Z",
-    last_modified: "2024-01-15T10:30:00Z",
-    status: "Ready",
-    runs_count: 3,
-    last_run: "2 hours ago",
-    runs: [
-      {
-        id: "run-1",
-        name: "High Privacy Synthesis",
-        method: "DP-GAN",
-        status: "completed",
-        created_at: "2 hours ago",
-        privacy_level: "High"
-      },
-      {
-        id: "run-2",
-        name: "Fast Generation",
-        method: "TabDDPM",
-        status: "running",
-        created_at: "30 min ago",
-        privacy_level: "Medium"
-      }
-    ]
-  },
-  {
-    id: "ds-2",
-    name: "Patient Demographics",
-    project_id: "proj-1",
-    project_name: "Clinical Trial Alpha",
-    file_name: "patient_demographics.csv",
-    file_size: 1024000,
-    rows: 800,
-    columns: 15,
-    created_at: "2024-01-14T14:20:00Z",
-    last_modified: "2024-01-14T14:20:00Z",
-    status: "Ready",
-    runs_count: 1,
-    last_run: "1 day ago",
-    runs: [
-      {
-        id: "run-3",
-        name: "Privacy-First Run",
-        method: "PATE-GAN",
-        status: "completed",
-        created_at: "1 day ago",
-        privacy_level: "Very High"
-      }
-    ]
-  },
-  {
-    id: "ds-3",
-    name: "Synthetic Data Beta",
-    project_id: "proj-2",
-    project_name: "Synthetic Data Beta",
-    file_name: "synthetic_beta.csv",
-    file_size: 512000,
-    rows: 300,
-    columns: 12,
-    created_at: "2024-01-10T09:15:00Z",
-    last_modified: "2024-01-10T09:15:00Z",
-    status: "Processing",
-    runs_count: 0,
-    last_run: "Just now",
-    runs: []
-  },
-  {
-    id: "ds-4",
-    name: "Research Data Gamma",
-    project_id: "proj-3",
-    project_name: "Research Project Gamma",
-    file_name: "research_gamma.csv",
-    file_size: 3072000,
-    rows: 2000,
-    columns: 30,
-    created_at: "2024-01-05T11:45:00Z",
-    last_modified: "2024-01-05T11:45:00Z",
-    status: "Failed",
-    runs_count: 0,
-    runs: []
-  }
-];
 
 export function DatasetsContent() {
   const t = useTranslations('dashboard');
@@ -455,27 +364,11 @@ export function DatasetsContent() {
   const uniqueProjects = Array.from(new Set(datasets.map(d => d.project_id).filter(Boolean)));
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-        <span className="ml-2 text-gray-600">Loading datasets...</span>
-      </div>
-    );
+    return <LoadingState message="Loading datasets..." />;
   }
 
   if (error && datasets.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <span className="text-2xl text-red-500">⚠</span>
-        </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Error loading datasets</h3>
-        <p className="text-gray-500 mb-4">{error}</p>
-        <Button onClick={fetchDatasets} variant="outline">
-          Try Again
-        </Button>
-      </div>
-    );
+    return <ErrorState message={error} onRetry={fetchDatasets} />;
   }
 
   return (
@@ -563,49 +456,27 @@ export function DatasetsContent() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <div className="flex">
-            <Button
-              variant={viewMode === 'list' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('list')}
-              className="rounded-r-none"
-            >
-              <List className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={viewMode === 'grid' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('grid')}
-              className="rounded-l-none"
-            >
-              <Grid3X3 className="h-4 w-4" />
-            </Button>
-          </div>
+          <ViewModeToggle 
+            viewMode={viewMode} 
+            onViewModeChange={setViewMode}
+          />
         </div>
       </div>
 
       {/* Datasets List */}
       {sortedDatasets.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-2xl text-gray-400">📊</span>
-          </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            {searchQuery || filterStatus !== 'all' || filterProject !== 'all' ? 'No datasets found' : 'No datasets yet'}
-          </h3>
-          <p className="text-gray-500 mb-4">
-            {searchQuery || filterStatus !== 'all' || filterProject !== 'all' 
-              ? 'Try adjusting your search or filter criteria'
-              : 'Get started by uploading your first dataset'
-            }
-          </p>
-          {!searchQuery && filterStatus === 'all' && filterProject === 'all' && (
-            <Button onClick={() => setUploadModal(true)} className="bg-red-600 hover:bg-red-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Upload Dataset
-            </Button>
-          )}
-        </div>
+        <EmptyState 
+          icon="📊"
+          title={searchQuery || filterStatus !== 'all' || filterProject !== 'all' ? 'No datasets found' : 'No datasets yet'}
+          description={searchQuery || filterStatus !== 'all' || filterProject !== 'all' 
+            ? 'Try adjusting your search or filter criteria'
+            : 'Get started by uploading your first dataset'
+          }
+          action={!searchQuery && filterStatus === 'all' && filterProject === 'all' ? {
+            label: "Upload Dataset",
+            onClick: () => setUploadModal(true)
+          } : undefined}
+        />
       ) : (
         <div className="space-y-6">
           {Object.values(groupedDatasets).map(({ project, datasets: projectDatasets }) => (
