@@ -40,10 +40,11 @@ MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "10"))
 APP_JWKS_CACHE: Dict[str, Any] = {}
 
 # Email configuration
-SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
+# Swisszonic email settings
+SMTP_SERVER = os.getenv("SMTP_SERVER", "mail.swisszonic.ch")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-SMTP_USERNAME = os.getenv("SMTP_USERNAME", "")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+SMTP_USERNAME = os.getenv("SMTP_USERNAME", "")  # e.g., "info@gesalpai.ch"
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")  # Your Swisszonic email password
 CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", "info@gesalpai.ch")
 
 # ---------- Plans / Entitlement ----------
@@ -1467,17 +1468,24 @@ This message was sent from the Gesalp AI contact form.
         
         msg.attach(MIMEText(body, 'plain'))
         
-        # Send email
+        # Send email via Swisszonic SMTP
+        print(f"Connecting to SMTP server: {SMTP_SERVER}:{SMTP_PORT}")
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        server.set_debuglevel(1)  # Enable debug output for troubleshooting
         server.starttls()
+        print(f"Authenticating as: {SMTP_USERNAME}")
         server.login(SMTP_USERNAME, SMTP_PASSWORD)
+        print(f"Sending email from {SMTP_USERNAME} to {CONTACT_EMAIL}")
         text = msg.as_string()
         server.sendmail(SMTP_USERNAME, CONTACT_EMAIL, text)
         server.quit()
+        print("Email sent successfully!")
         
         return True
     except Exception as e:
         print(f"Error sending email: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
 def _agent_plan_internal(dataset_id: str, preference: Optional[Dict[str, Any]], goal: Optional[str], prompt: Optional[str]) -> Dict[str, Any]:
