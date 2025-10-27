@@ -1,2 +1,529 @@
 2025-09-12T11:54:08+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.354.sha.642d8bf (642d8bf) built at 2025-08-20T09:30:46Z
 2025-09-12T11:54:08+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command args=[] command=init full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.354.sha.642d8bf/codacy-cli-v2 init --provider gh --organization Kogulan1 --repository gesalps --api-token ***]
+2025-10-12T14:49:33+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T14:49:33+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command args=[/Users/kogulan/Desktop/gesalps/backend/api/main.py] command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/backend/api/main.py --format sarif]
+2025-10-12T14:49:33+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/semgrep.yaml tool=semgrep
+2025-10-12T14:49:40+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-12T14:50:25+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/lizard.yaml tool=lizard
+2025-10-12T14:50:25+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=pylint toolConfigPath=.codacy/tools-configs/pylint.rc
+2025-10-12T14:57:06+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T14:57:06+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/test_data.csv --format sarif] args=[/Users/kogulan/Desktop/gesalps/test_data.csv]
+2025-10-12T14:57:15+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T14:57:15+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/test_data.csv --format sarif] args=[/Users/kogulan/Desktop/gesalps/test_data.csv] command=analyze
+2025-10-12T15:15:15+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:15:15+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/backend/api/main.py --format sarif] args=[/Users/kogulan/Desktop/gesalps/backend/api/main.py]
+2025-10-12T15:15:15+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-12T15:15:15+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-12T15:15:15+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=pylint toolConfigPath=.codacy/tools-configs/pylint.rc
+2025-10-12T15:15:16+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-12T15:15:39+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:15:39+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/backend/api/main.py --format sarif] args=[/Users/kogulan/Desktop/gesalps/backend/api/main.py]
+2025-10-12T15:15:39+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-12T15:15:39+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=pylint toolConfigPath=.codacy/tools-configs/pylint.rc
+2025-10-12T15:15:40+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/semgrep.yaml tool=semgrep
+2025-10-12T15:15:46+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-12T15:15:49+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:15:49+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/backend/docker-compose.yml --format sarif] args=[/Users/kogulan/Desktop/gesalps/backend/docker-compose.yml] command=analyze
+2025-10-12T15:15:49+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/semgrep.yaml tool=semgrep
+2025-10-12T15:15:53+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-12T15:16:13+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:16:13+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/backend/api/main.py --format sarif] args=[/Users/kogulan/Desktop/gesalps/backend/api/main.py]
+2025-10-12T15:16:13+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-12T15:16:19+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-12T15:16:19+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-12T15:16:19+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=pylint toolConfigPath=.codacy/tools-configs/pylint.rc
+2025-10-12T15:19:52+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:19:52+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/lib/constants/demoData.ts --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/lib/constants/demoData.ts]
+2025-10-12T15:19:52+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-12T15:19:53+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-12T15:19:53+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/semgrep.yaml tool=semgrep
+2025-10-12T15:19:57+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/trivy.yaml tool=trivy
+2025-10-12T15:19:59+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:19:59+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectsContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectsContent.tsx]
+2025-10-12T15:19:59+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-12T15:20:03+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/trivy.yaml tool=trivy
+2025-10-12T15:20:03+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-12T15:20:03+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-12T15:20:11+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:20:11+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/datasets/DatasetsContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/datasets/DatasetsContent.tsx]
+2025-10-12T15:20:11+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-12T15:20:12+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-12T15:20:12+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/semgrep.yaml tool=semgrep
+2025-10-12T15:20:16+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-12T15:21:33+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:21:33+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/dashboard/DashboardContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/dashboard/DashboardContent.tsx]
+2025-10-12T15:21:33+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/eslint.config.mjs tool=eslint
+2025-10-12T15:21:33+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-12T15:21:33+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-12T15:21:37+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/trivy.yaml tool=trivy
+2025-10-12T15:21:44+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:21:44+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectsContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectsContent.tsx] command=analyze
+2025-10-12T15:21:44+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-12T15:21:44+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-12T15:21:48+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-12T15:21:48+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/eslint.config.mjs tool=eslint
+2025-10-12T15:21:57+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:21:57+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectsContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectsContent.tsx] command=analyze
+2025-10-12T15:21:57+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/semgrep.yaml tool=semgrep
+2025-10-12T15:22:01+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-12T15:22:01+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-12T15:22:02+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-12T15:22:08+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:22:08+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command args=[/Users/kogulan/Desktop/gesalps/frontend/components/datasets/DatasetsContent.tsx] command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/datasets/DatasetsContent.tsx --format sarif]
+2025-10-12T15:22:08+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-12T15:22:08+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-12T15:22:08+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/lizard.yaml tool=lizard
+2025-10-12T15:22:08+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-12T15:22:14+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:22:14+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectsContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectsContent.tsx]
+2025-10-12T15:22:14+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-12T15:22:14+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-12T15:22:14+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-12T15:22:17+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/trivy.yaml tool=trivy
+2025-10-12T15:22:20+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:22:20+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/dashboard/DashboardContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/dashboard/DashboardContent.tsx]
+2025-10-12T15:22:20+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-12T15:22:21+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-12T15:22:21+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/semgrep.yaml tool=semgrep
+2025-10-12T15:22:24+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-12T15:22:29+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:22:29+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/dashboard/DashboardContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/dashboard/DashboardContent.tsx]
+2025-10-12T15:22:29+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/eslint.config.mjs tool=eslint
+2025-10-12T15:22:29+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-12T15:22:29+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-12T15:22:33+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-12T15:22:33+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:22:33+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/dashboard/DashboardContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/dashboard/DashboardContent.tsx]
+2025-10-12T15:22:33+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-12T15:22:37+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-12T15:22:37+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-12T15:22:37+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-12T15:22:39+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:22:39+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectsContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectsContent.tsx] command=analyze
+2025-10-12T15:22:39+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-12T15:22:39+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-12T15:22:43+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-12T15:22:43+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-12T15:22:44+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:22:44+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command args=[/Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectsContent.tsx] command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectsContent.tsx --format sarif]
+2025-10-12T15:22:44+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-12T15:22:44+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-12T15:22:44+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-12T15:22:44+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-12T15:22:49+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:22:49+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/datasets/DatasetsContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/datasets/DatasetsContent.tsx]
+2025-10-12T15:22:49+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-12T15:22:49+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-12T15:22:49+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-12T15:22:49+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-12T15:22:57+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:22:57+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/datasets/DatasetsContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/datasets/DatasetsContent.tsx]
+2025-10-12T15:22:57+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-12T15:22:57+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/eslint.config.mjs tool=eslint
+2025-10-12T15:22:57+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-12T15:22:57+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-12T15:23:03+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:23:03+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/datasets/DatasetsContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/datasets/DatasetsContent.tsx]
+2025-10-12T15:23:03+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-12T15:23:03+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-12T15:23:03+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-12T15:23:07+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/trivy.yaml tool=trivy
+2025-10-12T15:23:10+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:23:10+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/datasets/DatasetsContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/datasets/DatasetsContent.tsx]
+2025-10-12T15:23:10+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-12T15:23:14+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-12T15:23:14+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-12T15:23:14+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-12T15:23:18+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:23:18+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/common/StateComponents.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/common/StateComponents.tsx]
+2025-10-12T15:23:18+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-12T15:23:21+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-12T15:23:21+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-12T15:23:22+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-12T15:26:38+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:26:38+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command args=[/Users/kogulan/Desktop/gesalps/frontend/components/dashboard/ProjectCard.tsx] command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/dashboard/ProjectCard.tsx --format sarif]
+2025-10-12T15:26:38+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-12T15:26:42+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-12T15:26:42+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-12T15:26:42+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-12T15:26:46+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:26:46+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/dashboard/ProjectCard.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/dashboard/ProjectCard.tsx]
+2025-10-12T15:26:46+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-12T15:26:46+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-12T15:26:46+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-12T15:26:46+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-12T15:26:51+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:26:51+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/dashboard/ProjectCard.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/dashboard/ProjectCard.tsx]
+2025-10-12T15:26:51+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-12T15:26:51+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/lizard.yaml tool=lizard
+2025-10-12T15:26:51+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-12T15:26:55+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/trivy.yaml tool=trivy
+2025-10-12T15:26:59+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:26:59+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/dashboard/DashboardContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/dashboard/DashboardContent.tsx] command=analyze
+2025-10-12T15:26:59+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-12T15:26:59+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-12T15:27:03+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/trivy.yaml tool=trivy
+2025-10-12T15:27:03+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-12T15:27:12+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:27:12+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/dashboard/DashboardContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/dashboard/DashboardContent.tsx] command=analyze
+2025-10-12T15:27:12+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-12T15:27:12+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-12T15:27:12+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/semgrep.yaml tool=semgrep
+2025-10-12T15:27:16+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-12T15:27:18+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:27:18+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/dashboard/DashboardContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/dashboard/DashboardContent.tsx]
+2025-10-12T15:27:18+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-12T15:27:18+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-12T15:27:18+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-12T15:27:22+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-12T15:27:35+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-12T15:27:35+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/FEATURES_FOR_LATER.md --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/FEATURES_FOR_LATER.md] command=analyze
+2025-10-14T16:32:48+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T16:32:48+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=update full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 update] args=[]
+2025-10-14T16:32:48+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T16:32:48+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=reset full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 config reset] args=[]
+2025-10-14T16:32:54+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T16:32:54+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/.next/package.json --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/.next/package.json]
+2025-10-14T16:32:54+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-14T16:34:39+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T16:34:39+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/.next/package.json --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/.next/package.json] command=analyze
+2025-10-14T16:34:39+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-14T16:41:28+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T16:41:28+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/dashboard/DashboardContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/dashboard/DashboardContent.tsx]
+2025-10-14T16:41:28+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-14T16:41:28+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-14T16:41:28+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-14T16:41:32+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/trivy.yaml tool=trivy
+2025-10-14T16:41:36+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T16:41:36+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/dashboard/DashboardContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/dashboard/DashboardContent.tsx] command=analyze
+2025-10-14T16:41:36+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-14T16:41:36+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/semgrep.yaml tool=semgrep
+2025-10-14T16:41:40+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-14T16:41:40+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-14T16:41:45+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T16:41:45+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/dashboard/DashboardContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/dashboard/DashboardContent.tsx] command=analyze
+2025-10-14T16:41:45+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-14T16:41:45+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/semgrep.yaml tool=semgrep
+2025-10-14T16:41:49+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-14T16:41:49+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-14T16:42:15+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T16:42:15+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/dashboard/DashboardContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/dashboard/DashboardContent.tsx]
+2025-10-14T16:42:15+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-14T16:42:15+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-14T16:42:18+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-14T16:42:18+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-14T16:44:11+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T16:44:11+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/dashboard/ProjectCard.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/dashboard/ProjectCard.tsx]
+2025-10-14T16:44:11+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/trivy.yaml tool=trivy
+2025-10-14T16:44:11+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-14T16:44:11+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/lizard.yaml tool=lizard
+2025-10-14T16:44:11+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/semgrep.yaml tool=semgrep
+2025-10-14T16:44:26+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T16:44:26+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/dashboard/ProjectCard.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/dashboard/ProjectCard.tsx]
+2025-10-14T16:44:26+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/eslint.config.mjs tool=eslint
+2025-10-14T16:44:26+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-14T16:44:26+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/semgrep.yaml tool=semgrep
+2025-10-14T16:44:30+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-14T16:44:48+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T16:44:48+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/dashboard/ProjectCard.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/dashboard/ProjectCard.tsx] command=analyze
+2025-10-14T16:44:48+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-14T16:44:48+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-14T16:44:52+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-14T16:44:52+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/eslint.config.mjs tool=eslint
+2025-10-14T17:02:43+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T17:02:43+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectsContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectsContent.tsx] command=analyze
+2025-10-14T17:02:43+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-14T17:02:43+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-14T17:02:47+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-14T17:02:47+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-14T17:03:03+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T17:03:03+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command args=[/Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectsContent.tsx] command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectsContent.tsx --format sarif]
+2025-10-14T17:03:03+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/semgrep.yaml tool=semgrep
+2025-10-14T17:03:07+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-14T17:03:07+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-14T17:03:07+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-14T17:07:22+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T17:07:22+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/backend/api/main.py --format sarif] args=[/Users/kogulan/Desktop/gesalps/backend/api/main.py]
+2025-10-14T17:07:22+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-14T17:07:22+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/pylint.rc tool=pylint
+2025-10-14T17:07:23+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-14T17:07:29+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-14T17:07:51+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T17:07:51+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectDetailContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectDetailContent.tsx]
+2025-10-14T17:07:51+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-14T17:07:55+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-14T17:07:55+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-14T17:07:55+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-14T17:08:03+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T17:08:03+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectDetailContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectDetailContent.tsx]
+2025-10-14T17:08:03+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-14T17:08:03+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-14T17:08:06+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/trivy.yaml tool=trivy
+2025-10-14T17:08:07+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-14T17:08:17+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T17:08:17+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectDetailContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectDetailContent.tsx]
+2025-10-14T17:08:17+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-14T17:08:21+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/trivy.yaml tool=trivy
+2025-10-14T17:08:21+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-14T17:08:21+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-14T17:08:29+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T17:08:29+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectDetailContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectDetailContent.tsx] command=analyze
+2025-10-14T17:08:29+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-14T17:08:29+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-14T17:08:29+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/lizard.yaml tool=lizard
+2025-10-14T17:08:29+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-14T17:08:39+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T17:08:39+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectDetailContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectDetailContent.tsx]
+2025-10-14T17:08:39+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-14T17:08:43+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/trivy.yaml tool=trivy
+2025-10-14T17:08:43+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-14T17:08:43+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-14T17:08:46+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T17:08:46+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command args=[/Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectDetailContent.tsx] command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectDetailContent.tsx --format sarif]
+2025-10-14T17:08:46+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/semgrep.yaml tool=semgrep
+2025-10-14T17:08:50+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-14T17:08:50+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-14T17:08:50+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-14T17:08:54+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T17:08:54+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command args=[/Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectDetailContent.tsx] command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectDetailContent.tsx --format sarif]
+2025-10-14T17:08:54+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-14T17:08:57+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/trivy.yaml tool=trivy
+2025-10-14T17:08:57+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/eslint.config.mjs tool=eslint
+2025-10-14T17:08:57+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/lizard.yaml tool=lizard
+2025-10-14T17:09:20+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T17:09:20+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/backend/api/main.py --format sarif] args=[/Users/kogulan/Desktop/gesalps/backend/api/main.py] command=analyze
+2025-10-14T17:09:20+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/lizard.yaml tool=lizard
+2025-10-14T17:09:20+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=pylint toolConfigPath=.codacy/tools-configs/pylint.rc
+2025-10-14T17:09:21+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-14T17:09:27+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-14T17:13:18+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T17:13:18+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/backend/api/main.py --format sarif] args=[/Users/kogulan/Desktop/gesalps/backend/api/main.py] command=analyze
+2025-10-14T17:13:18+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/pylint.rc tool=pylint
+2025-10-14T17:13:19+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/semgrep.yaml tool=semgrep
+2025-10-14T17:13:24+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-14T17:13:24+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-14T17:19:41+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T17:19:41+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectDetailContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectDetailContent.tsx]
+2025-10-14T17:19:41+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-14T17:19:44+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-14T17:19:45+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-14T17:19:45+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-14T17:19:59+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T17:19:59+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectDetailContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectDetailContent.tsx]
+2025-10-14T17:19:59+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-14T17:20:03+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-14T17:20:03+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-14T17:20:03+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/lizard.yaml tool=lizard
+2025-10-14T17:20:06+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T17:20:06+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command args=[/Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectDetailContent.tsx] command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectDetailContent.tsx --format sarif]
+2025-10-14T17:20:06+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/eslint.config.mjs tool=eslint
+2025-10-14T17:20:07+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-14T17:20:07+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-14T17:20:10+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-14T17:20:17+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T17:20:17+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectDetailContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectDetailContent.tsx]
+2025-10-14T17:20:17+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/semgrep.yaml tool=semgrep
+2025-10-14T17:20:20+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-14T17:20:21+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-14T17:20:21+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-14T17:20:24+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T17:20:24+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectDetailContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectDetailContent.tsx]
+2025-10-14T17:20:24+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-14T17:20:27+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-14T17:20:27+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/eslint.config.mjs tool=eslint
+2025-10-14T17:20:28+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-14T17:20:45+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-14T17:20:45+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectDetailContent.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/projects/ProjectDetailContent.tsx] command=analyze
+2025-10-14T17:20:45+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/eslint.config.mjs tool=eslint
+2025-10-14T17:20:45+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/lizard.yaml tool=lizard
+2025-10-14T17:20:45+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-14T17:20:49+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-15T14:36:44+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-15T14:36:44+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx]
+2025-10-15T14:36:44+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-15T14:36:44+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-15T14:36:44+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-15T14:36:48+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-15T14:37:26+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-15T14:37:26+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command args=[/Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx] command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx --format sarif]
+2025-10-15T14:37:26+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/lizard.yaml tool=lizard
+2025-10-15T14:37:26+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-15T14:37:29+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-15T14:37:29+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-15T14:46:17+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-15T14:46:17+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx]
+2025-10-15T14:46:17+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-15T14:46:21+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-15T14:46:21+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-15T14:46:22+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-15T14:48:38+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-15T14:48:38+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx]
+2025-10-15T14:48:38+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/semgrep.yaml tool=semgrep
+2025-10-15T14:48:42+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-15T14:48:42+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-15T14:48:43+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-15T14:52:57+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-15T14:52:57+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx]
+2025-10-15T14:52:57+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/eslint.config.mjs tool=eslint
+2025-10-15T14:52:58+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-15T14:52:58+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-15T14:53:01+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/trivy.yaml tool=trivy
+2025-10-15T14:53:21+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-15T14:53:21+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx] command=analyze
+2025-10-15T14:53:21+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-15T14:53:21+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-15T14:53:25+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/trivy.yaml tool=trivy
+2025-10-15T14:53:25+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-15T14:53:40+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-15T14:53:40+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx]
+2025-10-15T14:53:40+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-15T14:53:40+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-15T14:53:40+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-15T14:53:41+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-15T14:54:13+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-15T14:54:13+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command args=[/Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx] command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx --format sarif]
+2025-10-15T14:54:13+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-15T14:54:16+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/trivy.yaml tool=trivy
+2025-10-15T14:54:16+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-15T14:54:16+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-15T14:56:49+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-15T14:56:49+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command args=[/Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx] command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx --format sarif]
+2025-10-15T14:56:49+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-15T14:56:49+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-15T14:56:53+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-15T14:56:53+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-15T14:57:43+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-15T14:57:43+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command args=[/Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx] command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx --format sarif]
+2025-10-15T14:57:43+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-15T14:57:43+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-15T14:57:43+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/lizard.yaml tool=lizard
+2025-10-15T14:57:43+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/semgrep.yaml tool=semgrep
+2025-10-15T15:01:01+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-15T15:01:01+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx]
+2025-10-15T15:01:01+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-15T15:01:02+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-15T15:01:02+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/semgrep.yaml tool=semgrep
+2025-10-15T15:01:05+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-15T15:01:49+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-15T15:01:49+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command args=[/Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx] command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx --format sarif]
+2025-10-15T15:01:49+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-15T15:01:53+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-15T15:01:53+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-15T15:01:53+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-15T15:04:53+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-15T15:04:53+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command args=[/Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx] command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx --format sarif]
+2025-10-15T15:04:53+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-15T15:04:53+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/eslint.config.mjs tool=eslint
+2025-10-15T15:04:53+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-15T15:04:53+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-15T15:05:36+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-15T15:05:36+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx]
+2025-10-15T15:05:36+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-15T15:05:40+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-15T15:05:40+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/eslint.config.mjs tool=eslint
+2025-10-15T15:05:40+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-15T15:09:26+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-15T15:09:26+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx] command=analyze
+2025-10-15T15:09:26+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-15T15:09:29+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-15T15:09:29+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/eslint.config.mjs tool=eslint
+2025-10-15T15:09:30+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-15T15:11:57+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-15T15:11:57+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx]
+2025-10-15T15:11:57+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-15T15:11:57+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/lizard.yaml tool=lizard
+2025-10-15T15:11:57+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/semgrep.yaml tool=semgrep
+2025-10-15T15:12:00+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/trivy.yaml tool=trivy
+2025-10-15T15:12:24+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-15T15:12:24+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/components/site/Roadmap.tsx] command=analyze
+2025-10-15T15:12:24+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-15T15:12:24+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=eslint toolConfigPath=.codacy/tools-configs/eslint.config.mjs
+2025-10-15T15:12:24+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-15T15:12:24+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-16T11:29:16+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-16T11:29:16+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/backend/api/main.py --format sarif] args=[/Users/kogulan/Desktop/gesalps/backend/api/main.py] command=analyze
+2025-10-16T11:29:16+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-16T11:29:23+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-16T11:29:40+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/lizard.yaml tool=lizard
+2025-10-16T11:29:40+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=pylint toolConfigPath=.codacy/tools-configs/pylint.rc
+2025-10-16T11:29:44+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-16T11:29:44+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command args=[/Users/kogulan/Desktop/gesalps/backend/api/main.py] command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/backend/api/main.py --format sarif]
+2025-10-16T11:29:44+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/semgrep.yaml tool=semgrep
+2025-10-16T11:29:50+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/trivy.yaml tool=trivy
+2025-10-16T11:29:50+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-16T11:29:50+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=pylint toolConfigPath=.codacy/tools-configs/pylint.rc
+2025-10-16T11:30:02+02:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.358.sha.7cb05d0 (7cb05d0) built at 2025-09-19T09:27:42Z
+2025-10-16T11:30:02+02:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.358.sha.7cb05d0/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/backend/api/main.py --format sarif] args=[/Users/kogulan/Desktop/gesalps/backend/api/main.py]
+2025-10-16T11:30:02+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/trivy.yaml tool=trivy
+2025-10-16T11:30:02+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-16T11:30:02+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=pylint toolConfigPath=.codacy/tools-configs/pylint.rc
+2025-10-16T11:30:03+02:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-27T13:29:11+01:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.360.sha.06bb49b (06bb49b) built at 2025-10-21T10:02:19Z
+2025-10-27T13:29:11+01:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command args=[] command=update full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.360.sha.06bb49b/codacy-cli-v2 update]
+2025-10-27T13:29:11+01:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.360.sha.06bb49b (06bb49b) built at 2025-10-21T10:02:19Z
+2025-10-27T13:29:11+01:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.360.sha.06bb49b/codacy-cli-v2 config reset] args=[] command=reset
+2025-10-27T13:29:17+01:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.360.sha.06bb49b (06bb49b) built at 2025-10-21T10:02:19Z
+2025-10-27T13:29:17+01:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.360.sha.06bb49b/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/frontend/.next/package.json --format sarif] args=[/Users/kogulan/Desktop/gesalps/frontend/.next/package.json]
+2025-10-27T13:29:17+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/trivy.yaml tool=trivy
+2025-10-27T16:17:37+01:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.360.sha.06bb49b (06bb49b) built at 2025-10-21T10:02:19Z
+2025-10-27T16:17:37+01:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.360.sha.06bb49b/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/backend/api/main.py --format sarif] args=[/Users/kogulan/Desktop/gesalps/backend/api/main.py] command=analyze
+2025-10-27T16:17:37+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-27T16:17:44+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/trivy.yaml tool=trivy
+2025-10-27T16:17:45+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/lizard.yaml tool=lizard
+2025-10-27T16:17:45+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=pylint toolConfigPath=.codacy/tools-configs/pylint.rc
+2025-10-27T16:18:35+01:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.360.sha.06bb49b (06bb49b) built at 2025-10-21T10:02:19Z
+2025-10-27T16:18:35+01:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.360.sha.06bb49b/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/backend/api/main.py --format sarif] args=[/Users/kogulan/Desktop/gesalps/backend/api/main.py]
+2025-10-27T16:18:35+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=pylint toolConfigPath=.codacy/tools-configs/pylint.rc
+2025-10-27T16:18:36+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-27T16:18:42+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-27T16:18:43+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/lizard.yaml tool=lizard
+2025-10-27T16:18:56+01:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.360.sha.06bb49b (06bb49b) built at 2025-10-21T10:02:19Z
+2025-10-27T16:18:56+01:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.360.sha.06bb49b/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/backend/api/main.py --format sarif] args=[/Users/kogulan/Desktop/gesalps/backend/api/main.py] command=analyze
+2025-10-27T16:18:56+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/lizard.yaml tool=lizard
+2025-10-27T16:18:56+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/pylint.rc tool=pylint
+2025-10-27T16:18:57+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-27T16:19:04+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/trivy.yaml tool=trivy
+2025-10-27T16:19:07+01:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.360.sha.06bb49b (06bb49b) built at 2025-10-21T10:02:19Z
+2025-10-27T16:19:07+01:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.360.sha.06bb49b/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/backend/api/main.py --format sarif] args=[/Users/kogulan/Desktop/gesalps/backend/api/main.py]
+2025-10-27T16:19:07+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=pylint toolConfigPath=.codacy/tools-configs/pylint.rc
+2025-10-27T16:19:09+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-27T16:19:15+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-27T16:19:15+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/lizard.yaml tool=lizard
+2025-10-27T16:20:15+01:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.360.sha.06bb49b (06bb49b) built at 2025-10-21T10:02:19Z
+2025-10-27T16:20:15+01:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.360.sha.06bb49b/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/DEPLOYMENT.md --format sarif] args=[/Users/kogulan/Desktop/gesalps/DEPLOYMENT.md] command=analyze
+2025-10-27T16:20:51+01:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.360.sha.06bb49b (06bb49b) built at 2025-10-21T10:02:19Z
+2025-10-27T16:20:51+01:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.360.sha.06bb49b/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/backend/api/main.py --format sarif] args=[/Users/kogulan/Desktop/gesalps/backend/api/main.py] command=analyze
+2025-10-27T16:20:51+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/trivy.yaml tool=trivy
+2025-10-27T16:20:51+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/lizard.yaml tool=lizard
+2025-10-27T16:20:51+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=pylint toolConfigPath=.codacy/tools-configs/pylint.rc
+2025-10-27T16:20:52+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-27T16:22:55+01:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.360.sha.06bb49b (06bb49b) built at 2025-10-21T10:02:19Z
+2025-10-27T16:22:55+01:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.360.sha.06bb49b/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/backend/api/main.py --format sarif] args=[/Users/kogulan/Desktop/gesalps/backend/api/main.py] command=analyze
+2025-10-27T16:22:55+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=pylint toolConfigPath=.codacy/tools-configs/pylint.rc
+2025-10-27T16:22:56+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/semgrep.yaml tool=semgrep
+2025-10-27T16:23:03+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-27T16:23:03+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/lizard.yaml tool=lizard
+2025-10-27T16:23:04+01:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.360.sha.06bb49b (06bb49b) built at 2025-10-21T10:02:19Z
+2025-10-27T16:23:04+01:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.360.sha.06bb49b/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/backend/api/main.py --format sarif] args=[/Users/kogulan/Desktop/gesalps/backend/api/main.py]
+2025-10-27T16:23:04+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-27T16:23:04+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=pylint toolConfigPath=.codacy/tools-configs/pylint.rc
+2025-10-27T16:23:06+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-27T16:23:12+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-27T16:24:02+01:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.360.sha.06bb49b (06bb49b) built at 2025-10-21T10:02:19Z
+2025-10-27T16:24:02+01:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.360.sha.06bb49b/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/backend/api/main.py --format sarif] args=[/Users/kogulan/Desktop/gesalps/backend/api/main.py]
+2025-10-27T16:24:02+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-27T16:24:08+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-27T16:24:09+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/lizard.yaml tool=lizard
+2025-10-27T16:24:09+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/pylint.rc tool=pylint
+2025-10-27T16:24:14+01:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.360.sha.06bb49b (06bb49b) built at 2025-10-21T10:02:19Z
+2025-10-27T16:24:14+01:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.360.sha.06bb49b/codacy-cli-v2 analyze /Users/kogulan/Desktop/gesalps/backend/api/main.py --format sarif] args=[/Users/kogulan/Desktop/gesalps/backend/api/main.py]
+2025-10-27T16:24:14+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=semgrep toolConfigPath=.codacy/tools-configs/semgrep.yaml
+2025-10-27T16:24:21+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-27T16:24:21+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=lizard toolConfigPath=.codacy/tools-configs/lizard.yaml
+2025-10-27T16:24:21+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/pylint.rc tool=pylint
+2025-10-27T16:24:33+01:00 [INFO] (codacy-cli-v2/cli-v2.go:27) Starting Codacy CLI version=1.0.0-main.360.sha.06bb49b (06bb49b) built at 2025-10-21T10:02:19Z
+2025-10-27T16:24:33+01:00 [INFO] (codacy-cli-v2/cmd/root.go:34) Executing CLI command command=analyze full_command=[/Users/kogulan/Library/Caches/Codacy/codacy-cli-v2/1.0.0-main.360.sha.06bb49b/codacy-cli-v2 analyze backend/api/main.py --format sarif] args=[backend/api/main.py]
+2025-10-27T16:24:33+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/semgrep.yaml tool=semgrep
+2025-10-27T16:24:40+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=trivy toolConfigPath=.codacy/tools-configs/trivy.yaml
+2025-10-27T16:24:40+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool toolConfigPath=.codacy/tools-configs/lizard.yaml tool=lizard
+2025-10-27T16:24:40+01:00 [INFO] (codacy-cli-v2/cmd/analyze.go:341) Config file found for tool tool=pylint toolConfigPath=.codacy/tools-configs/pylint.rc

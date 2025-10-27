@@ -11,6 +11,7 @@ services:
       - OLLAMA_BASE=http://ollama:11434
       - DP_BACKEND=synthcity
       - DP_STRICT_DEFAULT=false
+      - CORS_ALLOW_ORIGINS=http://localhost:3000,http://localhost:3001
     depends_on:
       report-service:
         condition: service_started
