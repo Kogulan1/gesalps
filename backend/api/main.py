@@ -5,6 +5,7 @@ import csv
 import json
 import time
 import smtplib
+import requests
 from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
 from email.mime.text import MIMEText
@@ -40,12 +41,17 @@ MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "10"))
 APP_JWKS_CACHE: Dict[str, Any] = {}
 
 # Email configuration
-# Swisszonic email settings
-SMTP_SERVER = os.getenv("SMTP_SERVER", "mail.swisszonic.ch")
-SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-SMTP_USERNAME = os.getenv("SMTP_USERNAME", "")  # e.g., "info@gesalpai.ch"
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")  # Your Swisszonic email password
+# Using Resend API (no SMTP port issues)
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
+FROM_EMAIL = os.getenv("FROM_EMAIL", "Gesalp AI <noreply@gesalpai.ch>")
 CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", "info@gesalpai.ch")
+
+# Fallback: Swisszonic SMTP settings (if RESEND_API_KEY not set)
+SMTP_SERVER = os.getenv("SMTP_SERVER", "authsmtp.securemail.pro")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "465"))
+SMTP_USE_SSL = os.getenv("SMTP_USE_SSL", "true").lower() == "true"
+SMTP_USERNAME = os.getenv("SMTP_USERNAME", "")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
 
 # ---------- Plans / Entitlement ----------
 def _truthy(v: Optional[str]) -> bool:
@@ -1438,20 +1444,68 @@ def _summarize_dataset(dataset_id: str) -> Dict[str, Any]:
 
 
 def send_contact_email(contact_data: ContactForm) -> bool:
-    """Send contact form email to the configured contact address."""
-    try:
-        if not SMTP_USERNAME or not SMTP_PASSWORD:
-            print("SMTP credentials not configured, skipping email send")
-            return False
+    """Send contact form email using Resend API or SMTP fallback."""
+    # Try Resend API first (recommended - no port issues)
+    if RESEND_API_KEY:
+        try:
+            print("Sending email via Resend API...")
             
-        # Create message
-        msg = MIMEMultipart()
-        msg['From'] = SMTP_USERNAME
-        msg['To'] = CONTACT_EMAIL
-        msg['Subject'] = f"Contact Form: {contact_data.subject or 'General Inquiry'}"
-        
-        # Create email body
-        body = f"""
+            body = f"""
+New contact form submission from Gesalp AI website:
+
+Name: {contact_data.firstName} {contact_data.lastName}
+Email: {contact_data.email}
+Company: {contact_data.company or 'Not provided'}
+Subject: {contact_data.subject or 'General Inquiry'}
+
+Message:
+{contact_data.message}
+
+---
+This message was sent from the Gesalp AI contact form.
+Reply to: {contact_data.email}
+            """
+            
+            response = requests.post(
+                "https://api.resend.com/emails",
+                headers={
+                    "Authorization": f"Bearer {RESEND_API_KEY}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "from": FROM_EMAIL,
+                    "to": CONTACT_EMAIL,
+                    "subject": f"Contact Form: {contact_data.subject or 'General Inquiry'}",
+                    "text": body.strip(),
+                    "reply_to": contact_data.email
+                },
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                print("Email sent successfully via Resend!")
+                return True
+            else:
+                print(f"Resend API error: {response.status_code} - {response.text}")
+                return False
+                
+        except Exception as e:
+            print(f"Resend API error: {e}")
+            return False
+    
+    # Fallback to SMTP
+    elif SMTP_USERNAME and SMTP_PASSWORD:
+        try:
+            print(f"Sending email via SMTP: {SMTP_SERVER}:{SMTP_PORT} (SSL={SMTP_USE_SSL})")
+            
+            # Create message
+            msg = MIMEMultipart()
+            msg['From'] = SMTP_USERNAME
+            msg['To'] = CONTACT_EMAIL
+            msg['Subject'] = f"Contact Form: {contact_data.subject or 'General Inquiry'}"
+            
+            # Create email body
+            body = f"""
 New contact form submission:
 
 Name: {contact_data.firstName} {contact_data.lastName}
@@ -1464,28 +1518,30 @@ Message:
 
 ---
 This message was sent from the Gesalp AI contact form.
-        """
-        
-        msg.attach(MIMEText(body, 'plain'))
-        
-        # Send email via Swisszonic SMTP
-        print(f"Connecting to SMTP server: {SMTP_SERVER}:{SMTP_PORT}")
-        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
-        server.set_debuglevel(1)  # Enable debug output for troubleshooting
-        server.starttls()
-        print(f"Authenticating as: {SMTP_USERNAME}")
-        server.login(SMTP_USERNAME, SMTP_PASSWORD)
-        print(f"Sending email from {SMTP_USERNAME} to {CONTACT_EMAIL}")
-        text = msg.as_string()
-        server.sendmail(SMTP_USERNAME, CONTACT_EMAIL, text)
-        server.quit()
-        print("Email sent successfully!")
-        
-        return True
-    except Exception as e:
-        print(f"Error sending email: {e}")
-        import traceback
-        traceback.print_exc()
+            """
+            
+            msg.attach(MIMEText(body, 'plain'))
+            
+            # Send via SMTP
+            if SMTP_USE_SSL:
+                server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT)
+            else:
+                server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+                server.starttls()
+            
+            server.login(SMTP_USERNAME, SMTP_PASSWORD)
+            text = msg.as_string()
+            server.sendmail(SMTP_USERNAME, CONTACT_EMAIL, text)
+            server.quit()
+            print("Email sent successfully via SMTP!")
+            return True
+            
+        except Exception as smtp_error:
+            print(f"SMTP error: {smtp_error}")
+            return False
+    
+    else:
+        print("No email credentials configured")
         return False
 
 def _agent_plan_internal(dataset_id: str, preference: Optional[Dict[str, Any]], goal: Optional[str], prompt: Optional[str]) -> Dict[str, Any]:
