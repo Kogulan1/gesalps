@@ -35,15 +35,21 @@ export default function ContactPage() {
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
-          company: formData.company || '',
-          subject: formData.subject || '',
+          company: formData.company,
+          subject: formData.subject,
           message: formData.message,
         }),
       });
 
-      if (response.ok) {
-        setSubmitStatus('success');
-        // Reset form
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
+
+      const result = await response.json();
+      setSubmitStatus('success');
+      
+      // Reset form on success
+      setTimeout(() => {
         setFormData({
           firstName: '',
           lastName: '',
@@ -52,11 +58,8 @@ export default function ContactPage() {
           subject: '',
           message: '',
         });
-      } else {
-        const errorData = await response.json();
-        console.error('Error sending email:', errorData);
-        setSubmitStatus('error');
-      }
+        setSubmitStatus('idle');
+      }, 3000);
     } catch (error) {
       console.error('Error submitting form:', error);
       setSubmitStatus('error');
@@ -125,8 +128,11 @@ export default function ContactPage() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {submitStatus === 'success' && (
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                    <p className="text-green-800 text-sm font-medium">
-                      ✅ Thank you! Your message has been sent to info@gesalpai.ch. We'll get back to you shortly.
+                    <p className="text-green-800 text-sm font-medium mb-2">
+                      ✅ Thank you! Your message has been sent to info@gesalpai.ch
+                    </p>
+                    <p className="text-green-700 text-xs">
+                      We'll get back to you soon at {formData.email || 'your email address'}
                     </p>
                   </div>
                 )}
@@ -241,7 +247,7 @@ export default function ContactPage() {
                     className="w-full bg-red-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{ color: 'white' }}
                   >
-                    {isSubmitting ? 'Sending...' : 'Send Message'}
+                    {isSubmitting ? 'Preparing Message...' : 'Send Message'}
                   </button>
                   
                   <div className="text-center">
