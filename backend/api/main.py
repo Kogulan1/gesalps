@@ -4,8 +4,11 @@ import io
 import csv
 import json
 import time
+import smtplib
 from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 import pandas as pd
 import httpx
@@ -35,6 +38,13 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY or SUPA
 REPORT_SERVICE_BASE = os.getenv("REPORT_SERVICE_BASE", "http://localhost:8010")
 MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "10"))
 APP_JWKS_CACHE: Dict[str, Any] = {}
+
+# Email configuration
+SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USERNAME = os.getenv("SMTP_USERNAME", "")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", "info@gesalpai.ch")
 
 # ---------- Plans / Entitlement ----------
 def _truthy(v: Optional[str]) -> bool:
@@ -188,6 +198,14 @@ class CreateProject(BaseModel):
 
 class RenameBody(BaseModel):
     name: str
+
+class ContactForm(BaseModel):
+    firstName: str
+    lastName: str
+    email: str
+    company: Optional[str] = ""
+    subject: Optional[str] = ""
+    message: str
 
 @app.get("/v1/projects")
 def list_projects(user: Dict[str, Any] = Depends(require_user)):
@@ -1398,6 +1416,59 @@ def _summarize_dataset(dataset_id: str) -> Dict[str, Any]:
         "categorical": cat_summary,
     }
 
+
+@app.post("/v1/contact")
+async def send_contact(contact_data: ContactForm):
+    """Send contact form email."""
+    success = send_contact_email(contact_data)
+    if success:
+        return {"message": "Email sent successfully", "status": "success"}
+    else:
+        raise HTTPException(status_code=500, detail="Failed to send email. Please try again later or contact info@gesalpai.ch directly.")
+
+def send_contact_email(contact_data: ContactForm) -> bool:
+    """Send contact form email to the configured contact address."""
+    try:
+        if not SMTP_USERNAME or not SMTP_PASSWORD:
+            print("SMTP credentials not configured, skipping email send")
+            return False
+            
+        # Create message
+        msg = MIMEMultipart()
+        msg['From'] = SMTP_USERNAME
+        msg['To'] = CONTACT_EMAIL
+        msg['Subject'] = f"Contact Form: {contact_data.subject or 'General Inquiry'}"
+        
+        # Create email body
+        body = f"""
+New contact form submission:
+
+Name: {contact_data.firstName} {contact_data.lastName}
+Email: {contact_data.email}
+Company: {contact_data.company or 'Not provided'}
+Subject: {contact_data.subject or 'General Inquiry'}
+
+Message:
+{contact_data.message}
+
+---
+This message was sent from the Gesalp AI contact form.
+        """
+        
+        msg.attach(MIMEText(body, 'plain'))
+        
+        # Send email
+        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        server.starttls()
+        server.login(SMTP_USERNAME, SMTP_PASSWORD)
+        text = msg.as_string()
+        server.sendmail(SMTP_USERNAME, CONTACT_EMAIL, text)
+        server.quit()
+        
+        return True
+    except Exception as e:
+        print(f"Error sending email: {e}")
+        return False
 
 def _agent_plan_internal(dataset_id: str, preference: Optional[Dict[str, Any]], goal: Optional[str], prompt: Optional[str]) -> Dict[str, Any]:
     summary = _summarize_dataset(dataset_id)

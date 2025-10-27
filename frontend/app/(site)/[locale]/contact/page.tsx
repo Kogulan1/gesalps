@@ -14,7 +14,6 @@ export default function ContactPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [generatedEmail, setGeneratedEmail] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -26,35 +25,38 @@ export default function ContactPage() {
     setSubmitStatus('idle');
 
     try {
-      const subject = `Contact Form: ${formData.subject || 'General Inquiry'}`;
-      const body = `
-Name: ${formData.firstName} ${formData.lastName}
-Email: ${formData.email}
-Company: ${formData.company}
-Subject: ${formData.subject}
-
-Message:
-${formData.message}
-      `;
-
-      // Generate the email content for display
-      const emailContent = `To: info@gesalpai.ch
-Subject: ${subject}
-
-${body}`;
-      
-      setGeneratedEmail(emailContent);
-      setSubmitStatus('success');
-      
-      // Reset form
-      setFormData({
-        firstName: '',
-        lastName: '',
-        email: '',
-        company: '',
-        subject: '',
-        message: '',
+      const baseUrl = process.env.NEXT_PUBLIC_BACKEND_API_BASE || 'http://localhost:8000';
+      const response = await fetch(`${baseUrl}/v1/contact`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          company: formData.company || '',
+          subject: formData.subject || '',
+          message: formData.message,
+        }),
       });
+
+      if (response.ok) {
+        setSubmitStatus('success');
+        // Reset form
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          company: '',
+          subject: '',
+          message: '',
+        });
+      } else {
+        const errorData = await response.json();
+        console.error('Error sending email:', errorData);
+        setSubmitStatus('error');
+      }
     } catch (error) {
       console.error('Error submitting form:', error);
       setSubmitStatus('error');
@@ -63,14 +65,6 @@ ${body}`;
     }
   };
 
-  const copyToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText(generatedEmail);
-      alert('Email content copied to clipboard!');
-    } catch (err) {
-      console.error('Failed to copy: ', err);
-    }
-  };
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -131,30 +125,9 @@ ${body}`;
               <form onSubmit={handleSubmit} className="space-y-6">
                 {submitStatus === 'success' && (
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                    <p className="text-green-800 text-sm mb-3 font-medium">
-                      ✅ Thank you! Your message has been prepared. Please copy the email below and send it to info@gesalpai.ch
+                    <p className="text-green-800 text-sm font-medium">
+                      ✅ Thank you! Your message has been sent to info@gesalpai.ch. We'll get back to you shortly.
                     </p>
-                    
-                    <div className="bg-white border border-green-200 rounded-lg p-3 mb-3">
-                      <pre className="text-xs text-gray-700 whitespace-pre-wrap font-mono">
-                        {generatedEmail}
-                      </pre>
-                    </div>
-                    
-                    <div className="flex gap-2">
-                      <button
-                        onClick={copyToClipboard}
-                        className="bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700 transition-colors"
-                      >
-                        📋 Copy Email
-                      </button>
-                      <a 
-                        href="mailto:info@gesalpai.ch" 
-                        className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 transition-colors inline-block"
-                      >
-                        📧 Open Email Client
-                      </a>
-                    </div>
                   </div>
                 )}
                 
@@ -268,7 +241,7 @@ ${body}`;
                     className="w-full bg-red-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{ color: 'white' }}
                   >
-                    {isSubmitting ? 'Preparing Message...' : 'Send Message'}
+                    {isSubmitting ? 'Sending...' : 'Send Message'}
                   </button>
                   
                   <div className="text-center">
