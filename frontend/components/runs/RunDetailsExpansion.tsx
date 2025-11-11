@@ -114,6 +114,12 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
       // Fetch run details with plan
       const runResponse = await fetch(`${base}/v1/runs/${runId}`, { headers });
       if (!runResponse.ok) {
+        // If run not found (404) or method not allowed (405), it might have been deleted
+        if (runResponse.status === 404 || runResponse.status === 405) {
+          console.warn(`[RunDetailsExpansion] Run ${runId} not found or deleted`);
+          onClose(); // Close the expansion if run is deleted
+          return;
+        }
         throw new Error(`Failed to load run: ${runResponse.status}`);
       }
       const runDataResult = await runResponse.json();

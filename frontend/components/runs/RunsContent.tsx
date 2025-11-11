@@ -445,6 +445,11 @@ export function RunsContent() {
             throw new Error(`API ${res.status}: ${msg || 'Failed to delete run'}`);
           }
 
+          // Close expansion if this run was expanded
+          if (expandedRunId === runId) {
+            setExpandedRunId(null);
+          }
+          
           // Remove from UI
           setRuns(prev => prev.filter(r => r.id !== runId));
           console.log(`[Delete Run] Successfully deleted run ${runId}`);
