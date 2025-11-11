@@ -11,6 +11,8 @@ from typing import Any, Dict, Optional
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
+from dotenv import load_dotenv
+
 import pandas as pd
 import httpx
 from fastapi import Depends, FastAPI, Form, HTTPException, UploadFile, Request, File
@@ -26,6 +28,11 @@ except Exception:
     class APIError(Exception):
         pass
 from supabase import create_client, Client
+
+# Load environment variables from .env file
+# Try to load from the current directory and parent directory (for Docker)
+load_dotenv()
+load_dotenv(dotenv_path="../.env")  # Docker looks in parent dir
 
 # ---------- Env & Supabase ----------
 SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL")
@@ -43,8 +50,13 @@ APP_JWKS_CACHE: Dict[str, Any] = {}
 # Email configuration
 # Using Resend API (no SMTP port issues)
 RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
-FROM_EMAIL = os.getenv("FROM_EMAIL", "Gesalp AI <noreply@gesalpai.ch>")
+FROM_EMAIL = os.getenv("FROM_EMAIL", "Gesalp AI <info@gesalpai.ch>")
 CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", "info@gesalpai.ch")
+
+# Debug: Print email configuration on startup
+print(f"[CONFIG] RESEND_API_KEY configured: {bool(RESEND_API_KEY)}")
+print(f"[CONFIG] FROM_EMAIL: {FROM_EMAIL}")
+print(f"[CONFIG] CONTACT_EMAIL: {CONTACT_EMAIL}")
 
 # Fallback: Swisszonic SMTP settings (if RESEND_API_KEY not set)
 SMTP_SERVER = os.getenv("SMTP_SERVER", "authsmtp.securemail.pro")
@@ -193,24 +205,6 @@ class ContactForm(BaseModel):
     company: Optional[str] = ""
     subject: Optional[str] = ""
     message: str
-
-# ---------- Contact Form (public) ----------
-@app.post("/v1/contact")
-async def send_contact(contact_data: ContactForm):
-    """Send contact form email."""
-    try:
-        success = send_contact_email(contact_data)
-        if success:
-            return {"message": "Email sent successfully", "status": "success"}
-        else:
-            # If SMTP not configured, still return success but log it
-            return {
-                "message": "Email queued successfully. Our team will respond shortly.",
-                "status": "success",
-                "note": "SMTP not configured in production yet"
-            }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 # ---------- Capabilities (public) ----------
 @app.get("/v1/capabilities")
@@ -364,6 +358,42 @@ def rename_project(project_id: str, body: RenameBody, user: Dict[str, Any] = Dep
     if res.data is None:
         raise HTTPException(status_code=500, detail=str(res.error))
     return {"message": "Project renamed successfully"}
+
+@app.delete("/v1/projects/{project_id}")
+def delete_project(project_id: str, user: Dict[str, Any] = Depends(require_user)):
+    """Delete a project and all its associated datasets and runs."""
+    # Verify the project belongs to the user
+    proj = supabase.table("projects").select("id").eq("id", project_id).eq("owner_id", user["id"]).single().execute()
+    if not proj.data:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    # Get all datasets in this project
+    datasets = supabase.table("datasets").select("id,file_url").eq("project_id", project_id).execute().data or []
+    
+    # Get all runs in this project
+    runs = supabase.table("runs").select("id").eq("project_id", project_id).execute().data or []
+    run_ids = [r["id"] for r in runs]
+    
+    # Delete all metrics, artifacts, and runs
+    if run_ids:
+        supabase.table("metrics").delete().in_("run_id", run_ids).execute()
+        supabase.table("run_artifacts").delete().in_("run_id", run_ids).execute()
+        supabase.table("runs").delete().in_("id", run_ids).execute()
+    
+    # Delete dataset files from storage
+    for ds in datasets:
+        if ds.get("file_url"):
+            try:
+                supabase.storage.from_("datasets").remove([ds["file_url"]])
+            except Exception:
+                pass
+    
+    # Delete datasets (cascade will handle related data)
+    supabase.table("datasets").delete().eq("project_id", project_id).execute()
+    
+    # Finally delete the project
+    supabase.table("projects").delete().eq("id", project_id).execute()
+    return {"ok": True}
 
 # ---------- Datasets ----------
 @app.get("/v1/datasets")
@@ -784,16 +814,87 @@ def start_run(body: StartRun, user: Dict[str, Any] = Depends(require_user)):
     # Log planning step for visibility
     try:
         plan = (cfg or {}).get("plan") or {}
+        method_name = plan.get('choice', {}).get('method', 'gc') if isinstance(plan.get('choice'), dict) else plan.get('method', 'gc')
+        detail = f"method={method_name}"
+        
+        print(f"[api][step] INSERTING planned step for run {run_id}: {detail}")
+        if plan.get('rationale'):
+            print(f"[api][agent] Agent rationale: {plan.get('rationale')}")
+        if plan.get('backup'):
+            print(f"[api][agent] Backup methods: {[b.get('method', 'unknown') if isinstance(b, dict) else str(b) for b in plan.get('backup', [])]}")
+        
         supabase.table("run_steps").insert({
             "run_id": run_id,
             "step_no": 0,
             "title": "planned",
-            "detail": f"method={plan.get('choice',{}).get('method','gc')}",
+            "detail": detail,
             "metrics_json": None,
         }).execute()
-    except Exception:
-        pass
+        print(f"[api][step] SUCCESS: planned step inserted for run {run_id}")
+    except Exception as e:
+        print(f"[api][step] ERROR inserting planned step for run {run_id}: {type(e).__name__}: {e}")
     return {"run_id": run_id}
+
+# Development endpoint to get all datasets (for testing)
+@app.get("/dev/datasets")
+def list_datasets_dev():
+    """Development endpoint to list all datasets without authentication."""
+    try:
+        # Get all datasets from the database
+        datasets_res = supabase.table("datasets").select("*").execute()
+        if datasets_res.data is None:
+            return []
+        
+        datasets = datasets_res.data
+        
+        # Get all projects for context
+        projects_res = supabase.table("projects").select("id, name").execute()
+        project_names = {p["id"]: p["name"] for p in (projects_res.data or [])}
+        
+        # Process datasets
+        datasets_with_metadata = []
+        for dataset in datasets:
+            # Get runs count for this dataset
+            runs_res = supabase.table("runs").select("id", count="exact").eq("dataset_id", dataset["id"]).execute()
+            runs_count = runs_res.count or 0
+            
+            # Get last run for this dataset
+            last_run_res = supabase.table("runs").select("started_at").eq("dataset_id", dataset["id"]).order("started_at", desc=True).limit(1).execute()
+            last_run = None
+            if last_run_res.data and last_run_res.data[0].get("started_at"):
+                from datetime import datetime, timezone
+                last_run_time = datetime.fromisoformat(last_run_res.data[0]["started_at"].replace('Z', '+00:00'))
+                now = datetime.now(timezone.utc)
+                diff = now - last_run_time
+                if diff.days > 0:
+                    last_run = f"{diff.days} day{'s' if diff.days > 1 else ''} ago"
+                elif diff.seconds > 3600:
+                    hours = diff.seconds // 3600
+                    last_run = f"{hours} hour{'s' if hours > 1 else ''} ago"
+                elif diff.seconds > 60:
+                    minutes = diff.seconds // 60
+                    last_run = f"{minutes} minute{'s' if minutes > 1 else ''} ago"
+                else:
+                    last_run = "Just now"
+            
+            datasets_with_metadata.append({
+                **dataset,
+                "project_name": project_names.get(dataset["project_id"], "Unknown Project"),
+                "file_name": dataset["file_url"].split("/")[-1] if dataset.get("file_url") else "unknown.csv",
+                "file_size": 0,  # Not available in current schema
+                "rows": dataset.get("rows_count") or 0,
+                "columns": dataset.get("cols_count") or 0,
+                "status": "Ready",  # Default status
+                "runs_count": runs_count,
+                "last_run": last_run,
+                "last_modified": dataset.get("created_at"),
+                "created_at": dataset.get("created_at")
+            })
+        
+        return datasets_with_metadata
+    except Exception as e:
+        print(f"Error in dev datasets endpoint: {e}")
+        return []
 
 # Development endpoint to get all runs (for testing)
 @app.get("/dev/runs")
@@ -843,6 +944,72 @@ def list_runs_dev():
         print(f"Error in dev runs endpoint: {e}")
         return []
 
+
+@app.get("/v1/runs/{run_id}")
+def get_run(run_id: str, user: Dict[str, Any] = Depends(require_user)):
+    """Get full run details including config_json with plan."""
+    r = supabase.table("runs").select("id,project_id").eq("id", run_id).single().execute()
+    if not r.data:
+        raise HTTPException(status_code=404, detail="Run not found")
+    
+    # Ownership check
+    proj = supabase.table("projects").select("owner_id").eq("id", r.data["project_id"]).single().execute()
+    if not proj.data or proj.data.get("owner_id") != user["id"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    
+    # Get full run data
+    run_data = supabase.table("runs").select("*").eq("id", run_id).single().execute()
+    if not run_data.data:
+        raise HTTPException(status_code=404, detail="Run not found")
+    
+    run = dict(run_data.data)
+    
+    # Analyze which method succeeded (from method field or metrics)
+    config_json = run.get("config_json") or {}
+    plan = config_json.get("plan") or {}
+    final_method = run.get("method")
+    
+    # Determine if backup method was used
+    plan_choice = plan.get("choice") or {}
+    # Handle case where choice is a string (legacy format)
+    if isinstance(plan_choice, str):
+        primary_method = plan_choice
+    else:
+        primary_method = plan_choice.get("method") if isinstance(plan_choice, dict) else plan.get("method") or final_method
+    backup_methods = plan.get("backup") or []
+    
+    method_source = "primary"
+    method_index = 0
+    if final_method and primary_method:
+        # Check if final method matches primary
+        if final_method.lower() != str(primary_method).lower():
+            # Check if it's a backup
+            for idx, backup in enumerate(backup_methods, start=1):
+                backup_method = backup.get("method") if isinstance(backup, dict) else backup
+                if isinstance(backup, dict) and "choice" in backup:
+                    backup_method = backup["choice"].get("method")
+                if final_method.lower() == str(backup_method).lower():
+                    method_source = "backup"
+                    method_index = idx
+                    break
+            if method_source == "primary":
+                method_source = "replanned"  # Method changed but not in backup list
+        else:
+            method_source = "primary"
+            method_index = 0
+    
+    # Add agent intervention flags
+    agent_interventions = {
+        "used_backup": method_source == "backup",
+        "replanned": method_source == "replanned",
+        "method_source": method_source,
+        "method_index": method_index,
+        "final_method": final_method,
+        "primary_method": primary_method,
+    }
+    
+    run["agent_interventions"] = agent_interventions
+    return run
 
 @app.get("/v1/runs/{run_id}/status")
 def run_status(run_id: str, user: Dict[str, Any] = Depends(require_user)):
@@ -912,6 +1079,7 @@ def run_artifacts(run_id: str, user: Dict[str, Any] = Depends(require_user)):
 
 @app.get("/v1/runs/{run_id}/steps")
 def run_steps(run_id: str, user: Dict[str, Any] = Depends(require_user)):
+    """Get step-by-step execution log with enhanced agent intervention flags."""
     r = supabase.table("runs").select("id,project_id").eq("id", run_id).single().execute()
     if not r.data:
         raise HTTPException(status_code=404, detail="Run not found")
@@ -920,7 +1088,44 @@ def run_steps(run_id: str, user: Dict[str, Any] = Depends(require_user)):
         raise HTTPException(status_code=403, detail="Forbidden")
     try:
         rows = supabase.table("run_steps").select("step_no,title,detail,metrics_json,created_at").eq("run_id", run_id).order("step_no").execute().data or []
-        return rows
+        
+        # Enhance steps with agent intervention flags
+        enhanced_rows = []
+        for step in rows:
+            enhanced_step = dict(step)
+            title_lower = (step.get("title") or "").lower()
+            detail_lower = (step.get("detail") or "").lower()
+            
+            # Detect agent events
+            enhanced_step["is_agent_action"] = (
+                "agent" in title_lower or 
+                "agent" in detail_lower or
+                "suggestion" in title_lower or
+                "replanned" in detail_lower
+            )
+            enhanced_step["is_backup_attempt"] = (
+                "backup" in detail_lower or
+                ("attempt" in detail_lower and any(x in detail_lower for x in ["2", "3", "4"]))
+            )
+            enhanced_step["is_error"] = title_lower == "error"
+            enhanced_step["is_training"] = title_lower == "training"
+            enhanced_step["is_metrics"] = title_lower == "metrics"
+            enhanced_step["is_planned"] = title_lower == "planned"
+            
+            # Extract method from detail if present
+            method_match = None
+            if detail_lower:
+                import re
+                methods = ["gc", "ctgan", "tvae"]
+                for m in methods:
+                    if re.search(rf'\b{m}\b', detail_lower):
+                        method_match = m.upper()
+                        break
+            enhanced_step["method_hint"] = method_match
+            
+            enhanced_rows.append(enhanced_step)
+        
+        return enhanced_rows
     except APIError as e:
         # Gracefully handle when the optional run_steps table hasn't been created yet
         # PGRST205: table not found in schema cache
@@ -1486,9 +1691,17 @@ Reply to: {contact_data.email}
                 print("✅ Email sent successfully via Resend!")
                 return True
             else:
-                print(f"⚠️ Resend API error: {response.status_code} - {response.text}")
+                error_text = response.text
+                print(f"⚠️ Resend API error: {response.status_code} - {error_text}")
                 # Log the submission anyway for manual processing
                 print(f"📝 Contact form submission logged from {contact_data.email}")
+                
+                # If domain not verified, provide helpful message
+                if response.status_code == 403 and "domain" in error_text.lower():
+                    print("💡 RESEND SETUP REQUIRED:")
+                    print("   Please verify your domain at: https://resend.com/domains")
+                    print(f"   Current FROM_EMAIL: {FROM_EMAIL}")
+                    print(f"   Current TO_EMAIL: {CONTACT_EMAIL}")
                 return False
                 
         except Exception as e:

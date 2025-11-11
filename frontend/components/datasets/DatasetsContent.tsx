@@ -129,9 +129,50 @@ export function DatasetsContent() {
     // TODO: Implement dataset archive
   };
 
-  const handleDatasetDelete = (datasetId: string) => {
-    console.log('Delete dataset:', datasetId);
-    // TODO: Implement dataset delete
+  const handleDatasetDelete = async (datasetId: string) => {
+    try {
+      const confirmed = window.confirm('Delete this dataset? This will also delete all associated runs. This action cannot be undone.');
+      if (!confirmed) return;
+
+      const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
+      
+      if (!base) {
+        alert('Backend API URL not configured. Please set NEXT_PUBLIC_BACKEND_API_BASE in Vercel environment variables.');
+        console.error('[Delete Dataset] NEXT_PUBLIC_BACKEND_API_BASE is not set');
+        return;
+      }
+
+      const supabase = createSupabaseBrowserClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('No authentication token available');
+      }
+
+      const url = `${base}/v1/datasets/${datasetId}`;
+      console.log(`[Delete Dataset] Calling: DELETE ${url}`);
+
+      const response = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`[Delete Dataset] API Error ${response.status}:`, errorText);
+        throw new Error(`Failed to delete dataset: ${response.status} - ${errorText}`);
+      }
+
+      // Remove from UI
+      setDatasets(prev => prev.filter(d => d.id !== datasetId));
+      console.log(`[Delete Dataset] Successfully deleted dataset ${datasetId}`);
+    } catch (err) {
+      console.error('Error deleting dataset:', err);
+      alert(`Failed to delete dataset: ${err instanceof Error ? err.message : String(err)}`);
+    }
   };
 
   const handlePreviewDataset = (dataset: DemoDataset) => {
@@ -252,17 +293,32 @@ export function DatasetsContent() {
     setLoading(true);
     setError(null);
 
-    const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
+    const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE || 'http://localhost:8000';
 
     try {
-      if (!base) {
-        throw new Error('Backend API base URL not configured');
-      }
-
       const supabase = createSupabaseBrowserClient();
       const { data: { session } } = await supabase.auth.getSession();
 
       if (!session?.access_token) {
+        console.warn('No authentication token - user may need to sign in');
+        // Try dev endpoint as fallback (for testing without auth)
+        try {
+          const devResponse = await fetch(`${base}/dev/datasets`, {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+          if (devResponse.ok) {
+            const devData = await devResponse.json();
+            if (Array.isArray(devData)) {
+              setDatasets(devData as DemoDataset[]);
+              setUsingDemoData(false);
+              return;
+            }
+          }
+        } catch (devErr) {
+          console.warn('Dev endpoint also unavailable:', devErr);
+        }
         throw new Error('No authentication token available');
       }
 
@@ -274,6 +330,26 @@ export function DatasetsContent() {
       });
 
       if (!response.ok) {
+        // Try dev endpoint as fallback for testing
+        if (response.status === 401 || response.status === 403) {
+          try {
+            const devResponse = await fetch(`${base}/dev/datasets`, {
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            });
+            if (devResponse.ok) {
+              const devData = await devResponse.json();
+              if (Array.isArray(devData)) {
+                setDatasets(devData as DemoDataset[]);
+                setUsingDemoData(false);
+                return;
+              }
+            }
+          } catch (devErr) {
+            // Continue with original error
+          }
+        }
         throw new Error(`API error: ${response.status}`);
       }
 
@@ -374,8 +450,8 @@ export function DatasetsContent() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       {usingDemoData && (
-        <div className="rounded-md border border-dashed border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
-          Showing demo datasets while the backend API is unavailable.
+        <div className="rounded-md border border-dashed border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
+          <strong>Note:</strong> Using demo datasets. Please sign in to connect to the backend API and view your actual datasets.
         </div>
       )}
       {/* Header */}
@@ -687,6 +763,10 @@ export function DatasetsContent() {
         onClose={() => setRunExecutionModal({ isOpen: false, dataset: null })}
         onSuccess={handleRunSuccess}
         dataset={runExecutionModal.dataset}
+        onViewResults={(runId, runName) => {
+          setRunExecutionModal({ isOpen: false, dataset: null });
+          setResultsModal({ isOpen: true, runId, runName });
+        }}
       />
 
       <ResultsModal

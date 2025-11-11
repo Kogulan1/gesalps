@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -33,28 +34,49 @@ export function CreateProjectModal({ isOpen, onClose, onSuccess }: CreateProject
 
     setLoading(true);
     try {
-      // TODO: Implement project creation logic
-      const newProject = {
-        id: `proj-${Date.now()}`,
-        name: projectName.trim(),
-        description: description.trim(),
-        status,
-        owner_id: "user-123",
-        created_at: new Date().toISOString(),
+      const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
+      
+      if (!base) {
+        throw new Error('API base URL not configured');
+      }
+
+      const supabase = createSupabaseBrowserClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('No authentication token available');
+      }
+
+      const response = await fetch(`${base}/v1/projects`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name: projectName.trim() })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to create project: ${response.status} - ${errorText}`);
+      }
+
+      const newProject = await response.json();
+      
+      // Add computed fields for the frontend
+      const projectWithMetadata = {
+        ...newProject,
         datasets_count: 0,
         runs_count: 0,
-        last_activity: "Just now"
+        last_activity: "Just now",
+        status: "Ready"
       };
-
-      console.log('Creating project:', newProject);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      onSuccess(newProject);
+      onSuccess(projectWithMetadata);
       handleClose();
     } catch (error) {
       console.error('Error creating project:', error);
+      alert(`Failed to create project: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setLoading(false);
     }
