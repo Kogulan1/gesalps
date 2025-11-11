@@ -55,7 +55,7 @@ export function PricingTeaser() {
       ],
       buttonText: t('pharma.button'),
       buttonVariant: 'outline' as const,
-      buttonHref: '#contact',
+      buttonHref: `/${locale}/contact`,
     },
   ];
 

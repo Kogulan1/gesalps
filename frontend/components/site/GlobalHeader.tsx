@@ -204,7 +204,7 @@ export function GlobalHeader() {
         {/* Right side */}
         <div className="flex items-center space-x-4">
           <Button variant="ghost" size="sm" asChild className="text-gray-600 hover:text-black hover:bg-gray-100">
-            <Link href="#pricing">{t('nav.contact')}</Link>
+            <Link href={`/${locale}/contact`}>{t('nav.contact')}</Link>
           </Button>
           
           

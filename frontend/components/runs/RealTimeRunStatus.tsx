@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import Progress from '@/components/ui/progress';
 import { 
   Play, 
   Pause, 
@@ -14,6 +14,7 @@ import {
   Activity
 } from 'lucide-react';
 import { useWebSocket } from '@/lib/hooks/useWebSocket';
+import { createSupabaseBrowserClient } from '@/lib/supabase/browserClient';
 
 interface RunStatus {
   id: string;
@@ -61,13 +62,56 @@ export function RealTimeRunStatus({ runId, onStatusChange }: RealTimeRunStatusPr
   // });
   const isConnected = false; // Temporary fallback
 
+  // Fetch steps for execution log
+  const [currentSteps, setCurrentSteps] = useState<any[]>([]);
+  const [latestStep, setLatestStep] = useState<any>(null);
+
+  const fetchSteps = async () => {
+    if (!runId) return;
+    try {
+      const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE || 'http://localhost:8000';
+      const supabase = createSupabaseBrowserClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) return;
+
+      const response = await fetch(`${base}/v1/runs/${runId}/steps`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        }
+      });
+
+      if (response.ok) {
+        const steps = await response.json();
+        setCurrentSteps(steps);
+        if (steps.length > 0) {
+          setLatestStep(steps[steps.length - 1]);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch steps:', error);
+    }
+  };
+
   // Fallback polling if WebSocket is not available
   useEffect(() => {
     if (!isConnected && runId) {
       setIsPolling(true);
-      const pollInterval = setInterval(async () => {
+      
+      // Initial fetch
+      const fetchStatus = async () => {
         try {
-          const response = await fetch(`/api/v1/runs/${runId}/status`);
+          const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE || 'http://localhost:8000';
+          const supabase = createSupabaseBrowserClient();
+          const { data: { session } } = await supabase.auth.getSession();
+          
+          if (!session?.access_token) return;
+
+          const headers = {
+            'Authorization': `Bearer ${session.access_token}`,
+          };
+
+          const response = await fetch(`${base}/v1/runs/${runId}/status`, { headers });
           if (response.ok) {
             const status = await response.json();
             setRunStatus(status);
@@ -76,11 +120,24 @@ export function RealTimeRunStatus({ runId, onStatusChange }: RealTimeRunStatusPr
             // Stop polling if run is completed
             if (status.status === 'succeeded' || status.status === 'failed') {
               setIsPolling(false);
-              clearInterval(pollInterval);
+              return false;
             }
           }
         } catch (error) {
           console.error('Failed to poll run status:', error);
+        }
+        return true;
+      };
+
+      fetchStatus();
+      fetchSteps();
+
+      const pollInterval = setInterval(async () => {
+        const shouldContinue = await fetchStatus();
+        if (shouldContinue) {
+          fetchSteps(); // Also poll steps
+        } else {
+          clearInterval(pollInterval);
         }
       }, 2000);
 
@@ -183,6 +240,30 @@ export function RealTimeRunStatus({ runId, onStatusChange }: RealTimeRunStatusPr
             {runStatus.currentStep && (
               <p className="text-sm text-gray-600">{runStatus.currentStep}</p>
             )}
+          </div>
+        )}
+
+        {/* Current Step Info */}
+        {latestStep && runStatus.status === 'running' && (
+          <div className="border-t pt-4 mt-4">
+            <h4 className="text-sm font-medium text-gray-700 mb-2">Latest Step</h4>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <div className="flex items-center space-x-2 mb-1">
+                <span className="text-xs font-medium text-blue-900">
+                  Step {latestStep.step_no}: {latestStep.title}
+                </span>
+                {latestStep.is_agent_action && (
+                  <Badge className="bg-purple-100 text-purple-800 text-xs">Agent</Badge>
+                )}
+                {latestStep.is_backup_attempt && (
+                  <Badge className="bg-orange-100 text-orange-800 text-xs">Backup</Badge>
+                )}
+              </div>
+              <p className="text-xs text-gray-700">{latestStep.detail}</p>
+              {latestStep.method_hint && (
+                <p className="text-xs text-gray-500 mt-1">Method: {latestStep.method_hint}</p>
+              )}
+            </div>
           </div>
         )}
 

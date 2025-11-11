@@ -1,0 +1,38 @@
+# Gesalps Backend - Environment Variables Template
+# Copy this file to .env and fill in your values
+
+# Supabase Configuration
+# Get these from your Supabase project settings
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
+SUPABASE_ANON_KEY=your-anon-key-here
+
+# CORS Configuration
+# Add your frontend domain(s) separated by commas
+# For production, use your actual domain(s), not localhost
+CORS_ALLOW_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
+
+# Email Configuration (Optional)
+# If using Resend for emails
+SMTP_HOST=smtp.resend.com
+SMTP_PORT=587
+SMTP_USER=resend
+SMTP_PASSWORD=your-resend-api-key
+SMTP_FROM=noreply@yourdomain.com
+
+# Service URLs (usually don't need to change)
+REPORT_SERVICE_BASE=http://report-service:8010
+OLLAMA_BASE=http://ollama:11434
+
+# Worker Configuration
+WORKER_ENABLED=true
+DP_BACKEND=custom
+DP_STRICT_DEFAULT=false
+
+# Security Settings
+# Set to false in production
+ALLOW_INSECURE_SUPABASE_DEFAULTS=false
+
+# Upload Limits
+MAX_UPLOAD_MB=10
+

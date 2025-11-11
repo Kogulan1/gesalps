@@ -25,7 +25,7 @@ export default function Footer() {
           <div>
             <div className="font-medium mb-2">Company</div>
             <ul className="space-y-1 token-muted">
-              <li><a href="mailto:sales@gesalps.ai">Contact</a></li>
+              <li><Link href={`/${locale}/contact`}>Contact</Link></li>
               <li><a href="#">Blog</a></li>
             </ul>
           </div>
@@ -41,7 +41,7 @@ export default function Footer() {
           <div>© {new Date().getFullYear()} GESALP AI</div>
           <Link href={`/${locale}/privacy`}>{tFooter('privacy')}</Link>
           <Link href={`/${locale}/terms`}>{tFooter('terms')}</Link>
-          <a href="mailto:support@gesalps.ai">{tFooter('contact')}</a>
+          <Link href={`/${locale}/contact`}>{tFooter('contact')}</Link>
         </div>
       </div>
     </footer>

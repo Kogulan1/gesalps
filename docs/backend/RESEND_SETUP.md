@@ -32,7 +32,7 @@ Add to your `.env` file:
 ```env
 # Resend API (Recommended - No port issues)
 RESEND_API_KEY=re_your_api_key_here
-FROM_EMAIL=Gesalp AI <noreply@gesalpai.ch>
+FROM_EMAIL=Gesalp AI <info@gesalpai.ch>
 CONTACT_EMAIL=info@gesalpai.ch
 ```
 

@@ -19,7 +19,7 @@ export default function Footer() {
         <div>
           <div className="font-medium mb-2">Company</div>
           <ul className="space-y-1 text-neutral-600 dark:text-neutral-300">
-            <li><a href="mailto:sales@example.com">Contact</a></li>
+            <li><Link href="/contact">Contact</Link></li>
             <li><a href="#">Blog</a></li>
           </ul>
         </div>

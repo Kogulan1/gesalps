@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useLocale } from "next-intl";
 
 export default function Roadmap() {
+  const locale = useLocale();
   const milestones = [
     {
       id: 1,
@@ -107,7 +109,7 @@ export default function Roadmap() {
         <div className="mt-16 text-center">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              href="/en/contact"
+              href={`/${locale}/contact`}
               className="inline-flex items-center px-6 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200"
               style={{ color: 'white' }}
               aria-label="Book a demo to get started"
