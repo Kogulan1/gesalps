@@ -23,10 +23,12 @@ try:
 except Exception:  # pragma: no cover
     SDVMetadata = None  # type: ignore
 from sdv.metadata import SingleTableMetadata
-from sdv.single_table import (
-    GaussianCopulaSynthesizer,
-    CTGANSynthesizer,
-    TVAESynthesizer,
+
+# Unified model interface
+from models import (
+    create_synthesizer,
+    train_synthesizer,
+    BaseSynthesizer,
 )
 
 # Silence only the deprecation warning coming from old lite API paths (if any)
@@ -140,49 +142,44 @@ def _sample_count(real_len: int, hparams: Dict[str, Any]) -> int:
     n = int(min(cap, mr, max(1, int(real_len * max(0.1, sm)))))
     return n
 
-def _train_gc(run_id: str, real_df: pd.DataFrame, hparams: Dict[str, Any]) -> tuple[pd.DataFrame, Dict[str, Any], Dict[str, str]]:
+def _train_unified(run_id: str, method: str, real_df: pd.DataFrame, metadata: SingleTableMetadata, hparams: Dict[str, Any], dp_options: Optional[Dict[str, Any]] = None) -> tuple[pd.DataFrame, Dict[str, Any], Dict[str, str]]:
+    """Unified training function replacing _train_gc, _train_ctgan, _train_tvae."""
     df = _clean_df_for_sdv(real_df)
-    meta_tbl = _prepare_metadata_from_df(df)
-    model = GaussianCopulaSynthesizer(meta_tbl)
-    model.fit(df)
     n = _sample_count(len(df), hparams)
-    synth = model.sample(num_rows=n)
-    util = _utility_metrics(df, synth)
-    priv = _privacy_metrics(df, synth)
-    fair = _fairness_metrics(df, synth)
-    metrics = {"utility": util, "privacy": priv, "fairness": fair}
-    artifacts = _make_artifacts(run_id, synth, metrics)
-    return synth, metrics, artifacts
+    
+    # Use unified trainer
+    result = train_synthesizer(
+        method=method,
+        real_df=df,
+        metadata=metadata,
+        hyperparams=hparams,
+        num_rows=n,
+        utility_fn=_utility_metrics,
+        privacy_fn=_privacy_metrics,
+        fairness_fn=_fairness_metrics,
+        dp_options=dp_options,
+    )
+    
+    metrics = {
+        "utility": result.utility_metrics,
+        "privacy": result.privacy_metrics,
+        "fairness": result.fairness_metrics,
+    }
+    artifacts = _make_artifacts(run_id, result.synthetic_df, metrics)
+    return result.synthetic_df, metrics, artifacts
+
+# Legacy aliases for backward compatibility (deprecated - use _train_unified)
+def _train_gc(run_id: str, real_df: pd.DataFrame, hparams: Dict[str, Any]) -> tuple[pd.DataFrame, Dict[str, Any], Dict[str, str]]:
+    metadata = _prepare_metadata_from_df(_clean_df_for_sdv(real_df))
+    return _train_unified(run_id, "gc", real_df, metadata, hparams)
 
 def _train_ctgan(run_id: str, real_df: pd.DataFrame, hparams: Dict[str, Any]) -> tuple[pd.DataFrame, Dict[str, Any], Dict[str, str]]:
-    df = _clean_df_for_sdv(real_df)
-    meta_tbl = _prepare_metadata_from_df(df)
-    hp = _sanitize_hparams("ctgan", hparams or {})
-    model = CTGANSynthesizer(meta_tbl, **hp)
-    model.fit(df)
-    n = _sample_count(len(df), hparams)
-    synth = model.sample(num_rows=n)
-    util = _utility_metrics(df, synth)
-    priv = _privacy_metrics(df, synth)
-    fair = _fairness_metrics(df, synth)
-    metrics = {"utility": util, "privacy": priv, "fairness": fair}
-    artifacts = _make_artifacts(run_id, synth, metrics)
-    return synth, metrics, artifacts
+    metadata = _prepare_metadata_from_df(_clean_df_for_sdv(real_df))
+    return _train_unified(run_id, "ctgan", real_df, metadata, hparams)
 
 def _train_tvae(run_id: str, real_df: pd.DataFrame, hparams: Dict[str, Any]) -> tuple[pd.DataFrame, Dict[str, Any], Dict[str, str]]:
-    df = _clean_df_for_sdv(real_df)
-    meta_tbl = _prepare_metadata_from_df(df)
-    hp = _sanitize_hparams("tvae", hparams or {})
-    model = TVAESynthesizer(meta_tbl, **hp)
-    model.fit(df)
-    n = _sample_count(len(df), hparams)
-    synth = model.sample(num_rows=n)
-    util = _utility_metrics(df, synth)
-    priv = _privacy_metrics(df, synth)
-    fair = _fairness_metrics(df, synth)
-    metrics = {"utility": util, "privacy": priv, "fairness": fair}
-    artifacts = _make_artifacts(run_id, synth, metrics)
-    return synth, metrics, artifacts
+    metadata = _prepare_metadata_from_df(_clean_df_for_sdv(real_df))
+    return _train_unified(run_id, "tvae", real_df, metadata, hparams)
 
 def resolve_dp_backend(config_dp: Optional[Dict[str, Any]] | bool | None) -> tuple[str, bool, Optional[float]]:
     """Resolve DP backend, strict flag, and epsilon from env + per-run config.
@@ -227,6 +224,7 @@ def resolve_dp_backend(config_dp: Optional[Dict[str, Any]] | bool | None) -> tup
     return (backend, strict, epsilon)
 
 def _lazy_import_tabddpm():
+    """Lazy import for TabDDPM (experimental)."""
     try:
         try:
             from tabddpm import TabDDPM  # type: ignore
@@ -241,6 +239,7 @@ def _lazy_import_tabddpm():
 
 
 def _lazy_import_tabtransformer():
+    """Lazy import for TabTransformer (experimental)."""
     try:
         # synthcity provides a TabTransformer model
         from synthcity.plugins.core.models.tabular_transformer import (  # type: ignore
@@ -253,20 +252,21 @@ def _lazy_import_tabtransformer():
         ) from e
 
 
-class _ModelAdapter:
-    """Light wrapper to normalize fit/sample API for experimental models."""
+class _ModelAdapter(BaseSynthesizer):
+    """Adapter for experimental models that don't follow SDV interface."""
 
-    def __init__(self, model):
+    def __init__(self, model, metadata: SingleTableMetadata):
+        super().__init__(metadata, None)
         self._model = model
         self._cols: list[str] = []
 
-    def fit(self, df: pd.DataFrame):
+    def fit(self, df: pd.DataFrame) -> None:
         self._cols = list(df.columns)
         # Most libs accept DataFrame directly; fallback to values
         try:
-            return self._model.fit(df)
+            self._model.fit(df)
         except Exception:
-            return self._model.fit(df.values)
+            self._model.fit(df.values)
 
     def sample(self, num_rows: int) -> pd.DataFrame:
         # Try common generation entry points
@@ -287,78 +287,11 @@ class _ModelAdapter:
             raise RuntimeError("Experimental model does not expose sample/generate API")
         if isinstance(out, pd.DataFrame):
             return out.head(num_rows).reset_index(drop=True)
-        import numpy as np  # local import
-
+        
         arr = np.asarray(out)
         if arr.ndim == 2 and arr.shape[1] == len(self._cols):
             return pd.DataFrame(arr[:num_rows], columns=self._cols)
-        # Last resort: coerce to DataFrame with best-effort columns
         return pd.DataFrame(arr[:num_rows], columns=self._cols[: arr.shape[1]])
-
-
-def _try_import_synthcity():
-    try:
-        from synthcity.plugins import Plugins  # type: ignore
-        return Plugins
-    except Exception:
-        return None
-
-
-class _SynthcityAdapter:
-    """Adapter to expose .fit/.sample over synthcity plugins."""
-
-    def __init__(self, plugin_obj):
-        self._p = plugin_obj
-        self._cols: list[str] = []
-
-    def fit(self, df: pd.DataFrame):
-        self._cols = list(df.columns)
-        return self._p.fit(df)
-
-    def sample(self, num_rows: int) -> pd.DataFrame:
-        try:
-            out = self._p.generate(num_rows)
-        except Exception:
-            out = self._p.sample(num_rows) if hasattr(self._p, "sample") else None
-        if isinstance(out, pd.DataFrame):
-            return out.head(num_rows).reset_index(drop=True)
-        import numpy as np
-        arr = np.asarray(out)
-        if arr.ndim == 2 and self._cols and arr.shape[1] == len(self._cols):
-            return pd.DataFrame(arr[:num_rows], columns=self._cols)
-        return pd.DataFrame(arr[:num_rows])
-
-
-def _build_synthcity_synthesizer(method: str, metadata: SingleTableMetadata, dp_opts: Optional[Dict[str, Any]], hparams: Optional[Dict[str, Any]]):
-    Plugins = _try_import_synthcity()
-    if not Plugins:
-        raise NotImplementedError("synthcity not installed for DP mode")
-
-    # Map requested → candidate plugin names
-    candidates = []
-    m = method.lower()
-    if m in {"dp-ctgan"}:
-        candidates = ["dpctgan", "ctgan_dp", "ctgan_privacy"]
-    elif m in {"pategan"}:
-        candidates = ["pategan"]
-    elif m in {"dpgan"}:
-        candidates = ["dpgan"]
-    else:
-        candidates = [m]
-
-    available = set(Plugins().list())
-    chosen = None
-    for name in candidates:
-        if name in available:
-            chosen = name; break
-    if not chosen:
-        raise NotImplementedError(f"DP plugin for '{method}' not found in synthcity plugins: {sorted(list(available))[:20]}")
-
-    try:
-        plg = Plugins().get(chosen, **(hparams or {}))
-    except Exception as e:
-        raise RuntimeError(f"Failed to init synthcity plugin '{chosen}': {e}")
-    return _SynthcityAdapter(plg)
 
 
 def _dp_backend_available(method: str) -> bool:
@@ -375,95 +308,40 @@ def _build_synthesizer(
     requested: Optional[str],
     hparams: Optional[Dict[str, Any]] = None,
     dp_opts: Optional[Dict[str, Any]] = None,
-) -> tuple[Any, bool]:
+) -> tuple[BaseSynthesizer, bool]:
     """
-    Choose synthesizer mapped from method string:
-      - gc     -> GaussianCopulaSynthesizer (default)
-      - ctgan  -> CTGANSynthesizer
-      - tvae   -> TVAESynthesizer
-    Fallback order: requested -> SDV_METHOD env -> GC
+    DEPRECATED: Use create_synthesizer() from models module instead.
+    
+    Legacy wrapper for backward compatibility. Delegates to unified factory.
     """
     m = (requested or SDV_METHOD or "gc").lower()
-    # Normalize dp aliases
-    if m in ("dp-ctgan", "ctgan-dp"):
-        m = "ctgan"; dp_opts = dp_opts or {"dp": True}
-    if m in ("dp-tvae", "tvae-dp"):
-        m = "tvae"; dp_opts = dp_opts or {"dp": True}
-
-    # Normalize dp options
-    dp_requested = False
-    dp_strict = False
-    if dp_opts is True:
-        dp_requested = True
-    elif isinstance(dp_opts, dict):
-        dp_requested = bool(dp_opts.get("dp", True))
-        dp_strict = bool(dp_opts.get("strict", False))
-
-    # If explicit synthcity DP methods requested
-    if m in ("dp-ctgan", "pategan", "dpgan"):
-        try:
-            adapter = _build_synthcity_synthesizer(m, metadata, dp_opts, hparams)
-            try:
-                print(f"[worker][dp] using synthcity plugin for method={m}")
-            except Exception:
-                pass
-            return adapter, True
-        except Exception as e:
-            # Respect strict mode
-            if dp_requested and dp_strict:
-                raise
-            try:
-                print(f"[worker][dp] synthcity unavailable for {m}: {e}; falling back to SDV GC (non-DP).")
-            except Exception:
-                pass
-            return GaussianCopulaSynthesizer(metadata), False
-
-    # If DP backend requested as synthcity but method is a standard SDV name, try synthcity DP-CTGAN transparently
-    if (dp_opts and isinstance(dp_opts, dict) and dp_opts.get("dp") and str(dp_opts.get("backend") or "").lower()=="synthcity") and m in ("ctgan","ct","ctgansynthesizer"):
-        try:
-            adapter = _build_synthcity_synthesizer("dp-ctgan", metadata, dp_opts, hparams)
-            try:
-                print("[worker][dp] using synthcity DP-CTGAN for ctgan request")
-            except Exception:
-                pass
-            return adapter, True
-        except Exception as e:
-            if dp_requested and dp_strict:
-                raise
-            try:
-                print(f"[worker][dp] synthcity unavailable for DP-CTGAN: {e}; falling back to SDV CTGAN (non-DP).")
-            except Exception:
-                pass
-            return CTGANSynthesizer(metadata, **(hparams or {})), False
-
-    if m in ("ctgan", "ct", "ctgansynthesizer"):
-        if dp_requested and not _dp_backend_available("ctgan"):
-            if dp_strict:
-                raise NotImplementedError("DP requested for CTGAN but DP backend unavailable; set dp.strict=false to fallback.")
-            try:
-                print("[worker][dp] DP requested but unavailable for ctgan; falling back to non-DP.")
-            except Exception:
-                pass
-            return CTGANSynthesizer(metadata, **(hparams or {})), False
-        return CTGANSynthesizer(metadata, **(hparams or {})), bool(dp_requested)
-    if m in ("tvae", "tv", "tvaesynthesizer"):
-        if dp_requested and not _dp_backend_available("tvae"):
-            if dp_strict:
-                raise NotImplementedError("DP requested for TVAE but DP backend unavailable; set dp.strict=false to fallback.")
-            try:
-                print("[worker][dp] DP requested but unavailable for tvae; falling back to non-DP.")
-            except Exception:
-                pass
-            return TVAESynthesizer(metadata, **(hparams or {})), False
-        return TVAESynthesizer(metadata, **(hparams or {})), bool(dp_requested)
+    
+    # Handle experimental models that aren't in unified structure yet
     if m in ("diffusion", "ddpm", "tabddpm"):
         TabDDPM = _lazy_import_tabddpm()
-        return _ModelAdapter(TabDDPM(metadata=metadata)), False  # type: ignore[call-arg]
+        return _ModelAdapter(TabDDPM(metadata=metadata), metadata), False  # type: ignore[call-arg]
     if m in ("transformer", "tabtransformer"):
         TabTransformer = _lazy_import_tabtransformer()
-        return _ModelAdapter(TabTransformer(metadata=metadata)), False  # type: ignore[call-arg]
-    # default (fast & robust)
-    return GaussianCopulaSynthesizer(metadata), False
+        return _ModelAdapter(TabTransformer(metadata=metadata), metadata), False  # type: ignore[call-arg]
+    
+    # Use unified factory for all standard and SynthCity models
+    try:
+        return create_synthesizer(
+            method=m,
+            metadata=metadata,
+            hyperparams=hparams,
+            dp_options=dp_opts,
+        )
+    except Exception as e:
+        # If DP strict mode and it fails, re-raise
+        if isinstance(dp_opts, dict) and dp_opts.get("strict", False):
+            raise
+        # Otherwise fallback to GC
+        try:
+            print(f"[worker] Model creation failed for {m}, falling back to GC: {e}")
+        except Exception:
+            pass
+        return create_synthesizer("gc", metadata, None, None)
 
 
 def _filter_hparams(method: str, cfg: Dict[str, Any]) -> Dict[str, Any]:
@@ -646,20 +524,50 @@ def _score_metrics(met: Dict[str, Any]) -> float:
         return 10.0
 
 def _quantile_match(real: pd.DataFrame, synth: pd.DataFrame) -> pd.DataFrame:
+    """Enhanced quantile matching with better edge case handling and correlation preservation."""
     out = synth.copy()
     real_num = real.select_dtypes(include=[np.number])
+    
     for col in out.select_dtypes(include=[np.number]).columns:
         try:
+            if col not in real_num.columns:
+                continue
+                
             r = real_num[col].dropna().to_numpy()
-            s = out[col].to_numpy()
+            s = out[col].dropna().to_numpy()
+            
+            # Skip if insufficient data
             if len(r) < 10 or len(s) == 0:
                 continue
+            
+            # Handle constant columns
+            if np.std(r) == 0 or np.std(s) == 0:
+                out[col] = np.mean(r) if len(r) > 0 else s
+                continue
+            
+            # Enhanced quantile matching with interpolation
             r_sorted = np.sort(r)
             ranks = np.argsort(np.argsort(s))
+            
+            # Use linear interpolation for smoother matching
             p = (ranks + 0.5) / max(1, len(s))
-            idx = np.clip((p * (len(r_sorted) - 1)).astype(int), 0, len(r_sorted) - 1)
-            out[col] = r_sorted[idx]
+            idx_float = p * (len(r_sorted) - 1)
+            idx_low = np.floor(idx_float).astype(int)
+            idx_high = np.ceil(idx_float).astype(int)
+            idx_low = np.clip(idx_low, 0, len(r_sorted) - 1)
+            idx_high = np.clip(idx_high, 0, len(r_sorted) - 1)
+            
+            # Linear interpolation
+            weight = idx_float - idx_low
+            out[col] = (1 - weight) * r_sorted[idx_low] + weight * r_sorted[idx_high]
+            
+            # Preserve NaN positions from original synthetic data
+            nan_mask = pd.isna(synth[col])
+            if nan_mask.any():
+                out.loc[nan_mask, col] = np.nan
+                
         except Exception:
+            # Fallback: keep original synthetic values
             pass
     return out
 
@@ -975,16 +883,41 @@ def execute_pipeline(run: Dict[str, Any]) -> Dict[str, Any]:
             bench_real = real_df.head(n).copy()
             results: Dict[str, Any] = {}
 
-            # Build light configs for speed
+            # Build adaptive configs for benchmarking (faster but representative)
+            n_rows = len(real_df)
+            n_cols = len(real_df.columns)
+            
+            # Scale benchmark configs based on dataset size
+            if n_rows < 1000:
+                ctgan_epochs, ctgan_batch = 50, 64
+                tvae_epochs, tvae_batch = 50, 64
+            elif n_rows < 5000:
+                ctgan_epochs, ctgan_batch = 75, 128
+                tvae_epochs, tvae_batch = 75, 128
+            else:
+                ctgan_epochs, ctgan_batch = 100, 128
+                tvae_epochs, tvae_batch = 100, 128
+            
+            embedding_dim = 128 if n_cols < 20 else 256
+            
             configs = {
-                "gc": ({}, GaussianCopulaSynthesizer),
-                "ctgan": ({"epochs": 50, "batch_size": 128, "embedding_dim": 64, "pac": 10}, CTGANSynthesizer),
-                "tvae": ({"epochs": 120, "batch_size": 128, "embedding_dim": 64}, TVAESynthesizer),
+                "gc": {},
+                "ctgan": {
+                    "epochs": ctgan_epochs,
+                    "batch_size": ctgan_batch,
+                    "embedding_dim": embedding_dim,
+                    "pac": 10
+                },
+                "tvae": {
+                    "epochs": tvae_epochs,
+                    "batch_size": tvae_batch,
+                    "embedding_dim": embedding_dim
+                },
             }
 
-            for m, (hp, cls) in configs.items():
+            for m, hp in configs.items():
                 try:
-                    model = cls(meta_schema, **hp)  # type: ignore[misc]
+                    model, _ = create_synthesizer(m, meta_schema, hp)
                     model.fit(bench_real)
                     synth = model.sample(num_rows=n)
                     util = _utility_metrics(bench_real, synth)
@@ -1045,12 +978,11 @@ def execute_pipeline(run: Dict[str, Any]) -> Dict[str, Any]:
     hparams = _sanitize_hparams(method or "gc", hparams)
 
     # Build synthesizer with optional hyperparameters
-    if (method or "gc") in ("ctgan", "ct"):
-        synth_model = CTGANSynthesizer(metadata, **hparams)
-    elif (method or "gc") == "tvae":
-        synth_model = TVAESynthesizer(metadata, **hparams)
-    else:
-        synth_model = GaussianCopulaSynthesizer(metadata)
+    synth_model, _ = create_synthesizer(
+        method=(method or "gc"),
+        metadata=metadata,
+        hyperparams=hparams,
+    )
 
     # Per-run overrides from agent plan (with safe fallbacks)
     sample_multiplier = float(_cfg_get(run, "sample_multiplier", SAMPLE_MULTIPLIER))
@@ -1112,6 +1044,12 @@ def execute_pipeline(run: Dict[str, Any]) -> Dict[str, Any]:
     except Exception:
         plan = None
     if isinstance(plan, dict) and (plan.get("choice") or plan.get("method")):
+        # Log agent plan execution
+        print(f"[worker][agent] EXECUTING agent plan for run {run['id']}")
+        print(f"[worker][agent] Plan choice: {plan.get('choice')}")
+        print(f"[worker][agent] Plan rationale: {plan.get('rationale', 'N/A')}")
+        print(f"[worker][agent] Plan backups: {len(plan.get('backup') or [])} backup methods")
+        
         # Normalize attempts list
         first = plan.get("choice") or {"method": plan.get("method"), "hyperparams": plan.get("hyperparams", {})}
         backups = plan.get("backup") or []
@@ -1126,20 +1064,25 @@ def execute_pipeline(run: Dict[str, Any]) -> Dict[str, Any]:
         attempts_list.append(_norm(first))
         for b in backups:
             attempts_list.append(_norm(b))
+        
+        print(f"[worker][agent] Will attempt {len(attempts_list)} methods: {[a.get('method') for a in attempts_list]}")
 
         accepted: Optional[Dict[str, Any]] = None
         best: Optional[Dict[str, Any]] = None
         best_score = 1e9
         for i, item in enumerate(attempts_list, start=1):
             try:
+                step_detail = f"attempt {i}: method={item.get('method')}"
+                print(f"[worker][step] INSERTING step {i}: training - {step_detail}")
                 supabase.table("run_steps").insert({
                     "run_id": run["id"],
                     "step_no": i,
                     "title": "training",
-                    "detail": f"attempt {i}: method={item.get('method')}",
+                    "detail": step_detail,
                 }).execute()
-            except Exception:
-                pass
+                print(f"[worker][step] SUCCESS: step {i} inserted")
+            except Exception as e:
+                print(f"[worker][step] ERROR inserting training step {i}: {type(e).__name__}: {e}")
 
             try:
                 out = _attempt_train(item, real_clean, metadata)
@@ -1153,28 +1096,35 @@ def execute_pipeline(run: Dict[str, Any]) -> Dict[str, Any]:
                     best_score = sc
                     best = {"synth": synth, "metrics": met, "method": out.get("method"), "attempt": i, "n": out.get("n")}
                 try:
+                    metrics_detail = "; ".join(reasons)[:500]
+                    print(f"[worker][step] INSERTING step {i}: metrics - {metrics_detail}")
+                    print(f"[worker][metrics] Run {run['id']} attempt {i}: KS={met.get('utility', {}).get('ks_mean'):.3f}, Corr={met.get('utility', {}).get('corr_delta'):.3f}, MIA={met.get('privacy', {}).get('mia_auc'):.3f}")
                     supabase.table("run_steps").insert({
                         "run_id": run["id"],
                         "step_no": i,
                         "title": "metrics",
-                        "detail": "; ".join(reasons)[:500],
+                        "detail": metrics_detail,
                         "metrics_json": met,
                     }).execute()
-                except Exception:
-                    pass
+                    print(f"[worker][step] SUCCESS: metrics step {i} inserted")
+                except Exception as e:
+                    print(f"[worker][step] ERROR inserting metrics step {i}: {type(e).__name__}: {e}")
                 if ok:
                     accepted = {"synth": synth, "metrics": met, "method": out.get("method"), "attempt": i, "n": out.get("n")}
                     break
             except Exception as e:
                 try:
+                    error_detail = f"{type(e).__name__}: {e}"
+                    print(f"[worker][step] INSERTING step {i}: error - {error_detail}")
                     supabase.table("run_steps").insert({
                         "run_id": run["id"],
                         "step_no": i,
                         "title": "error",
-                        "detail": f"{type(e).__name__}: {e}",
+                        "detail": error_detail,
                     }).execute()
-                except Exception:
-                    pass
+                    print(f"[worker][step] SUCCESS: error step {i} inserted")
+                except Exception as insert_err:
+                    print(f"[worker][step] ERROR inserting error step {i}: {type(insert_err).__name__}: {insert_err}")
                 continue
 
         chosen = accepted or best
@@ -1512,12 +1462,75 @@ def execute_pipeline(run: Dict[str, Any]) -> Dict[str, Any]:
                 next_method = "gc"
                 next_hparams = {}
 
-        # Provide default knobs for chosen model
+        # Provide default knobs for chosen model with adaptive tuning
         def _defaults(m: str) -> Dict[str, Any]:
+            n_rows = len(real_clean)
+            n_cols = len(real_clean.columns)
+            
+            # Adaptive hyperparameters based on dataset characteristics
             if m in ("ctgan", "ct"):
-                return {"epochs": 300, "batch_size": 128, "embedding_dim": 128, "pac": 10}
+                # Adaptive epochs: more for larger/complex datasets
+                if n_rows < 1000:
+                    epochs = 300
+                elif n_rows < 10000:
+                    epochs = 400
+                else:
+                    epochs = 500
+                
+                # Adaptive batch size: balance speed and quality
+                if n_rows < 500:
+                    batch_size = max(32, min(64, n_rows // 10))
+                elif n_rows < 5000:
+                    batch_size = 128
+                else:
+                    batch_size = 256
+                
+                # Adaptive embedding dimension: scale with columns
+                if n_cols < 10:
+                    embedding_dim = 128
+                elif n_cols < 30:
+                    embedding_dim = 256
+                else:
+                    embedding_dim = 512
+                
+                return {
+                    "epochs": epochs,
+                    "batch_size": batch_size,
+                    "embedding_dim": embedding_dim,
+                    "pac": 10,
+                    "generator_lr": 2e-4,
+                    "discriminator_lr": 2e-4,
+                }
             if m == "tvae":
-                return {"epochs": 250, "batch_size": 128, "embedding_dim": 64}
+                # Adaptive epochs for TVAE
+                if n_rows < 1000:
+                    epochs = 250
+                elif n_rows < 10000:
+                    epochs = 350
+                else:
+                    epochs = 450
+                
+                # Adaptive batch size
+                if n_rows < 500:
+                    batch_size = max(32, min(64, n_rows // 10))
+                elif n_rows < 5000:
+                    batch_size = 128
+                else:
+                    batch_size = 256
+                
+                # Adaptive embedding dimension
+                if n_cols < 10:
+                    embedding_dim = 64
+                elif n_cols < 30:
+                    embedding_dim = 128
+                else:
+                    embedding_dim = 256
+                
+                return {
+                    "epochs": epochs,
+                    "batch_size": batch_size,
+                    "embedding_dim": embedding_dim,
+                }
             return {}
         current_method = next_method
         current_hparams = {**_defaults(next_method), **_sanitize_hparams(next_method, next_hparams)}
@@ -1626,18 +1639,16 @@ def _attempt_train(plan_item: Dict[str, Any], real_df: pd.DataFrame, metadata: S
     max_synth_rows = int(hp_all.get("max_synth_rows", default_max_rows) or default_max_rows)
     n = int(min(max_synth_rows, max(1, int(len(real_df) * sample_multiplier))))
 
-    # model hparams
+    # Build model using unified factory
     base_hp = {}
     if method == "ctgan":
         base_hp = _sanitize_hparams(method, {**(hp_all.get("ctgan", {})), **{k: v for k, v in hp_all.items() if k in ("epochs","batch_size","embedding_dim","pac")}})
-        model = CTGANSynthesizer(metadata, **base_hp)
     elif method == "tvae":
         base_hp = _sanitize_hparams(method, {**(hp_all.get("tvae", {})), **{k: v for k, v in hp_all.items() if k in ("epochs","batch_size","embedding_dim")}})
-        model = TVAESynthesizer(metadata, **base_hp)
     else:
         method = "gc"
-        model = GaussianCopulaSynthesizer(metadata)
-
+    
+    model, _ = create_synthesizer(method, metadata, base_hp)
     model.fit(real_df)
     synth = model.sample(num_rows=n)
 
