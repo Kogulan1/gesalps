@@ -29,7 +29,7 @@ export default function Pricing() {
             title={t('pharma.title')}
             price={t('pharma.price')}
             features={["Unlimited", "Diffusion + DP", "Full privacy suite + audit PDF", "SSO", "On‑prem option"]}
-            cta={<Button variant="outline" className="btn-secondary rounded-2xl" asChild><a href="mailto:sales@example.com">Choose Plan</a></Button>}
+            cta={<Button variant="outline" className="btn-secondary rounded-2xl" asChild><Link href={`/${locale}/contact`}>Choose Plan</Link></Button>}
           />
         </div>
       </div>

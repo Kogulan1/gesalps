@@ -78,7 +78,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 On your VPS, edit `/opt/gesalps/backend/.env` and update the CORS line:
 ```bash
 # Add your Vercel URL(s) to the list
-CORS_ALLOW_ORIGINS=https://gesalpai.ch,https://www.gesalpai.ch,https://your-app.vercel.app,https://your-app-git-main.vercel.app
+CORS_ALLOW_ORIGINS=https://gesalpai.ch,https://www.gesalpai.ch,https://gesalps-rjf4k2tr8-kogulan1s-projects.vercel.app,https://gesalps-git-main-kogulan1s-projects.vercel.app
 ```
 
 Then restart the backend:

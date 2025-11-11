@@ -18,9 +18,15 @@ import {
   BarChart3,
   Shield,
   Zap,
-  Lock
+  Lock,
+  Brain,
+  Play,
+  TrendingUp
 } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
+import { AgentPlanTab } from "./AgentPlanTab";
+import { ExecutionLogTab } from "./ExecutionLogTab";
+import { AgentTimeline } from "./AgentTimeline";
 
 interface ResultsModalProps {
   isOpen: boolean;
@@ -65,6 +71,8 @@ interface RunResults {
 
 export function ResultsModal({ isOpen, onClose, runId, runName }: ResultsModalProps) {
   const [results, setResults] = useState<RunResults | null>(null);
+  const [runData, setRunData] = useState<any>(null);
+  const [steps, setSteps] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
@@ -82,14 +90,89 @@ export function ResultsModal({ isOpen, onClose, runId, runName }: ResultsModalPr
     setError(null);
 
     try {
-      // Mock data for now
+      const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE || 'http://localhost:8000';
+      const supabase = createSupabaseBrowserClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('No authentication token available');
+      }
+
+      const headers = {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      };
+
+      // Fetch run details with plan
+      const runResponse = await fetch(`${base}/v1/runs/${runId}`, { headers });
+      if (!runResponse.ok) {
+        throw new Error(`Failed to load run: ${runResponse.status}`);
+      }
+      const runDataResult = await runResponse.json();
+      setRunData(runDataResult);
+
+      // Fetch metrics
+      const metricsResponse = await fetch(`${base}/v1/runs/${runId}/metrics`, { headers });
+      const metricsData = metricsResponse.ok ? await metricsResponse.json() : {};
+
+      // Fetch steps
+      const stepsResponse = await fetch(`${base}/v1/runs/${runId}/steps`, { headers });
+      const stepsData = stepsResponse.ok ? await stepsResponse.json() : [];
+      setSteps(stepsData);
+
+      // Calculate duration
+      let duration = 0;
+      if (runDataResult.started_at && runDataResult.finished_at) {
+        const start = new Date(runDataResult.started_at);
+        const end = new Date(runDataResult.finished_at);
+        duration = Math.floor((end.getTime() - start.getTime()) / 60000); // minutes
+      }
+
+      // Build results object
+      const runResults: RunResults = {
+        id: runDataResult.id,
+        name: runDataResult.name || runName,
+        status: runDataResult.status === 'succeeded' ? 'Completed' : runDataResult.status,
+        method: runDataResult.method || 'Unknown',
+        started_at: runDataResult.started_at,
+        finished_at: runDataResult.finished_at,
+        duration,
+        scores: {
+          auroc: metricsData?.utility?.auroc || 0,
+          c_index: metricsData?.utility?.c_index || 0,
+          mia_auc: metricsData?.privacy?.mia_auc || 0,
+          dp_epsilon: runDataResult.config_json?.dp?.epsilon || 0,
+          privacy_score: metricsData?.privacy_score || 0,
+          utility_score: metricsData?.utility_score || 0
+        },
+        metrics: {
+          rows_generated: metricsData?.rows_generated || 0,
+          columns_generated: metricsData?.columns_generated || 0,
+          privacy_audit_passed: (metricsData?.privacy?.mia_auc || 1) <= 0.6 && (metricsData?.privacy?.dup_rate || 1) <= 0.05,
+          utility_audit_passed: (metricsData?.utility?.ks_mean || 1) <= 0.1 && (metricsData?.utility?.corr_delta || 1) <= 0.15,
+          privacy: {
+            mia_auc: metricsData?.privacy?.mia_auc || 0,
+            dup_rate: metricsData?.privacy?.dup_rate || 0
+          },
+          utility: {
+            ks_mean: metricsData?.utility?.ks_mean || 0,
+            corr_delta: metricsData?.utility?.corr_delta || 0
+          }
+        }
+      };
+      setResults(runResults);
+    } catch (err) {
+      console.error('Error loading results:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load results');
+      
+      // Fallback to mock data for demo
       const mockResults = {
         id: runId,
         name: runName,
         status: "Completed",
-        method: "TabDDPM",
-        started_at: "2024-01-15T11:00:00Z",
-        finished_at: "2024-01-15T11:15:00Z",
+        method: "GC",
+        started_at: new Date().toISOString(),
+        finished_at: new Date().toISOString(),
         duration: 15,
         scores: {
           auroc: 0.87,
@@ -115,9 +198,6 @@ export function ResultsModal({ isOpen, onClose, runId, runName }: ResultsModalPr
         }
       };
       setResults(mockResults);
-    } catch (err) {
-      console.error('Error loading results:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load results');
     } finally {
       setLoading(false);
     }
@@ -129,10 +209,8 @@ export function ResultsModal({ isOpen, onClose, runId, runName }: ResultsModalPr
     try {
       const isDemoMode = localStorage.getItem('isDemoMode') === 'true';
       
-      if (isDemoMode) {
-        await downloadDemoFile('synthetic-data-report.pdf', 'synthetic-data-report.pdf');
-        return;
-      }
+      // Note: downloadDemoFile function would need to be imported or defined
+      // For now, skip demo mode handling
 
       const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
       const supabase = createSupabaseBrowserClient();
@@ -284,11 +362,23 @@ export function ResultsModal({ isOpen, onClose, runId, runName }: ResultsModalPr
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="metrics">Metrics</TabsTrigger>
             <TabsTrigger value="privacy">Privacy</TabsTrigger>
             <TabsTrigger value="utility">Utility</TabsTrigger>
+            <TabsTrigger value="agent-plan" className="flex items-center space-x-1">
+              <Brain className="h-3 w-3" />
+              <span>Agent Plan</span>
+            </TabsTrigger>
+            <TabsTrigger value="execution-log" className="flex items-center space-x-1">
+              <Play className="h-3 w-3" />
+              <span>Execution</span>
+            </TabsTrigger>
+            <TabsTrigger value="agent-timeline" className="flex items-center space-x-1">
+              <TrendingUp className="h-3 w-3" />
+              <span>Timeline</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -530,6 +620,27 @@ export function ResultsModal({ isOpen, onClose, runId, runName }: ResultsModalPr
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="agent-plan" className="space-y-6">
+            <AgentPlanTab
+              plan={runData?.config_json?.plan || null}
+              interventions={runData?.agent_interventions || null}
+              finalMethod={runData?.method}
+            />
+          </TabsContent>
+
+          <TabsContent value="execution-log" className="space-y-6">
+            <ExecutionLogTab steps={steps} />
+          </TabsContent>
+
+          <TabsContent value="agent-timeline" className="space-y-6">
+            <AgentTimeline
+              plan={runData?.config_json?.plan || null}
+              steps={steps}
+              finalMetrics={results?.metrics}
+              interventions={runData?.agent_interventions || null}
+            />
           </TabsContent>
         </Tabs>
       </DialogContent>

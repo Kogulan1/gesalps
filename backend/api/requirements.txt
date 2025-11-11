@@ -8,3 +8,4 @@ supabase
 python-multipart
 python-jose
 reportlab
+python-dotenv

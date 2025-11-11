@@ -21,7 +21,7 @@ export function MarketingFooter() {
     {
       title: t('company.title'),
       links: [
-        { label: t('company.contact'), href: '#contact' },
+        { label: t('company.contact'), href: `/${locale}/contact` },
         { label: t('company.blog'), href: '#blog' },
       ],
     },
