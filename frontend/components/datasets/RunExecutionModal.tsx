@@ -26,7 +26,9 @@ import {
   Download,
   Eye,
   FileText,
-  TrendingUp
+  TrendingUp,
+  StopCircle,
+  AlertTriangle
 } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
 import { ExecutionLogTab } from "@/components/runs/ExecutionLogTab";
@@ -63,6 +65,8 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [announcement, setAnnouncement] = useState<string>(""); // For aria-live announcements
   const timelineRef = useRef<HTMLDivElement>(null); // Ref for auto-scrolling timeline
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
 
   const methods = [
     { 
@@ -311,8 +315,8 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
       // Initial fetch
       fetchStatus();
       
-      // Poll every 2 seconds
-      const interval = setInterval(fetchStatus, 2000);
+      // Poll every 1 second for faster updates (was 2 seconds)
+      const interval = setInterval(fetchStatus, 1000);
       
       return () => clearInterval(interval);
     }
@@ -326,9 +330,9 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
         setRunState('running');
       } else if (runStatus.status === 'succeeded') {
         setRunState('completed');
-      } else if (runStatus.status === 'failed') {
-        setRunState('failed');
-      }
+            } else if (runStatus.status === 'failed' || runStatus.status === 'cancelled') {
+              setRunState('failed');
+            }
     }
   }, [runState, runId, runStatus]);
 
@@ -727,15 +731,71 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
           </div>
           
           <DialogHeader>
-            <DialogTitle className="flex items-center space-x-2">
-              <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
-              <span>{getDynamicStatus()}</span>
-            </DialogTitle>
-            <DialogDescription>
-              {runStatus?.name || 'Synthetic data generation in progress'}
-              {runSteps.length > 0 && ` • ${runSteps.length} step${runSteps.length !== 1 ? 's' : ''} completed`}
-            </DialogDescription>
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <DialogTitle className="flex items-center space-x-2">
+                  <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
+                  <span>{getDynamicStatus()}</span>
+                  {runStatus?.status === 'running' && (
+                    <Badge className="bg-green-100 text-green-800 border-green-300 ml-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-1.5"></div>
+                      LIVE
+                    </Badge>
+                  )}
+                </DialogTitle>
+                <DialogDescription>
+                  {runStatus?.name || 'Synthetic data generation in progress'}
+                  {runSteps.length > 0 && ` • ${runSteps.length} step${runSteps.length !== 1 ? 's' : ''} completed`}
+                </DialogDescription>
+              </div>
+              {(runStatus?.status === 'running' || runStatus?.status === 'queued') && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setShowCancelConfirm(true)}
+                  disabled={isCancelling}
+                  className="ml-4 bg-red-500 hover:bg-red-600 text-white"
+                >
+                  <StopCircle className="h-4 w-4 mr-2" />
+                  {isCancelling ? 'Cancelling...' : 'Cancel'}
+                </Button>
+              )}
+            </div>
           </DialogHeader>
+          
+          {/* Cancel Confirmation Dialog */}
+          {showCancelConfirm && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+              <Card className="w-full max-w-md mx-4 bg-white shadow-xl">
+                <CardContent className="p-6">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <AlertTriangle className="h-6 w-6 text-yellow-600" />
+                    <h3 className="text-lg font-semibold text-gray-900">Cancel Run?</h3>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-6">
+                    Are you sure you want to cancel this run? This action cannot be undone. Any progress made so far will be lost.
+                  </p>
+                  <div className="flex justify-end space-x-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowCancelConfirm(false)}
+                      disabled={isCancelling}
+                    >
+                      Keep Running
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={handleCancelRun}
+                      disabled={isCancelling}
+                      className="bg-red-500 hover:bg-red-600"
+                    >
+                      {isCancelling ? 'Cancelling...' : 'Yes, Cancel Run'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
           <div className="space-y-6">
             {/* Progress Section */}

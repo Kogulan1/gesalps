@@ -836,7 +836,7 @@ def _agent_plan_ollama(dataset_name: str, schema_json: Dict[str, Any], last_metr
 
 # -------------------- Pipeline --------------------
 
-def execute_pipeline(run: Dict[str, Any]) -> Dict[str, Any]:
+def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str, Any]:
     # Load dataset
     ds = supabase.table("datasets").select("file_url,rows_count,name,schema_json").eq("id", run["dataset_id"]).single().execute()
     file_url = (ds.data or {}).get("file_url")
@@ -1071,6 +1071,20 @@ def execute_pipeline(run: Dict[str, Any]) -> Dict[str, Any]:
         best: Optional[Dict[str, Any]] = None
         best_score = 1e9
         for i, item in enumerate(attempts_list, start=1):
+            # Check for cancellation before each attempt
+            if cancellation_checker and cancellation_checker(run["id"]):
+                print(f"[worker] Run {run['id']} cancelled, stopping execution")
+                try:
+                    supabase.table("run_steps").insert({
+                        "run_id": run["id"],
+                        "step_no": i,
+                        "title": "cancelled",
+                        "detail": "Execution cancelled by user",
+                    }).execute()
+                except Exception:
+                    pass
+                raise RuntimeError("Run cancelled by user")
+            
             try:
                 step_detail = f"attempt {i}: method={item.get('method')}"
                 print(f"[worker][step] INSERTING step {i}: training - {step_detail}")
@@ -1681,12 +1695,27 @@ def worker_loop():
                 time.sleep(POLL_SECONDS)
                 continue
 
+            # Check if run was cancelled before starting
+            run_check = supabase.table("runs").select("status").eq("id", run["id"]).single().execute()
+            if run_check.data and run_check.data.get("status") == "cancelled":
+                print(f"[worker] Run {run['id']} was cancelled, skipping")
+                continue
+
             supabase.table("runs").update({
                 "status": "running",
                 "started_at": datetime.utcnow().isoformat()
             }).eq("id", run["id"]).execute()
 
-            result = execute_pipeline(run)
+            # Check for cancellation periodically during execution
+            def check_cancelled(run_id: str) -> bool:
+                try:
+                    check = supabase.table("runs").select("status").eq("id", run_id).single().execute()
+                    return check.data and check.data.get("status") == "cancelled"
+                except Exception:
+                    return False
+
+            # Pass cancellation checker to pipeline (will be used in training loops)
+            result = execute_pipeline(run, cancellation_checker=check_cancelled)
 
             # Save metrics + artifacts
             supabase.table("metrics").insert({
@@ -1706,14 +1735,31 @@ def worker_loop():
                 "finished_at": datetime.utcnow().isoformat()
             }).eq("id", run["id"]).execute()
 
+        except RuntimeError as e:
+            # Handle cancellation gracefully
+            if "cancelled" in str(e).lower():
+                print(f"[worker] Run {run.get('id') if run else 'unknown'} was cancelled")
+                try:
+                    if run and run.get("id"):
+                        # Status already set to cancelled by API, just ensure finished_at is set
+                        supabase.table("runs").update({
+                            "finished_at": datetime.utcnow().isoformat()
+                        }).eq("id", run["id"]).execute()
+                except Exception:
+                    pass
+            else:
+                raise
         except Exception as e:
             print(f"[worker] error: {type(e).__name__}: {e}")
             try:
                 if run and run.get("id"):
-                    supabase.table("runs").update({
-                        "status": "failed",
-                        "finished_at": datetime.utcnow().isoformat()
-                    }).eq("id", run["id"]).execute()
+                    # Check if it was cancelled (don't overwrite cancelled status)
+                    status_check = supabase.table("runs").select("status").eq("id", run["id"]).single().execute()
+                    if status_check.data and status_check.data.get("status") != "cancelled":
+                        supabase.table("runs").update({
+                            "status": "failed",
+                            "finished_at": datetime.utcnow().isoformat()
+                        }).eq("id", run["id"]).execute()
             except Exception:
                 pass
             time.sleep(1.0)
