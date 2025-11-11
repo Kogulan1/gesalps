@@ -26,7 +26,9 @@ import {
   XCircle,
   Edit,
   Archive,
-  Trash2
+  Trash2,
+  StopCircle,
+  Loader2
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
@@ -249,6 +251,8 @@ export function RunsContent() {
     currentName: ""
   });
   const [expandedRunId, setExpandedRunId] = useState<string | null>(null);
+  const [runSteps, setRunSteps] = useState<Record<string, any[]>>({}); // Track steps for each run
+  const [cancellingRunId, setCancellingRunId] = useState<string | null>(null);
 
   const handleRunEdit = (runId: string) => {
     const run = runs.find(r => r.id === runId);
@@ -376,6 +380,7 @@ export function RunsContent() {
       case 'queued':
         return 'bg-blue-100 text-blue-800';
       case 'failed':
+      case 'cancelled':
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
@@ -392,6 +397,7 @@ export function RunsContent() {
       case 'queued':
         return <Clock className="h-4 w-4 text-blue-600" />;
       case 'failed':
+      case 'cancelled':
         return <XCircle className="h-4 w-4 text-red-600" />;
       default:
         return <AlertCircle className="h-4 w-4 text-gray-600" />;
@@ -410,6 +416,52 @@ export function RunsContent() {
     console.log('Archive run:', runId);
     // TODO: Implement archive functionality
   };
+
+      const handleCancelRun = async (runId: string) => {
+        if (!window.confirm('Cancel this run? This action cannot be undone.')) return;
+        
+        setCancellingRunId(runId);
+        try {
+          const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
+          if (!base) {
+            throw new Error('Backend API URL not configured');
+          }
+
+          const supabase = createSupabaseBrowserClient();
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session?.access_token) {
+            throw new Error('No authentication token available');
+          }
+
+          const response = await fetch(`${base}/v1/runs/${runId}/cancel`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Failed to cancel run: ${response.status} - ${errorText}`);
+          }
+
+          // Update local state
+          setRuns(prev => prev.map(r => 
+            r.id === runId ? { ...r, status: 'cancelled' } : r
+          ));
+
+          // Close expansion if this run was expanded
+          if (expandedRunId === runId) {
+            setExpandedRunId(null);
+          }
+        } catch (err) {
+          console.error('Error cancelling run:', err);
+          alert(`Failed to cancel run: ${err instanceof Error ? err.message : String(err)}`);
+        } finally {
+          setCancellingRunId(null);
+        }
+      };
 
       const handleDeleteRun = async (runId: string) => {
         try {
@@ -479,6 +531,57 @@ export function RunsContent() {
   useEffect(() => {
     fetchRuns();
   }, []);
+
+  // Poll for running/queued runs to get real-time updates
+  useEffect(() => {
+    const hasActiveRuns = runs.some(r => r.status === 'running' || r.status === 'queued');
+    if (!hasActiveRuns) return;
+
+    const pollInterval = setInterval(async () => {
+      const activeRuns = runs.filter(r => r.status === 'running' || r.status === 'queued');
+      if (activeRuns.length === 0) return;
+
+      const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
+      if (!base) return;
+
+      try {
+        const supabase = createSupabaseBrowserClient();
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) return;
+
+        const headers = {
+          'Authorization': `Bearer ${session.access_token}`,
+        };
+
+        // Update status and steps for each active run
+        for (const run of activeRuns) {
+          try {
+            // Fetch status
+            const statusRes = await fetch(`${base}/v1/runs/${run.id}/status`, { headers });
+            if (statusRes.ok) {
+              const status = await statusRes.json();
+              setRuns(prev => prev.map(r => 
+                r.id === run.id ? { ...r, status: status.status } : r
+              ));
+            }
+
+            // Fetch steps for progress calculation
+            const stepsRes = await fetch(`${base}/v1/runs/${run.id}/steps`, { headers });
+            if (stepsRes.ok) {
+              const steps = await stepsRes.json();
+              setRunSteps(prev => ({ ...prev, [run.id]: steps || [] }));
+            }
+          } catch (err) {
+            console.error(`Error polling run ${run.id}:`, err);
+          }
+        }
+      } catch (err) {
+        console.error('Error polling runs:', err);
+      }
+    }, 2000); // Poll every 2 seconds
+
+    return () => clearInterval(pollInterval);
+  }, [runs]);
 
   // Close expansion only when clicking on another run's view button (not automatic click-outside)
   // This prevents accidental closure and allows users to interact with the expansion freely
@@ -810,21 +913,50 @@ export function RunsContent() {
                   <h4 className="text-md font-medium text-gray-700 ml-4">{dataset.name}</h4>
                   
                   <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4' : 'space-y-3'}>
-                    {datasetRuns.map((run: Run) => (
+                    {datasetRuns.map((run: Run) => {
+                      const isRunning = run.status === 'running' || run.status === 'queued';
+                      const steps = runSteps[run.id] || [];
+                      const progress = isRunning && steps.length > 0 
+                        ? Math.min((steps.length / 12) * 95, 95) // Estimate progress from steps
+                        : 0;
+                      const latestStep = steps.length > 0 ? steps[steps.length - 1] : null;
+                      
+                      return (
                       <div key={run.id}>
                         <Card className="hover:shadow-md transition-shadow">
                           <CardContent className="py-3">
+                            {/* Progress bar for running runs */}
+                            {isRunning && (
+                              <div className="mb-2 -mx-3 -mt-3">
+                                <div className="h-0.5 bg-gray-200">
+                                  <div 
+                                    className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-300"
+                                    style={{ width: `${progress}%` }}
+                                  />
+                                </div>
+                              </div>
+                            )}
                             <div className="flex items-center justify-between">
                               {/* Left side: Run name and status */}
-                              <div className="flex items-center space-x-3">
-                                <div className="w-6 h-6 bg-purple-100 rounded flex items-center justify-center">
-                                  <Play className="h-3 w-3 text-purple-600" />
+                              <div className="flex items-center space-x-3 flex-1 min-w-0">
+                                <div className="w-6 h-6 bg-purple-100 rounded flex items-center justify-center flex-shrink-0">
+                                  {isRunning ? (
+                                    <Loader2 className="h-3 w-3 text-blue-600 animate-spin" />
+                                  ) : (
+                                    <Play className="h-3 w-3 text-purple-600" />
+                                  )}
                                 </div>
-                                <div className="flex items-center space-x-2">
-                                  <span className="font-medium text-sm">{run.name}</span>
-                                <Badge className={`${getStatusColor(run.status)} text-xs px-2 py-1`}>
-                                  {run.status === 'succeeded' ? 'Completed' : run.status}
+                                <div className="flex items-center space-x-2 min-w-0 flex-1">
+                                  <span className="font-medium text-sm truncate">{run.name}</span>
+                                <Badge className={`${getStatusColor(run.status)} text-xs px-2 py-1 flex-shrink-0`}>
+                                  {run.status === 'succeeded' ? 'Completed' : run.status === 'cancelled' ? 'Cancelled' : run.status}
                                 </Badge>
+                                {isRunning && (
+                                  <Badge className="bg-green-100 text-green-800 border-green-300 text-xs flex-shrink-0">
+                                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse mr-1"></div>
+                                    LIVE
+                                  </Badge>
+                                )}
                                   {/* Agent intervention indicators */}
                                   {(run as any).agent_interventions?.used_backup && (
                                     <Badge className="bg-orange-100 text-orange-800 text-xs" title="Agent used backup method">
@@ -859,6 +991,19 @@ export function RunsContent() {
 
                               {/* Right side: Action buttons */}
                               <div className="flex items-center space-x-1">
+                                {isRunning && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleCancelRun(run.id)}
+                                    disabled={cancellingRunId === run.id}
+                                    className="text-red-600 hover:text-red-700 hover:bg-red-50 h-7 px-2"
+                                    title="Cancel run"
+                                  >
+                                    <StopCircle className="h-4 w-4 mr-1" />
+                                    {cancellingRunId === run.id ? 'Cancelling...' : 'Cancel'}
+                                  </Button>
+                                )}
                                 <Button
                                   variant="ghost"
                                   size="sm"
@@ -870,14 +1015,16 @@ export function RunsContent() {
                                 >
                                   <Eye className="h-4 w-4" />
                                 </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleDownloadRun(run.id, run.name)}
-                                  className="text-gray-600 hover:text-gray-900 h-7 w-7 p-0"
-                                >
-                                  <Download className="h-4 w-4" />
-                                </Button>
+                                {!isRunning && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDownloadRun(run.id, run.name)}
+                                    className="text-gray-600 hover:text-gray-900 h-7 w-7 p-0"
+                                  >
+                                    <Download className="h-4 w-4" />
+                                  </Button>
+                                )}
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
                                     <Button variant="default" size="sm" className="bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 h-7 w-7 p-0 border-0">
@@ -901,6 +1048,17 @@ export function RunsContent() {
                                 </DropdownMenu>
                               </div>
                             </div>
+                            {/* Current step info for running runs */}
+                            {isRunning && latestStep && (
+                              <div className="mt-2 pt-2 border-t border-gray-200">
+                                <p className="text-xs text-gray-600">
+                                  <span className="font-medium">Step {latestStep.step_no}:</span> {latestStep.title}
+                                  {latestStep.detail && (
+                                    <span className="text-gray-500 ml-1">• {latestStep.detail.substring(0, 50)}{latestStep.detail.length > 50 ? '...' : ''}</span>
+                                  )}
+                                </p>
+                              </div>
+                            )}
                           </CardContent>
                         </Card>
                         {/* Expandable details section */}
@@ -912,7 +1070,8 @@ export function RunsContent() {
                           />
                         )}
                       </div>
-                    ))}
+                    );
+                    })}
                   </div>
                 </div>
               ))}

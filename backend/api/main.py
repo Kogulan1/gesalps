@@ -1131,6 +1131,44 @@ def run_steps(run_id: str, user: Dict[str, Any] = Depends(require_user)):
         # PGRST205: table not found in schema cache
         return []
 
+@app.post("/v1/runs/{run_id}/cancel")
+def cancel_run(run_id: str, user: Dict[str, Any] = Depends(require_user)):
+    """Cancel a queued or running run."""
+    r = supabase.table("runs").select("id,project_id,status").eq("id", run_id).single().execute()
+    if not r.data:
+        raise HTTPException(status_code=404, detail="Run not found")
+    
+    proj = supabase.table("projects").select("owner_id").eq("id", r.data["project_id"]).single().execute()
+    if not proj.data or proj.data.get("owner_id") != user["id"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    
+    current_status = r.data.get("status", "").lower()
+    if current_status not in ("queued", "running"):
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Cannot cancel run with status '{current_status}'. Only queued or running runs can be cancelled."
+        )
+    
+    # Update status to cancelled
+    supabase.table("runs").update({
+        "status": "cancelled",
+        "finished_at": datetime.utcnow().isoformat()
+    }).eq("id", run_id).execute()
+    
+    # Log cancellation step
+    try:
+        supabase.table("run_steps").insert({
+            "run_id": run_id,
+            "step_no": 999,  # High number to appear last
+            "title": "cancelled",
+            "detail": f"Run cancelled by user at {datetime.utcnow().isoformat()}",
+            "metrics_json": None,
+        }).execute()
+    except Exception:
+        pass  # Best effort
+    
+    return {"ok": True, "status": "cancelled"}
+
 @app.delete("/v1/runs/{run_id}")
 def delete_run(run_id: str, user: Dict[str, Any] = Depends(require_user)):
     r = supabase.table("runs").select("id,project_id").eq("id", run_id).single().execute()

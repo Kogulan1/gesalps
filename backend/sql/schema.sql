@@ -8,7 +8,16 @@ create extension if not exists pgcrypto;
 do $$
 begin
   if not exists (select 1 from pg_type where typname = 'run_status') then
-    create type run_status as enum ('queued','running','succeeded','failed');
+    create type run_status as enum ('queued','running','succeeded','failed','cancelled');
+  else
+    -- Add 'cancelled' if enum exists but doesn't have it
+    if not exists (
+      select 1 from pg_enum 
+      where enumlabel = 'cancelled' 
+      and enumtypid = (select oid from pg_type where typname = 'run_status')
+    ) then
+      alter type run_status add value 'cancelled';
+    end if;
   end if;
 end $$;
 
