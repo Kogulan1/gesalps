@@ -134,9 +134,43 @@ export function ProjectsContent() {
     // TODO: Implement project archive
   };
 
-  const handleProjectDelete = (projectId: string) => {
-    console.log('Delete project:', projectId);
-    // TODO: Implement project delete
+  const handleProjectDelete = async (projectId: string) => {
+    try {
+      const confirmed = window.confirm('Delete this project? This will also delete all associated datasets and runs. This action cannot be undone.');
+      if (!confirmed) return;
+
+      const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
+      
+      if (!base) {
+        throw new Error('API base URL not configured');
+      }
+
+      const supabase = createSupabaseBrowserClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('No authentication token available');
+      }
+
+      const response = await fetch(`${base}/v1/projects/${projectId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to delete project: ${response.status} - ${errorText}`);
+      }
+
+      // Remove from UI
+      setProjects(prev => prev.filter(p => p.id !== projectId));
+    } catch (err) {
+      console.error('Error deleting project:', err);
+      alert(`Failed to delete project: ${err instanceof Error ? err.message : String(err)}`);
+    }
   };
 
   const handleStartRun = (projectId: string) => {

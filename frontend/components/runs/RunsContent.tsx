@@ -37,7 +37,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { RenameModal } from "@/components/common/RenameModal";
-import { ResultsModal } from "./ResultsModal";
+import { RunDetailsExpansion } from "./RunDetailsExpansion";
 
 interface Run {
   id: string;
@@ -248,15 +248,7 @@ export function RunsContent() {
     runId: null,
     currentName: ""
   });
-  const [resultsModal, setResultsModal] = useState<{
-    isOpen: boolean;
-    runId: string | null;
-    runName: string;
-  }>({
-    isOpen: false,
-    runId: null,
-    runName: ""
-  });
+  const [expandedRunId, setExpandedRunId] = useState<string | null>(null);
 
   const handleRunEdit = (runId: string) => {
     const run = runs.find(r => r.id === runId);
@@ -274,17 +266,27 @@ export function RunsContent() {
     // TODO: Implement run archive
   };
 
-  const handleRunDelete = (runId: string) => {
-    console.log('Delete run:', runId);
-    // TODO: Implement run delete
+  const handleViewResults = (runId: string, runName: string, event?: React.MouseEvent) => {
+    // Prevent event bubbling
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    
+    console.log('handleViewResults called:', { runId, currentExpanded: expandedRunId });
+    
+    // Toggle expansion: if already expanded, collapse; otherwise expand
+    if (expandedRunId === runId) {
+      console.log('Collapsing run:', runId);
+      setExpandedRunId(null);
+    } else {
+      console.log('Expanding run:', runId);
+      setExpandedRunId(runId);
+    }
   };
 
-  const handleViewResults = (runId: string, runName: string) => {
-    setResultsModal({
-      isOpen: true,
-      runId: runId,
-      runName: runName
-    });
+  const handleCloseExpansion = () => {
+    setExpandedRunId(null);
   };
 
   const handleDownloadRun = async (runId: string, runName: string) => {
@@ -365,7 +367,10 @@ export function RunsContent() {
     const normalized = (status || '').toLowerCase();
     switch (normalized) {
       case 'completed':
+      case 'succeeded':
         return 'bg-green-100 text-green-800';
+      case 'completed with failures':
+        return 'bg-orange-100 text-orange-800';
       case 'running':
         return 'bg-yellow-100 text-yellow-800';
       case 'queued':
@@ -406,10 +411,48 @@ export function RunsContent() {
     // TODO: Implement archive functionality
   };
 
-  const handleDeleteRun = (runId: string) => {
-    console.log('Delete run:', runId);
-    // TODO: Implement delete functionality
-  };
+      const handleDeleteRun = async (runId: string) => {
+        try {
+          const confirmed = window.confirm('Delete this run? This action cannot be undone.');
+          if (!confirmed) return;
+
+          const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
+          
+          if (!base) {
+            alert('Backend API URL not configured. Please set NEXT_PUBLIC_BACKEND_API_BASE in Vercel environment variables.');
+            console.error('[Delete Run] NEXT_PUBLIC_BACKEND_API_BASE is not set');
+            return;
+          }
+
+          const supabase = createSupabaseBrowserClient();
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session?.access_token) throw new Error('No authentication token available');
+
+          const url = `${base}/v1/runs/${runId}`;
+          console.log(`[Delete Run] Calling: DELETE ${url}`);
+
+          const res = await fetch(url, {
+            method: 'DELETE',
+            headers: { 
+              'Authorization': `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json'
+            },
+          });
+          
+          if (!res.ok) {
+            const msg = await res.text();
+            console.error(`[Delete Run] API Error ${res.status}:`, msg);
+            throw new Error(`API ${res.status}: ${msg || 'Failed to delete run'}`);
+          }
+
+          // Remove from UI
+          setRuns(prev => prev.filter(r => r.id !== runId));
+          console.log(`[Delete Run] Successfully deleted run ${runId}`);
+        } catch (err) {
+          console.error('Error deleting run:', err);
+          alert(`Failed to delete run: ${err instanceof Error ? err.message : String(err)}`);
+        }
+      };
 
   const formatDuration = (duration: number) => {
     if (duration < 60) {
@@ -432,6 +475,9 @@ export function RunsContent() {
     fetchRuns();
   }, []);
 
+  // Close expansion only when clicking on another run's view button (not automatic click-outside)
+  // This prevents accidental closure and allows users to interact with the expansion freely
+
   const fetchRuns = async () => {
     setLoading(true);
     setError(null);
@@ -450,7 +496,8 @@ export function RunsContent() {
         throw new Error('No authentication token available');
       }
 
-      const response = await fetch(`${base}/dev/runs`, {
+      // Fetch runs with agent intervention data
+      const response = await fetch(`${base}/v1/runs`, {
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
@@ -458,15 +505,73 @@ export function RunsContent() {
       });
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
+        // Fallback to dev endpoint if main endpoint fails
+        const devResponse = await fetch(`${base}/dev/runs`, {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!devResponse.ok) {
+          throw new Error(`API error: ${devResponse.status}`);
+        }
+        
+        const data = await devResponse.json();
+        if (!Array.isArray(data)) {
+          throw new Error('Unexpected API response shape');
+        }
+        setRuns(data as Run[]);
+      } else {
+        const runsData = await response.json();
+        if (!Array.isArray(runsData)) {
+          throw new Error('Unexpected API response shape');
+        }
+        
+        // Enrich runs with agent intervention data and compute correct status
+        const enrichedRuns = await Promise.all(
+          runsData.map(async (run: any) => {
+            try {
+              const runDetailResponse = await fetch(`${base}/v1/runs/${run.id}`, {
+                headers: {
+                  'Authorization': `Bearer ${session.access_token}`,
+                }
+              });
+              if (runDetailResponse.ok) {
+                const runDetail = await runDetailResponse.json();
+                
+                // Fetch metrics to compute status
+                const metricsResponse = await fetch(`${base}/v1/runs/${run.id}/metrics`, {
+                  headers: {
+                    'Authorization': `Bearer ${session.access_token}`,
+                  }
+                });
+                
+                let computedStatus = run.status || runDetail.status;
+                if ((computedStatus === 'succeeded' || computedStatus === 'completed') && metricsResponse.ok) {
+                  const metricsData = await metricsResponse.json();
+                  const privacyPassed = (metricsData?.privacy?.mia_auc || 1) <= 0.6 && (metricsData?.privacy?.dup_rate || 1) <= 0.05;
+                  const utilityPassed = (metricsData?.utility?.ks_mean || 1) <= 0.1 && (metricsData?.utility?.corr_delta || 1) <= 0.15;
+                  if (!privacyPassed || !utilityPassed) {
+                    computedStatus = 'Completed with Failures';
+                  }
+                }
+                
+                return { 
+                  ...run, 
+                  status: computedStatus,
+                  agent_interventions: runDetail.agent_interventions 
+                };
+              }
+            } catch {
+              // Ignore errors for individual run details
+            }
+            return run;
+          })
+        );
+        
+        setRuns(enrichedRuns as Run[]);
       }
-
-      const data = await response.json();
-      if (!Array.isArray(data)) {
-        throw new Error('Unexpected API response shape');
-      }
-
-      setRuns(data as Run[]);
       setUsingDemoData(false);
     } catch (err) {
       console.warn('Runs API unavailable, falling back to demo data:', err);
@@ -701,83 +806,107 @@ export function RunsContent() {
                   
                   <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4' : 'space-y-3'}>
                     {datasetRuns.map((run: Run) => (
-                      <Card key={run.id} className="hover:shadow-md transition-shadow">
-                        <CardContent className="py-3">
-                          <div className="flex items-center justify-between">
-                            {/* Left side: Run name and status */}
-                            <div className="flex items-center space-x-3">
-                              <div className="w-6 h-6 bg-purple-100 rounded flex items-center justify-center">
-                                <Play className="h-3 w-3 text-purple-600" />
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <span className="font-medium text-sm">{run.name}</span>
+                      <div key={run.id}>
+                        <Card className="hover:shadow-md transition-shadow">
+                          <CardContent className="py-3">
+                            <div className="flex items-center justify-between">
+                              {/* Left side: Run name and status */}
+                              <div className="flex items-center space-x-3">
+                                <div className="w-6 h-6 bg-purple-100 rounded flex items-center justify-center">
+                                  <Play className="h-3 w-3 text-purple-600" />
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <span className="font-medium text-sm">{run.name}</span>
                                 <Badge className={`${getStatusColor(run.status)} text-xs px-2 py-1`}>
-                                  {run.status}
+                                  {run.status === 'succeeded' ? 'Completed' : run.status}
                                 </Badge>
-                              </div>
-                            </div>
-
-                            {/* Center: Metric lines */}
-                            <div className="flex items-center space-x-3">
-                              <div className="flex items-center space-x-1">
-                                <Lock className="h-3 w-3 text-gray-500" />
-                                <div className="flex space-x-1">
-                                  <div className={`w-1 h-4 rounded ${getMetricColor(run.privacy?.mia_auc || run.metrics?.privacy?.mia_auc || 0, 0.5)}`} title={`MIA AUC: ${run.privacy?.mia_auc || run.metrics?.privacy?.mia_auc || 0}`}></div>
-                                  <div className={`w-1 h-4 rounded ${getMetricColor(run.privacy?.dup_rate || run.metrics?.privacy?.dup_rate || 0, 0.05)}`} title={`Dup Rate: ${run.privacy?.dup_rate || run.metrics?.privacy?.dup_rate || 0}`}></div>
+                                  {/* Agent intervention indicators */}
+                                  {(run as any).agent_interventions?.used_backup && (
+                                    <Badge className="bg-orange-100 text-orange-800 text-xs" title="Agent used backup method">
+                                      🔄 Backup
+                                    </Badge>
+                                  )}
+                                  {(run as any).agent_interventions?.replanned && (
+                                    <Badge className="bg-purple-100 text-purple-800 text-xs" title="Agent replanned during execution">
+                                      🧠 Replanned
+                                    </Badge>
+                                  )}
                                 </div>
                               </div>
-                              <div className="flex items-center space-x-1">
-                                <Zap className="h-3 w-3 text-gray-500" />
-                                <div className="flex space-x-1">
-                                  <div className={`w-1 h-4 rounded ${getMetricColor(run.utility?.ks_mean || run.metrics?.utility?.ks_mean || 0, 0.1)}`} title={`KS Mean: ${run.utility?.ks_mean || run.metrics?.utility?.ks_mean || 0}`}></div>
-                                  <div className={`w-1 h-4 rounded ${getMetricColor(run.utility?.corr_delta || run.metrics?.utility?.corr_delta || 0, 0.15)}`} title={`Corr Delta: ${run.utility?.corr_delta || run.metrics?.utility?.corr_delta || 0}`}></div>
+
+                              {/* Center: Metric lines */}
+                              <div className="flex items-center space-x-3">
+                                <div className="flex items-center space-x-1">
+                                  <Lock className="h-3 w-3 text-gray-500" />
+                                  <div className="flex space-x-1">
+                                    <div className={`w-1 h-4 rounded ${getMetricColor(run.privacy?.mia_auc || run.metrics?.privacy?.mia_auc || 0, 0.5)}`} title={`MIA AUC: ${run.privacy?.mia_auc || run.metrics?.privacy?.mia_auc || 0}`}></div>
+                                    <div className={`w-1 h-4 rounded ${getMetricColor(run.privacy?.dup_rate || run.metrics?.privacy?.dup_rate || 0, 0.05)}`} title={`Dup Rate: ${run.privacy?.dup_rate || run.metrics?.privacy?.dup_rate || 0}`}></div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-1">
+                                  <Zap className="h-3 w-3 text-gray-500" />
+                                  <div className="flex space-x-1">
+                                    <div className={`w-1 h-4 rounded ${getMetricColor(run.utility?.ks_mean || run.metrics?.utility?.ks_mean || 0, 0.1)}`} title={`KS Mean: ${run.utility?.ks_mean || run.metrics?.utility?.ks_mean || 0}`}></div>
+                                    <div className={`w-1 h-4 rounded ${getMetricColor(run.utility?.corr_delta || run.metrics?.utility?.corr_delta || 0, 0.15)}`} title={`Corr Delta: ${run.utility?.corr_delta || run.metrics?.utility?.corr_delta || 0}`}></div>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
 
-                            {/* Right side: Action buttons */}
-                            <div className="flex items-center space-x-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleViewResults(run.id, run.name)}
-                                className="text-gray-600 hover:text-gray-900 h-7 w-7 p-0"
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDownloadRun(run.id, run.name)}
-                                className="text-gray-600 hover:text-gray-900 h-7 w-7 p-0"
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="default" size="sm" className="bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 h-7 w-7 p-0 border-0">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="bg-white border-0 shadow-lg">
-                                  <DropdownMenuItem onClick={() => handleRenameRun(run.id, run.name)}>
-                                    <Edit className="h-4 w-4 mr-2" />
-                                    Rename
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleArchiveRun(run.id)}>
-                                    <Archive className="h-4 w-4 mr-2" />
-                                    Archive
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleDeleteRun(run.id)} className="text-red-600">
-                                    <Trash2 className="h-4 w-4 mr-2" />
-                                    Delete
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
+                              {/* Right side: Action buttons */}
+                              <div className="flex items-center space-x-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => handleViewResults(run.id, run.name, e)}
+                                  data-view-button
+                                  className={`text-gray-600 hover:text-gray-900 h-7 w-7 p-0 ${
+                                    expandedRunId === run.id ? 'bg-blue-100' : ''
+                                  }`}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDownloadRun(run.id, run.name)}
+                                  className="text-gray-600 hover:text-gray-900 h-7 w-7 p-0"
+                                >
+                                  <Download className="h-4 w-4" />
+                                </Button>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="default" size="sm" className="bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 h-7 w-7 p-0 border-0">
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" className="bg-white border-0 shadow-lg">
+                                    <DropdownMenuItem onClick={() => handleRenameRun(run.id, run.name)}>
+                                      <Edit className="h-4 w-4 mr-2" />
+                                      Rename
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleArchiveRun(run.id)}>
+                                      <Archive className="h-4 w-4 mr-2" />
+                                      Archive
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleDeleteRun(run.id)} className="text-red-600">
+                                      <Trash2 className="h-4 w-4 mr-2" />
+                                      Delete
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
                             </div>
-                          </div>
-                        </CardContent>
-                      </Card>
+                          </CardContent>
+                        </Card>
+                        {/* Expandable details section */}
+                        {expandedRunId === run.id && (
+                          <RunDetailsExpansion
+                            runId={run.id}
+                            runName={run.name}
+                            onClose={handleCloseExpansion}
+                          />
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -798,12 +927,6 @@ export function RunsContent() {
         placeholder="Enter run name"
       />
 
-      <ResultsModal
-        isOpen={resultsModal.isOpen}
-        onClose={() => setResultsModal({ isOpen: false, runId: null, runName: "" })}
-        runId={resultsModal.runId}
-        runName={resultsModal.runName}
-      />
     </div>
   );
 }
