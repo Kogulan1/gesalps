@@ -37,7 +37,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { RenameModal } from "@/components/common/RenameModal";
-import { RunDetailsExpansion } from "./RunDetailsExpansion";
+import { RunDetailsExpansion } from "@/components/runs/RunDetailsExpansion";
 
 interface Run {
   id: string;
