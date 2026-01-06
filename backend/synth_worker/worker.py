@@ -1,7 +1,9 @@
 import os, io, json, time, warnings
 import re
+import signal
 from datetime import datetime
 from typing import Any, Dict, Optional
+from contextlib import contextmanager
 
 import numpy as np
 import pandas as pd
@@ -30,6 +32,7 @@ from models import (
     train_synthesizer,
     BaseSynthesizer,
 )
+from models.synthcity_models import SynthcitySynthesizer
 
 # Silence only the deprecation warning coming from old lite API paths (if any)
 warnings.filterwarnings("ignore", category=FutureWarning, module="sdv.lite.single_table")
@@ -58,6 +61,8 @@ POLL_SECONDS = float(os.getenv("POLL_SECONDS", "2.0"))
 KS_MAX = float(os.getenv("KS_MAX", "0.10"))
 CORR_MAX = float(os.getenv("CORR_MAX", "0.10"))
 MIA_MAX = float(os.getenv("MIA_MAX", "0.60"))
+# Use SynthCity evaluators for metrics (default: true)
+USE_SYNTHCITY_METRICS = (os.getenv("USE_SYNTHCITY_METRICS", "true").strip().lower() in ("1","true","yes","on"))
 def _cfg_get(run: Dict[str, Any], key: str, default):
     cfg = run.get("config_json") or {}
     return cfg.get(key, default)
@@ -120,6 +125,7 @@ def _clean_df_for_sdv(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 def _prepare_metadata_from_df(df: pd.DataFrame) -> SingleTableMetadata:
+    """Prepare SDV metadata from DataFrame (fallback path)."""
     md = SingleTableMetadata()
     try:
         md.detect_from_dataframe(df)
@@ -127,6 +133,22 @@ def _prepare_metadata_from_df(df: pd.DataFrame) -> SingleTableMetadata:
         # best effort: coerce and try again
         md.detect_from_dataframe(_clean_df_for_sdv(df))
     return md
+
+def _prepare_synthcity_loader(df: pd.DataFrame, sensitive_features: Optional[list[str]] = None) -> Optional[Any]:
+    """Prepare SynthCity DataLoader from DataFrame.
+    
+    Returns DataLoader if SynthCity is available, None otherwise.
+    """
+    try:
+        from synthcity.plugins.core.dataloader import DataLoader  # type: ignore
+        loader = DataLoader(df, sensitive_features=sensitive_features or [])
+        return loader
+    except (ImportError, Exception) as e:
+        try:
+            print(f"[worker][metadata] SynthCity DataLoader unavailable: {type(e).__name__}. Using SDV metadata.")
+        except Exception:
+            pass
+        return None
 
 def _sample_count(real_len: int, hparams: Dict[str, Any]) -> int:
     try:
@@ -387,16 +409,78 @@ def _sanitize_hparams(method: str, hp: Dict[str, Any]) -> Dict[str, Any]:
 
 # -------------------- Metrics --------------------
 
-def _utility_metrics(real: pd.DataFrame, synth: pd.DataFrame) -> Dict[str, Any]:
-    """Compute lightweight utility metrics.
-
-    - ks_mean: mean Kolmogorov–Smirnov statistic across numeric cols (lower is better)
-               Fallback for all-categorical tables: average total-variation distance
-               between category distributions per column (scaled 0..1).
-    - corr_delta: mean absolute delta across numeric correlation upper triangles.
-                  Fallback: reuse categorical TV distance when numeric correlation is undefined.
+def _utility_metrics_synthcity(real: pd.DataFrame, synth: pd.DataFrame) -> Optional[Dict[str, Any]]:
+    """Compute utility metrics using SynthCity evaluators.
+    
+    Returns dict with ks_mean, corr_delta if successful, None otherwise.
     """
+    try:
+        from synthcity.metrics import eval_statistical  # type: ignore
+        
+        # SynthCity eval_statistical returns a dict with various metrics
+        synthcity_results = eval_statistical(real, synth)
+        
+        if not isinstance(synthcity_results, dict):
+            return None
+        
+        # Map SynthCity results to our format
+        # Try common SynthCity metric names
+        ks_mean = (
+            synthcity_results.get("statistical_ks") or
+            synthcity_results.get("ks_statistic") or
+            synthcity_results.get("ks_mean") or
+            synthcity_results.get("ks") or
+            None
+        )
+        
+        corr_delta = (
+            synthcity_results.get("statistical_correlation") or
+            synthcity_results.get("corr_delta") or
+            synthcity_results.get("correlation_delta") or
+            synthcity_results.get("corr") or
+            None
+        )
+        
+        # Return if we got at least one valid metric
+        if ks_mean is not None or corr_delta is not None:
+            return {
+                "ks_mean": float(ks_mean) if ks_mean is not None else None,
+                "corr_delta": float(corr_delta) if corr_delta is not None else None,
+                "auroc": None,
+                "c_index": None,
+            }
+        
+        return None
+    except (ImportError, AttributeError, Exception) as e:
+        # SynthCity not available or failed
+        try:
+            print(f"[worker][metrics] SynthCity utility evaluator failed: {type(e).__name__}: {e}")
+        except Exception:
+            pass
+        return None
 
+def _utility_metrics(real: pd.DataFrame, synth: pd.DataFrame) -> Dict[str, Any]:
+    """Compute utility metrics.
+    
+    Tries SynthCity eval_statistical first if enabled, falls back to custom implementation.
+    
+    Returns:
+        - ks_mean: mean Kolmogorov–Smirnov statistic across numeric cols (lower is better)
+        - corr_delta: mean absolute delta across numeric correlation upper triangles
+        - auroc: None (placeholder for future)
+        - c_index: None (placeholder for future)
+    """
+    # Try SynthCity evaluators first if enabled
+    if USE_SYNTHCITY_METRICS:
+        synthcity_result = _utility_metrics_synthcity(real, synth)
+        if synthcity_result is not None:
+            try:
+                print("[worker][metrics] Using SynthCity evaluators for utility metrics")
+            except Exception:
+                pass
+            return synthcity_result
+    
+    # Fallback to custom implementation
     # KS across numeric columns
     ks_vals: list[float] = []
     num_cols = real.select_dtypes(include=[np.number]).columns
@@ -495,6 +579,31 @@ def choose_model_by_schema(df: pd.DataFrame) -> str:
                 print(f"[worker][schema] warning: detected {dt_cols} datetime column(s); time-series synthesis is not yet specialized.")
             except Exception:
                 pass
+
+        # Check for high-cardinality categorical columns
+        max_cardinality = 0
+        for col in df.columns:
+            if df[col].dtype == 'object' or pd.api.types.is_categorical_dtype(df[col]):
+                try:
+                    card = df[col].nunique()
+                    if card > max_cardinality:
+                        max_cardinality = card
+                except Exception:
+                    pass
+        
+        # If high-cardinality detected, avoid CTGAN
+        if max_cardinality > 1000:
+            try:
+                print(f"[worker][schema] warning: detected high-cardinality columns (max={max_cardinality}). Avoiding CTGAN.")
+            except Exception:
+                pass
+            # Prefer GC or TVAE for high-cardinality data
+            if n_rows < 2000:
+                return "gc"
+            if num_ratio >= 0.70:
+                return "tvae"
+            # Default to GC for high-cardinality categorical data
+            return "gc"
 
         if n_rows < 2000:
             return "gc"
@@ -685,7 +794,74 @@ def _align_for_merge(real: pd.DataFrame, synth: pd.DataFrame, cols: list[str]) -
     return r, s
 
 
+def _privacy_metrics_synthcity(real: pd.DataFrame, synth: pd.DataFrame) -> Optional[Dict[str, Any]]:
+    """Compute privacy metrics using SynthCity evaluators.
+    
+    Returns dict with mia_auc, dup_rate if successful, None otherwise.
+    """
+    try:
+        from synthcity.metrics import eval_privacy  # type: ignore
+        
+        # SynthCity eval_privacy returns a dict with privacy metrics
+        synthcity_results = eval_privacy(real, synth)
+        
+        if not isinstance(synthcity_results, dict):
+            return None
+        
+        # Map SynthCity results to our format
+        # Try common SynthCity metric names
+        mia_auc = (
+            synthcity_results.get("privacy_mia_auc") or
+            synthcity_results.get("mia_auc") or
+            synthcity_results.get("membership_inference_auc") or
+            synthcity_results.get("mia") or
+            None
+        )
+        
+        dup_rate = (
+            synthcity_results.get("privacy_duplicate_rate") or
+            synthcity_results.get("duplicate_rate") or
+            synthcity_results.get("dup_rate") or
+            synthcity_results.get("duplicates") or
+            None
+        )
+        
+        # Return if we got at least one valid metric
+        if mia_auc is not None or dup_rate is not None:
+            return {
+                "mia_auc": float(mia_auc) if mia_auc is not None else None,
+                "dup_rate": float(dup_rate) if dup_rate is not None else None,
+            }
+        
+        return None
+    except (ImportError, AttributeError, Exception) as e:
+        # SynthCity not available or failed
+        try:
+            print(f"[worker][metrics] SynthCity privacy evaluator failed: {type(e).__name__}: {e}")
+        except Exception:
+            pass
+        return None
+
 def _privacy_metrics(real: pd.DataFrame, synth: pd.DataFrame) -> Dict[str, Any]:
+    """Compute privacy metrics.
+    
+    Tries SynthCity eval_privacy first if enabled, falls back to custom MIA and duplicate detection.
+    
+    Returns:
+        - mia_auc: Membership Inference Attack AUC (lower is better, threshold < 0.60)
+        - dup_rate: Duplicate rate (exact row matches, threshold < 5%)
+    """
+    # Try SynthCity evaluators first if enabled
+    if USE_SYNTHCITY_METRICS:
+        synthcity_result = _privacy_metrics_synthcity(real, synth)
+        if synthcity_result is not None:
+            try:
+                print("[worker][metrics] Using SynthCity evaluators for privacy metrics")
+            except Exception:
+                pass
+            return synthcity_result
+    
+    # Fallback to custom implementation
     # Very lightweight membership-inference proxy via classifier separability
     try:
         from sklearn.model_selection import train_test_split
@@ -846,7 +1022,12 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
     real = _download_csv_from_storage(file_url)
     real_clean = _clean_df_for_sdv(real)
 
-    # Metadata (prefer new SDV Metadata if available; fallback to SingleTableMetadata)
+    # Prepare metadata/loader based on backend preference
+    # Try SynthCity DataLoader first (preferred), fallback to SDV metadata
+    synthcity_loader = _prepare_synthcity_loader(real_clean)
+    using_synthcity_loader = synthcity_loader is not None
+    
+    # SDV metadata (fallback path, still needed for SDV synthesizers and compatibility)
     metadata: SingleTableMetadata
     if SDVMetadata is not None:
         try:
@@ -862,6 +1043,12 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
     else:
         metadata = SingleTableMetadata()
         metadata.detect_from_dataframe(real_clean)
+    
+    if using_synthcity_loader:
+        try:
+            print("[worker][metadata] Using SynthCity DataLoader for metadata handling")
+        except Exception:
+            pass
 
     # Method can come from run.method, or agent plan in config_json.method, or env
     method = (run.get("method") or _cfg_get(run, "method", "")).lower()
@@ -918,7 +1105,12 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
             for m, hp in configs.items():
                 try:
                     model, _ = create_synthesizer(m, meta_schema, hp)
-                    model.fit(bench_real)
+                    # Use DataLoader if SynthCity backend, otherwise use DataFrame
+                    bench_loader = _prepare_synthcity_loader(bench_real)
+                    if isinstance(model, SynthcitySynthesizer) and bench_loader is not None:
+                        model.fit(bench_loader)
+                    else:
+                        model.fit(bench_real)
                     synth = model.sample(num_rows=n)
                     util = _utility_metrics(bench_real, synth)
                     priv = _privacy_metrics(bench_real, synth)
@@ -983,6 +1175,9 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
         metadata=metadata,
         hyperparams=hparams,
     )
+    
+    # Determine if we should use DataLoader (for SynthCity backend)
+    use_loader = isinstance(synth_model, SynthcitySynthesizer) and using_synthcity_loader and synthcity_loader is not None
 
     # Per-run overrides from agent plan (with safe fallbacks)
     sample_multiplier = float(_cfg_get(run, "sample_multiplier", SAMPLE_MULTIPLIER))
@@ -1099,7 +1294,26 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
                 print(f"[worker][step] ERROR inserting training step {i}: {type(e).__name__}: {e}")
 
             try:
-                out = _attempt_train(item, real_clean, metadata)
+                # Add timeout protection for training attempts
+                training_start = time.time()
+                try:
+                    out = _attempt_train(item, real_clean, metadata, SAMPLE_MULTIPLIER, MAX_SYNTH_ROWS, synthcity_loader)
+                    training_elapsed = time.time() - training_start
+                    try:
+                        print(f"[worker][training] {item.get('method')} training completed in {training_elapsed:.1f}s")
+                    except Exception:
+                        pass
+                except (TimeoutError, RuntimeError) as timeout_err:
+                    # Training timed out or failed due to high cardinality
+                    training_elapsed = time.time() - training_start
+                    error_msg = str(timeout_err)
+                    try:
+                        print(f"[worker][training] {item.get('method')} training failed after {training_elapsed:.1f}s: {error_msg}")
+                    except Exception:
+                        pass
+                    # Re-raise as a regular exception to be caught by outer handler
+                    raise Exception(f"Training timeout: {error_msg}")
+                
                 synth = _enforce_schema_dtypes(real_clean, out["synth"])  # align dtypes
                 met = out["metrics"]
                 # thresholds
@@ -1150,12 +1364,21 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
         # Ensure meta info
         try:
             fm = final_metrics.setdefault("meta", {})
+            # Determine evaluator backend for plan-driven execution
+            evaluator_backend_plan = "custom"
+            if USE_SYNTHCITY_METRICS:
+                # Check if SynthCity evaluators were successfully used
+                util_check = _utility_metrics_synthcity(real_clean, chosen["synth"])
+                priv_check = _privacy_metrics_synthcity(real_clean, chosen["synth"])
+                if util_check is not None or priv_check is not None:
+                    evaluator_backend_plan = "synthcity"
             fm.update({
                 "model": chosen.get("method"),
                 "attempt": chosen.get("attempt"),
                 "n_real": int(len(real_clean)),
                 "n_synth": int(chosen.get("n") or 0),
                 "dp_effective": False,
+                "evaluator_backend": evaluator_backend_plan,
             })
         except Exception:
             pass
@@ -1261,7 +1484,10 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
                         _sanitize_hparams(current_method, current_hparams),
                         None,
                     )
-                    synth_model.fit(real_clean)
+                    if isinstance(synth_model, SynthcitySynthesizer) and using_synthcity_loader and synthcity_loader is not None:
+                        synth_model.fit(synthcity_loader)
+                    else:
+                        synth_model.fit(real_clean)
                     synth = synth_model.sample(num_rows=n)
                 except Exception as e:
                     if dp_strict:
@@ -1276,7 +1502,10 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
                         _sanitize_hparams(current_method, current_hparams),
                         None,
                     )
-                    synth_model.fit(real_clean)
+                    if isinstance(synth_model, SynthcitySynthesizer) and using_synthcity_loader and synthcity_loader is not None:
+                        synth_model.fit(synthcity_loader)
+                    else:
+                        synth_model.fit(real_clean)
                     synth = synth_model.sample(num_rows=n)
             else:
                 # Build synthesizer (supports experimental models + DP fallback via synthcity path or SDV fallback)
@@ -1289,7 +1518,11 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
                     _sanitize_hparams(current_method, current_hparams),
                     dp_opts,
                 )
-                synth_model.fit(real_clean)
+                    # Use DataLoader if SynthCity backend and loader available, otherwise use DataFrame
+                if isinstance(synth_model, SynthcitySynthesizer) and using_synthcity_loader and synthcity_loader is not None:
+                    synth_model.fit(synthcity_loader)
+                else:
+                    synth_model.fit(real_clean)
                 synth = synth_model.sample(num_rows=n)
 
             # (generation handled above)
@@ -1314,10 +1547,21 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
 
         util = _utility_metrics(real_clean, synth)
         priv = _privacy_metrics(real_clean, synth)
+        
+        # Determine evaluator backend (check if SynthCity was actually used)
+        evaluator_backend = "custom"
+        if USE_SYNTHCITY_METRICS:
+            # Check if SynthCity evaluators were successfully used
+            util_synthcity = _utility_metrics_synthcity(real_clean, synth)
+            priv_synthcity = _privacy_metrics_synthcity(real_clean, synth)
+            if util_synthcity is not None or priv_synthcity is not None:
+                evaluator_backend = "synthcity"
+        
         try:
             print(
                 f"[worker][metrics] model={current_method} dp_backend={locals().get('dp_backend','none')} dp_effective={bool(locals().get('dp_effective_model', False))} "
-                f"ks={util.get('ks_mean')} cd={util.get('corr_delta')} mia={priv.get('mia_auc')}"
+                f"ks={util.get('ks_mean')} cd={util.get('corr_delta')} mia={priv.get('mia_auc')} "
+                f"evaluator={evaluator_backend}"
             )
         except Exception:
             pass
@@ -1370,6 +1614,7 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
             "dp_effective": bool(locals().get('dp_effective_model', False)),
             "n_real": int(len(real_clean)),
             "n_synth": int(len(synth)) if isinstance(synth, pd.DataFrame) else None,
+            "evaluator_backend": evaluator_backend,
         }
         metrics = {"utility": util, "privacy": priv, "composite": composite, "meta": metrics_meta}
 
@@ -1637,10 +1882,35 @@ def _fairness_metrics(real: pd.DataFrame, synth: pd.DataFrame) -> Dict[str, Any]
     except Exception:
         return {"rare_coverage": None, "freq_skew": None}
 
+# -------------------- Timeout helper --------------------
+@contextmanager
+def timeout_context(seconds: float):
+    """Context manager for timeout on operations (Unix only, uses SIGALRM)."""
+    def timeout_handler(signum, frame):
+        raise TimeoutError(f"Operation timed out after {seconds} seconds")
+    
+    # Set up signal handler (Unix only)
+    if hasattr(signal, 'SIGALRM'):
+        old_handler = signal.signal(signal.SIGALRM, timeout_handler)
+        signal.alarm(int(seconds))
+        try:
+            yield
+        finally:
+            signal.alarm(0)
+            signal.signal(signal.SIGALRM, old_handler)
+    else:
+        # Windows doesn't support SIGALRM, use a simpler approach
+        start = time.time()
+        yield
+        elapsed = time.time() - start
+        if elapsed > seconds:
+            raise TimeoutError(f"Operation took {elapsed:.1f}s, exceeded timeout of {seconds}s")
+
 # -------------------- Plan attempt helper --------------------
 def _attempt_train(plan_item: Dict[str, Any], real_df: pd.DataFrame, metadata: SingleTableMetadata,
                    default_sample_multiplier: float = SAMPLE_MULTIPLIER,
-                   default_max_rows: int = MAX_SYNTH_ROWS) -> Dict[str, Any]:
+                   default_max_rows: int = MAX_SYNTH_ROWS,
+                   synthcity_loader: Optional[Any] = None) -> Dict[str, Any]:
     """Train according to a plan item and return synth + metrics.
 
     plan_item: { "method": "gc|ctgan|tvae", "hyperparams": { sample_multiplier, max_synth_rows, ctgan?{}, tvae?{} } }
@@ -1653,6 +1923,39 @@ def _attempt_train(plan_item: Dict[str, Any], real_df: pd.DataFrame, metadata: S
     max_synth_rows = int(hp_all.get("max_synth_rows", default_max_rows) or default_max_rows)
     n = int(min(max_synth_rows, max(1, int(len(real_df) * sample_multiplier))))
 
+    # Check for high-cardinality columns that would cause CTGAN to hang
+    if method == "ctgan":
+        max_cardinality = 0
+        high_card_cols = []
+        for col in real_df.columns:
+            if real_df[col].dtype == 'object' or pd.api.types.is_categorical_dtype(real_df[col]):
+                try:
+                    card = real_df[col].nunique()
+                    if card > max_cardinality:
+                        max_cardinality = card
+                    if card > 1000:  # Threshold for high cardinality
+                        high_card_cols.append((col, card))
+                except Exception:
+                    pass
+        
+        if max_cardinality > 1000:
+            try:
+                print(f"[worker][warning] CTGAN detected high-cardinality columns (max={max_cardinality}). This may cause training to hang.")
+                if high_card_cols:
+                    print(f"[worker][warning] High-cardinality columns: {[(c, n) for c, n in high_card_cols[:5]]}")
+            except Exception:
+                pass
+            
+            # For very high cardinality (>5000), CTGAN is likely to hang - use shorter timeout
+            if max_cardinality > 5000:
+                training_timeout = 300.0  # 5 minutes max for CTGAN on very high-cardinality data
+            else:
+                training_timeout = 600.0  # 10 minutes for moderate cardinality
+        else:
+            training_timeout = 1200.0  # 20 minutes for normal data
+    else:
+        training_timeout = 1200.0  # 20 minutes default
+
     # Build model using unified factory
     base_hp = {}
     if method == "ctgan":
@@ -1663,7 +1966,29 @@ def _attempt_train(plan_item: Dict[str, Any], real_df: pd.DataFrame, metadata: S
         method = "gc"
     
     model, _ = create_synthesizer(method, metadata, base_hp)
-    model.fit(real_df)
+    
+    # Prepare DataLoader if using SynthCity backend
+    train_loader = synthcity_loader if synthcity_loader is not None else _prepare_synthcity_loader(real_df)
+    use_loader_for_train = isinstance(model, SynthcitySynthesizer) and train_loader is not None
+    
+    # Train with timeout protection
+    try:
+        if method == "ctgan" and hasattr(signal, 'SIGALRM'):
+            # Use signal-based timeout for CTGAN (Unix only)
+            with timeout_context(training_timeout):
+                if use_loader_for_train:
+                    model.fit(train_loader)
+                else:
+                    model.fit(real_df)
+        else:
+            # For other methods or Windows, just train normally
+            if use_loader_for_train:
+                model.fit(train_loader)
+            else:
+                model.fit(real_df)
+    except TimeoutError as e:
+        raise RuntimeError(f"CTGAN training timed out after {training_timeout}s. This dataset has high-cardinality columns (max={max_cardinality if 'max_cardinality' in locals() else 'unknown'}) that make CTGAN unsuitable. Try using 'gc' or 'tvae' method instead.")
+    
     synth = model.sample(num_rows=n)
 
     util = _utility_metrics(real_df, synth)
