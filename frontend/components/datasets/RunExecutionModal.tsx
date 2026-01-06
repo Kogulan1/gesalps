@@ -205,19 +205,20 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
     return `Step ${stepNumber} – ${latestStep.title}`;
   };
 
-  // Poll for run status and steps (also poll when started to catch early steps)
+  // Poll for run status and steps - START IMMEDIATELY when runId is set
   useEffect(() => {
-    if ((runState === 'running' || runState === 'started') && runId) {
-      // Reset previous step count when starting a new run
-      if (previousStepCount === 0 && runSteps.length === 0) {
-        setPreviousStepCount(0);
-      }
+    if (runId && (runState === 'running' || runState === 'started')) {
       const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || 'http://localhost:8000';
       
       const fetchStatus = async () => {
         try {
           const supabase = createSupabaseBrowserClient();
-          const { data: { session } } = await supabase.auth.getSession();
+          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+          
+          if (sessionError) {
+            console.error('[RunExecutionModal] Session error:', sessionError);
+            return;
+          }
           
           if (!session?.access_token) return;
 
@@ -235,6 +236,7 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
               name: fullRunData.name 
             });
             
+            // Update state based on status
             if (fullRunData.status === 'succeeded') {
               setRunState('completed');
               // Fetch final metrics
@@ -243,8 +245,11 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
                 const metrics = await metricsResponse.json();
                 setRunMetrics(metrics);
               }
-            } else if (fullRunData.status === 'failed') {
+            } else if (fullRunData.status === 'failed' || fullRunData.status === 'cancelled') {
               setRunState('failed');
+            } else if (fullRunData.status === 'running' && runState === 'started') {
+              // Transition from 'started' to 'running' when status becomes 'running'
+              setRunState('running');
             }
           } else {
             // Fallback to status endpoint if full run endpoint fails
@@ -255,13 +260,15 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
               
               if (status.status === 'succeeded') {
                 setRunState('completed');
-              } else if (status.status === 'failed') {
+              } else if (status.status === 'failed' || status.status === 'cancelled') {
                 setRunState('failed');
+              } else if (status.status === 'running' && runState === 'started') {
+                setRunState('running');
               }
             }
           }
 
-          // Fetch steps
+          // Fetch steps - CRITICAL: This must run to show steps immediately
           const stepsResponse = await fetch(`${base}/v1/runs/${runId}/steps`, { headers });
           if (stepsResponse.ok) {
             const steps = await stepsResponse.json();
@@ -269,7 +276,6 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
             
             // Detect new steps and announce them
             if (newSteps.length > previousStepCount) {
-              const newStepCount = newSteps.length - previousStepCount;
               const latestStep = newSteps[newSteps.length - 1];
               let announcementText = '';
               
@@ -282,13 +288,14 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
               } else if (latestStep.title === 'error') {
                 const errorType = latestStep.detail?.split(':')[0] || 'Error';
                 announcementText = `Error occurred: ${errorType} at step ${latestStep.step_no}`;
+              } else if (latestStep.title === 'planned') {
+                announcementText = `Agent plan created at step ${latestStep.step_no}`;
               } else {
                 announcementText = `Step ${latestStep.step_no}: ${latestStep.title}`;
               }
               
               if (announcementText) {
                 setAnnouncement(announcementText);
-                // Clear announcement after a delay so it can be announced again
                 setTimeout(() => setAnnouncement(""), 100);
               }
               
@@ -308,31 +315,32 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
             }
           }
         } catch (error) {
-          console.error('Error fetching run status:', error);
+          console.error('[RunExecutionModal] Error fetching run status:', error);
         }
       };
 
-      // Initial fetch
+      // Immediate fetch - don't wait for interval
       fetchStatus();
       
-      // Poll every 1 second for faster updates (was 2 seconds)
+      // Poll every 1 second for real-time updates
       const interval = setInterval(fetchStatus, 1000);
       
       return () => clearInterval(interval);
     }
-  }, [runState, runId]);
+  }, [runState, runId, previousStepCount]);
 
   // Auto-transition from started to running immediately when we get status
   useEffect(() => {
     if (runState === 'started' && runId && runStatus?.status) {
       // Immediately transition to running if status indicates it
-      if (runStatus.status === 'running' || runStatus.status === 'queued') {
+      if (runStatus.status === 'running') {
         setRunState('running');
       } else if (runStatus.status === 'succeeded') {
         setRunState('completed');
-            } else if (runStatus.status === 'failed' || runStatus.status === 'cancelled') {
-              setRunState('failed');
-            }
+      } else if (runStatus.status === 'failed' || runStatus.status === 'cancelled') {
+        setRunState('failed');
+      }
+      // Note: 'queued' status stays in 'started' state until it becomes 'running'
     }
   }, [runState, runId, runStatus]);
 
@@ -606,8 +614,13 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
 
   // Render different views based on state
   if (runState === 'started') {
+    // Calculate progress based on steps even in 'started' state
+    const progress = runSteps.length > 0 
+      ? Math.min((runSteps.length / 12) * 50, 50) // Cap at 50% in started state
+      : 5;
+    
     return (
-      <Dialog open={isOpen} onOpenChange={handleClose} className="w-[95vw] sm:max-w-6xl lg:max-w-7xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={isOpen} onOpenChange={() => {}} className="w-[95vw] sm:max-w-6xl lg:max-w-7xl max-h-[90vh] overflow-y-auto">
         <DialogContent className="p-6">
           {/* Aria-live announcement for screen readers */}
           <div role="alert" aria-live="assertive" aria-atomic="true" className="sr-only">
@@ -615,36 +628,87 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
           </div>
           
           <DialogHeader>
-            <DialogTitle className="flex items-center space-x-2">
-              <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
-              <span>{getDynamicStatus()}</span>
-            </DialogTitle>
-            <DialogDescription>
-              {runSteps.length > 0 
-                ? `Processing step ${runSteps.length} of synthesis pipeline...`
-                : 'Your synthesis run has been initiated. Preparing to start...'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-6">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4">
-                <Play className="h-8 w-8 text-blue-600" />
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <DialogTitle className="flex items-center space-x-2">
+                  <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
+                  <span>{getDynamicStatus()}</span>
+                  <Badge className="bg-green-100 text-green-800 border-green-300 ml-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-1.5"></div>
+                    LIVE
+                  </Badge>
+                </DialogTitle>
+                <DialogDescription>
+                  {runStatus?.name || runName || 'Synthetic data generation in progress'}
+                  {runSteps.length > 0 && ` • ${runSteps.length} step${runSteps.length !== 1 ? 's' : ''} completed`}
+                </DialogDescription>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">{runName || 'Synthesis Run'}</h3>
-              <p className="text-sm text-gray-600">Initializing synthesis process...</p>
+              {(runStatus?.status === 'running' || runStatus?.status === 'queued') && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setShowCancelConfirm(true)}
+                  disabled={isCancelling}
+                  className="ml-4 bg-red-500 hover:bg-red-600 text-white"
+                >
+                  <StopCircle className="h-4 w-4 mr-2" />
+                  {isCancelling ? 'Cancelling...' : 'Cancel'}
+                </Button>
+              )}
             </div>
-
-            {/* Indeterminate progress while preparing */}
+          </DialogHeader>
+          
+          {/* Cancel Confirmation Dialog */}
+          {showCancelConfirm && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+              <Card className="w-full max-w-md mx-4 bg-white shadow-xl">
+                <CardContent className="p-6">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <AlertTriangle className="h-6 w-6 text-yellow-600" />
+                    <h3 className="text-lg font-semibold text-gray-900">Cancel Run?</h3>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-6">
+                    Are you sure you want to cancel this run? This action cannot be undone. Any progress made so far will be lost.
+                  </p>
+                  <div className="flex justify-end space-x-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowCancelConfirm(false)}
+                      disabled={isCancelling}
+                    >
+                      Keep Running
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={handleCancelRun}
+                      disabled={isCancelling}
+                      className="bg-red-500 hover:bg-red-600"
+                    >
+                      {isCancelling ? 'Cancelling...' : 'Yes, Cancel Run'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+          
+          <div className="space-y-6">
+            {/* Progress Section */}
             <div className="space-y-2">
               <div className="flex justify-between items-center text-sm">
                 <span className="text-gray-600">Progress</span>
-                <span className="font-medium">Starting…</span>
+                <span className="font-medium">{Math.round(progress)}%</span>
               </div>
-              <Progress indeterminate className="w-full h-2" />
+              <Progress value={progress} className="w-full h-2 transition-all duration-300 ease-in-out" />
+              {runSteps.length > 0 && (
+                <p className="text-xs text-gray-500 mt-1">
+                  {runSteps.length} step{runSteps.length !== 1 ? 's' : ''} executed
+                </p>
+              )}
             </div>
 
-            {/* Time and ETA */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* Time, Status, Quick Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center space-x-2 mb-2">
@@ -652,26 +716,61 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
                     <span className="text-sm font-medium text-gray-700">Elapsed Time</span>
                   </div>
                   <p className="text-2xl font-bold text-gray-900">{formatElapsedTime(elapsedTime)}</p>
+                  <p className="text-xs text-gray-500 mt-1">ETA: {calculateEstimatedTime()}</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center space-x-2 mb-2">
                     <Database className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm font-medium text-gray-700">Estimated Time</span>
+                    <span className="text-sm font-medium text-gray-700">Status</span>
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">{calculateEstimatedTime()}</p>
+                  <Badge className="bg-blue-100 text-blue-800">
+                    {runStatus?.status || 'starting'}
+                  </Badge>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <TrendingUp className="h-4 w-4 text-gray-500" />
+                    <span className="text-sm font-medium text-gray-700">Quick Metrics</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="bg-gray-50 rounded p-2">
+                      <div className="text-gray-600">KS Mean</div>
+                      <div className="font-mono text-sm">{runMetrics?.utility?.ks_mean?.toFixed(3) || '—'}</div>
+                    </div>
+                    <div className="bg-gray-50 rounded p-2">
+                      <div className="text-gray-600">Corr Δ</div>
+                      <div className="font-mono text-sm">{runMetrics?.utility?.corr_delta?.toFixed(3) || '—'}</div>
+                    </div>
+                    <div className="bg-gray-50 rounded p-2">
+                      <div className="text-gray-600">MIA AUC</div>
+                      <div className="font-mono text-sm">{runMetrics?.privacy?.mia_auc?.toFixed(3) || '—'}</div>
+                    </div>
+                    <div className="bg-gray-50 rounded p-2">
+                      <div className="text-gray-600">Dup%</div>
+                      <div className="font-mono text-sm">{runMetrics?.privacy?.dup_rate ? `${(runMetrics.privacy.dup_rate*100).toFixed(1)}%` : '—'}</div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Agent Plan Section - Show when agent plan is available (detected from run data) */}
+            {/* Agent Plan Section - Show when agent plan is available */}
             {runData?.config_json?.plan && (
               <div className="space-y-4 mt-6">
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 flex-wrap gap-2">
                   <Brain className="h-5 w-5 text-purple-600" />
                   <h4 className="text-base font-semibold text-gray-900">Agent Planning Decisions</h4>
                   <Badge className="bg-purple-100 text-purple-800">AI Agent</Badge>
+                  {runData?.agent_interventions?.used_backup && (
+                    <Badge className="bg-orange-100 text-orange-800">Backup Used</Badge>
+                  )}
+                  {runData?.agent_interventions?.replanned && (
+                    <Badge className="bg-blue-100 text-blue-800">Re-planned</Badge>
+                  )}
                 </div>
                 <div className="border rounded-lg bg-white p-4 max-h-[35vh] overflow-y-auto">
                   <AgentPlanTab 

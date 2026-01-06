@@ -1,6 +1,6 @@
 """SynthCity model wrappers."""
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 import pandas as pd
 from sdv.metadata import SingleTableMetadata
 
@@ -18,10 +18,25 @@ def _try_import_synthcity():
 
 # Mapping from method names to SynthCity plugin names
 SYNTHCITY_METHOD_MAP: Dict[str, list[str]] = {
+    # Core methods (preferred over SDV)
+    "gc": ["gaussian_copula", "gaussiancopula"],
+    "gaussian-copula": ["gaussian_copula", "gaussiancopula"],
+    "gaussiancopula": ["gaussian_copula", "gaussiancopula"],
+    "ctgan": ["ctgan"],
+    "ct": ["ctgan"],
+    "ctgansynthesizer": ["ctgan"],
+    "tvae": ["tvae"],
+    "tv": ["tvae"],
+    "tvaesynthesizer": ["tvae"],
+    # Diffusion models (high priority for mixed/high-dim data)
+    "ddpm": ["ddpm", "tabddpm", "diffusion"],
+    "tabddpm": ["ddpm", "tabddpm", "diffusion"],
+    "diffusion": ["ddpm", "tabddpm", "diffusion"],
+    # Differential privacy methods
     "dp-ctgan": ["dpctgan", "ctgan_dp", "ctgan_privacy"],
     "pategan": ["pategan"],
     "dpgan": ["dpgan"],
-    # Add more mappings as needed
+    # Additional SynthCity plugins (optional)
     # "timegan": ["timegan"],
     # "adsgan": ["adsgan"],
 }
@@ -43,8 +58,8 @@ class SynthcitySynthesizer(BaseSynthesizer):
         """Initialize SynthCity synthesizer.
         
         Args:
-            metadata: SDV metadata (may not be fully used by all plugins)
-            method: Method name (e.g., "dp-ctgan", "pategan")
+            metadata: SDV metadata (legacy, kept for compatibility)
+            method: Method name (e.g., "dp-ctgan", "pategan", "gc", "ctgan", "tvae")
             hyperparams: Plugin-specific hyperparameters
         """
         super().__init__(metadata, hyperparams)
@@ -79,14 +94,37 @@ class SynthcitySynthesizer(BaseSynthesizer):
             raise RuntimeError(f"Failed to initialize SynthCity plugin '{chosen}': {e}")
         
         self._columns: list[str] = []
+        self._data_loader: Optional[Any] = None  # Will hold SynthCity DataLoader if used
     
-    def fit(self, data: pd.DataFrame) -> None:
-        """Train SynthCity plugin."""
-        self._columns = list(data.columns)
-        try:
-            self._plugin.fit(data)
-        except Exception as e:
-            raise RuntimeError(f"SynthCity plugin fit failed: {e}")
+    def fit(self, data: Union[pd.DataFrame, Any]) -> None:
+        """Train SynthCity plugin.
+        
+        Args:
+            data: Either a pandas DataFrame or a SynthCity DataLoader
+        """
+        # Check if data is a SynthCity DataLoader
+        if hasattr(data, 'dataframe') or (hasattr(data, '__class__') and 'DataLoader' in str(type(data))):
+            # It's a DataLoader - use it directly
+            self._data_loader = data
+            try:
+                self._columns = list(data.dataframe().columns) if hasattr(data, 'dataframe') else list(data.columns)
+            except Exception:
+                # Fallback: try to get columns from the loader
+                try:
+                    self._columns = list(data.columns)
+                except Exception:
+                    self._columns = []
+            try:
+                self._plugin.fit(data)
+            except Exception as e:
+                raise RuntimeError(f"SynthCity plugin fit failed with DataLoader: {e}")
+        else:
+            # It's a DataFrame - use as before
+            self._columns = list(data.columns)
+            try:
+                self._plugin.fit(data)
+            except Exception as e:
+                raise RuntimeError(f"SynthCity plugin fit failed: {e}")
     
     def sample(self, num_rows: int) -> pd.DataFrame:
         """Generate synthetic data."""

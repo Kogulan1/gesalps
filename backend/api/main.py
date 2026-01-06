@@ -1043,10 +1043,31 @@ def rename_run(run_id: str, body: RenameBody, user: Dict[str, Any] = Depends(req
 
 @app.get("/v1/runs/{run_id}/metrics")
 def run_metrics(run_id: str, user: Dict[str, Any] = Depends(require_user)):
-    m = supabase.table("metrics").select("payload_json").eq("run_id", run_id).single().execute()
-    if m.data is None:
+    """Get metrics for a run. Returns empty dict if run was cancelled/failed before metrics were generated."""
+    # Check run status first - cancelled/failed runs may not have metrics
+    r = supabase.table("runs").select("id,status,project_id").eq("id", run_id).single().execute()
+    if not r.data:
+        raise HTTPException(status_code=404, detail="Run not found")
+    
+    # Ownership check
+    proj = supabase.table("projects").select("owner_id").eq("id", r.data["project_id"]).single().execute()
+    if not proj.data or proj.data.get("owner_id") != user["id"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    
+    # For cancelled or failed runs, return empty dict gracefully
+    if r.data.get("status") in ("cancelled", "failed"):
         return {}
-    return m.data.get("payload_json") or {}
+    
+    # Try to fetch metrics
+    try:
+        m = supabase.table("metrics").select("payload_json").eq("run_id", run_id).maybe_single().execute()
+        if m.data is None:
+            return {}
+        return m.data.get("payload_json") or {}
+    except Exception as e:
+        # If metrics don't exist, return empty dict (graceful degradation)
+        print(f"[api] Warning: Could not fetch metrics for run {run_id}: {e}")
+        return {}
 
 @app.get("/v1/runs/{run_id}/artifacts")
 def run_artifacts(run_id: str, user: Dict[str, Any] = Depends(require_user)):
@@ -1805,11 +1826,12 @@ def _agent_plan_internal(dataset_id: str, preference: Optional[Dict[str, Any]], 
         "Return ONLY valid JSON per schema:\n"
         "{\n \"choice\":{\"method\":\"gc|ctgan|tvae\"},\n \"hyperparams\":{\"sample_multiplier\":number,\"max_synth_rows\":number,\"ctgan\":{\"epochs\":int,\"batch_size\":int,\"embedding_dim\":int}?,\"tvae\":{\"epochs\":int,\"batch_size\":int,\"embedding_dim\":int}?},\n \"dp\":{\"enabled\":false},\n \"backup\":[{\"method\":\"gc|ctgan|tvae\",\"hyperparams\":{...}}...],\n \"rationale\":\"short reason\"\n}\n"
         "Guidance:\n"
-        "- GC for small/mixed data with many categoricals or when stability is needed.\n"
-        "- CTGAN for complex categorical/non-Gaussian data:\n"
+        "- GC for small/mixed data with many categoricals, high-cardinality columns (>1000 unique values), or when stability is needed.\n"
+        "- CTGAN for complex categorical/non-Gaussian data (AVOID if any column has >1000 unique values - CTGAN will hang):\n"
         "  * Small datasets (<1000 rows): epochs 300-400, batch 64-128, embedding_dim 128-256\n"
         "  * Medium (1000-10000): epochs 400-500, batch 128-256, embedding_dim 256-512\n"
         "  * Large (>10000): epochs 500-600, batch 256-512, embedding_dim 512\n"
+        "- NEVER use CTGAN if dataset has columns with >1000 unique values - use GC or TVAE instead.\n"
         "- TVAE for continuous-heavy data:\n"
         "  * Small: epochs 250-350, batch 64-128, embedding_dim 64-128\n"
         "  * Medium: epochs 350-450, batch 128-256, embedding_dim 128-256\n"
@@ -1868,11 +1890,23 @@ def _agent_plan_internal(dataset_id: str, preference: Optional[Dict[str, Any]], 
         cols = summary.get("schema", {}).get("columns", []) if isinstance(summary, dict) else []
         # estimate categorical weight
         cat_like = 0
+        max_cardinality = 0
         for c in cols:
             t = str((c or {}).get("type") or "").lower()
             if t and not any(x in t for x in ["int","float","double","number","decimal","datetime","date"]):
                 cat_like += 1
-        method = "ctgan" if (cat_like and len(cols) and (cat_like/len(cols) > 0.5)) else "gc"
+            # Check for high cardinality (unique_count in summary)
+            unique_count = (c or {}).get("unique_count") or (c or {}).get("nunique") or 0
+            if unique_count > max_cardinality:
+                max_cardinality = unique_count
+        
+        # Avoid CTGAN if high-cardinality columns detected
+        if max_cardinality > 1000:
+            method = "gc"  # Use GC for high-cardinality data
+        elif cat_like and len(cols) and (cat_like/len(cols) > 0.5):
+            method = "ctgan"
+        else:
+            method = "gc"
     except Exception:
         method = "gc"
     rows = int((summary or {}).get("rows_count") or 0)
@@ -1885,7 +1919,7 @@ def _agent_plan_internal(dataset_id: str, preference: Optional[Dict[str, Any]], 
             {"method": "gc", "hyperparams": {"sample_multiplier": 1.0, "max_synth_rows": max_rows}},
             {"method": "tvae", "hyperparams": {"sample_multiplier": 1.0, "max_synth_rows": max_rows}},
         ],
-        "rationale": "Fallback default plan (LLM unavailable)",
+        "rationale": f"Fallback default plan (LLM unavailable). {'Avoiding CTGAN due to high-cardinality columns' if max_cardinality > 1000 else ''}",
     }
 
 

@@ -3,8 +3,20 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
 
 export async function authedFetch(path: string, init: RequestInit = {}) {
   const supabase = createSupabaseBrowserClient();
-  const { data } = await supabase.auth.getSession();
-  const token = data.session?.access_token;
+  const { data, error } = await supabase.auth.getSession();
+  
+  // Handle refresh token errors gracefully
+  if (error && error.message?.includes('Refresh Token')) {
+    console.warn('[API] Auth error, signing out:', error.message);
+    await supabase.auth.signOut().catch(() => {});
+    // Redirect to sign in if we're in the browser
+    if (typeof window !== 'undefined') {
+      window.location.href = '/signin';
+    }
+    throw new Error('Authentication expired. Please sign in again.');
+  }
+  
+  const token = data?.session?.access_token;
   const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || "";
   
   if (!base) {
