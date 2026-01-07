@@ -46,7 +46,7 @@ type RunState = 'config' | 'started' | 'running' | 'completed' | 'failed';
 
 export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewResults }: RunExecutionModalProps) {
   const [runName, setRunName] = useState("");
-  const [method, setMethod] = useState("TabDDPM");
+  const [method, setMethod] = useState("ddpm");
   const [privacyLevel, setPrivacyLevel] = useState("Medium");
   const [useAgentic, setUseAgentic] = useState(false);
   const [description, setDescription] = useState("");
@@ -58,7 +58,10 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
   const [runId, setRunId] = useState<string | null>(null);
   const [runStatus, setRunStatus] = useState<any>(null);
   const [runSteps, setRunSteps] = useState<any[]>([]);
+  const runStepsRef = useRef<any[]>([]); // Ref to track current steps for comparison (avoids stale closures)
+  const [renderKey, setRenderKey] = useState(0); // Force re-render when steps change
   const [previousStepCount, setPreviousStepCount] = useState(0); // Track previous step count for announcements
+  const previousStepCountRef = useRef(0); // Ref to track step count without causing re-renders
   const [runMetrics, setRunMetrics] = useState<any>(null);
   const [runData, setRunData] = useState<any>(null); // Full run data including agent plan
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -70,12 +73,13 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
 
   const methods = [
     { 
-      value: "TabDDPM", 
-      label: "TabDDPM", 
-      description: "Denoising Diffusion Probabilistic Models for tabular data",
+      value: "ddpm", 
+      label: "TabDDPM (Diffusion - Highest Fidelity)", 
+      description: "2025 state-of-the-art diffusion model — best clinical data fidelity",
       category: "Diffusion",
       recommended: true,
-      baseTime: 20 // minutes
+      baseTime: 20, // minutes
+      badge: "SOTA" // Special badge for TabDDPM
     },
     { 
       value: "CTGAN", 
@@ -205,19 +209,22 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
     return `Step ${stepNumber} – ${latestStep.title}`;
   };
 
-  // Poll for run status and steps (also poll when started to catch early steps)
+  // Poll for run status and steps - START IMMEDIATELY when runId is set
+  // Continue polling even when failed to ensure all steps are fetched
   useEffect(() => {
-    if ((runState === 'running' || runState === 'started') && runId) {
-      // Reset previous step count when starting a new run
-      if (previousStepCount === 0 && runSteps.length === 0) {
-        setPreviousStepCount(0);
-      }
+    if (runId && (runState === 'running' || runState === 'started' || runState === 'failed')) {
+      console.log(`[RunExecutionModal] Polling useEffect: runId=${runId}, runState=${runState}`);
       const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || 'http://localhost:8000';
       
       const fetchStatus = async () => {
         try {
           const supabase = createSupabaseBrowserClient();
-          const { data: { session } } = await supabase.auth.getSession();
+          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+          
+          if (sessionError) {
+            console.error('[RunExecutionModal] Session error:', sessionError);
+            return;
+          }
           
           if (!session?.access_token) return;
 
@@ -235,6 +242,7 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
               name: fullRunData.name 
             });
             
+            // Update state based on status
             if (fullRunData.status === 'succeeded') {
               setRunState('completed');
               // Fetch final metrics
@@ -243,8 +251,13 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
                 const metrics = await metricsResponse.json();
                 setRunMetrics(metrics);
               }
-            } else if (fullRunData.status === 'failed') {
+            } else if (fullRunData.status === 'failed' || fullRunData.status === 'cancelled') {
               setRunState('failed');
+              // Continue polling for a bit to ensure all steps are fetched
+              // The polling will stop after a few seconds when we detect no new steps
+            } else if (fullRunData.status === 'running' && runState === 'started') {
+              // Transition from 'started' to 'running' when status becomes 'running'
+              setRunState('running');
             }
           } else {
             // Fallback to status endpoint if full run endpoint fails
@@ -255,21 +268,84 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
               
               if (status.status === 'succeeded') {
                 setRunState('completed');
-              } else if (status.status === 'failed') {
+              } else if (status.status === 'failed' || status.status === 'cancelled') {
                 setRunState('failed');
+              } else if (status.status === 'running' && runState === 'started') {
+                setRunState('running');
               }
             }
           }
 
-          // Fetch steps
+          // Fetch steps - CRITICAL: This must run to show steps immediately
           const stepsResponse = await fetch(`${base}/v1/runs/${runId}/steps`, { headers });
           if (stepsResponse.ok) {
             const steps = await stepsResponse.json();
-            const newSteps = steps || [];
+            const newSteps = Array.isArray(steps) ? steps : [];
+            
+            // Enhanced debug logging
+            const currentCount = previousStepCountRef.current;
+            console.log(`[RunExecutionModal] Polling: Fetched ${newSteps.length} steps (previous ref: ${currentCount})`, {
+              timestamp: new Date().toISOString(),
+              runState,
+              runId,
+              stepCounts: newSteps.map(s => `${s.step_no}:${s.title}`),
+              allSteps: newSteps
+            });
+            
+            // Sort steps by step_no to ensure correct order
+            const sortedSteps = [...newSteps].sort((a, b) => (a.step_no || 0) - (b.step_no || 0));
+            
+            // CRITICAL: Use ref to get current steps (avoids stale closure issue)
+            const currentSteps = runStepsRef.current;
+            const stepsChanged = 
+              sortedSteps.length !== currentSteps.length ||
+              sortedSteps.some((step, idx) => {
+                const currentStep = currentSteps[idx];
+                return !currentStep || 
+                       step.step_no !== currentStep.step_no || 
+                       step.title !== currentStep.title ||
+                       step.detail !== currentStep.detail;
+              });
+            
+            console.log(`[RunExecutionModal] Steps comparison:`, {
+              newCount: sortedSteps.length,
+              currentCount: currentSteps.length,
+              stepsChanged,
+              newSteps: sortedSteps.map(s => `${s.step_no}:${s.title}`),
+              currentSteps: currentSteps.map(s => `${s.step_no}:${s.title}`)
+            });
+            
+            // Simple state update - create a NEW array reference (like RunDetailsExpansion does)
+            // This is the key: always create a new array so React detects the change
+            const newStepsArray = [...sortedSteps];
+            
+            // Update ref for comparison logic
+            runStepsRef.current = newStepsArray;
+            
+            // Simple state update - React will handle re-render
+            console.log(`[RunExecutionModal] Updating steps: ${newStepsArray.length} steps`, {
+              newStepsArray,
+              timestamp: new Date().toISOString(),
+              willTriggerRender: true
+            });
+            
+            // CRITICAL: Update both state and ref synchronously
+            // Update ref first for comparison logic
+            runStepsRef.current = newStepsArray;
+            
+            // Update state - use direct assignment, not callback, to ensure immediate update
+            setRunSteps(newStepsArray);
+            console.log(`[RunExecutionModal] setRunSteps called with ${newStepsArray.length} steps`);
+            
+            // Force a re-render by updating render key - this ensures React re-renders
+            setRenderKey(prev => {
+              const newKey = prev + 1;
+              console.log(`[RunExecutionModal] Updating renderKey from ${prev} to ${newKey} to force re-render`);
+              return newKey;
+            });
             
             // Detect new steps and announce them
-            if (newSteps.length > previousStepCount) {
-              const newStepCount = newSteps.length - previousStepCount;
+            if (newSteps.length > currentCount) {
               const latestStep = newSteps[newSteps.length - 1];
               let announcementText = '';
               
@@ -282,57 +358,86 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
               } else if (latestStep.title === 'error') {
                 const errorType = latestStep.detail?.split(':')[0] || 'Error';
                 announcementText = `Error occurred: ${errorType} at step ${latestStep.step_no}`;
+              } else if (latestStep.title === 'planned') {
+                announcementText = `Agent plan created at step ${latestStep.step_no}`;
               } else {
                 announcementText = `Step ${latestStep.step_no}: ${latestStep.title}`;
               }
               
               if (announcementText) {
                 setAnnouncement(announcementText);
-                // Clear announcement after a delay so it can be announced again
                 setTimeout(() => setAnnouncement(""), 100);
               }
               
+              // Update both state and ref
+              previousStepCountRef.current = newSteps.length;
               setPreviousStepCount(newSteps.length);
+              
+              // Auto-scroll timeline to bottom when new steps arrive
+              requestAnimationFrame(() => {
+                if (timelineRef.current) {
+                  timelineRef.current.scrollTo({
+                    top: timelineRef.current.scrollHeight,
+                    behavior: 'smooth'
+                  });
+                }
+              });
+            } else {
+              // Even if no new steps, update the ref to current count
+              previousStepCountRef.current = newSteps.length;
             }
-            
-            setRunSteps(newSteps);
-            
-            // Auto-scroll timeline to bottom when new steps arrive
-            if (newSteps.length > previousStepCount && timelineRef.current) {
-              setTimeout(() => {
-                timelineRef.current?.scrollTo({
-                  top: timelineRef.current.scrollHeight,
-                  behavior: 'smooth'
-                });
-              }, 100);
-            }
+          } else {
+            console.warn(`[RunExecutionModal] Steps fetch failed: ${stepsResponse.status} ${stepsResponse.statusText}`);
           }
         } catch (error) {
-          console.error('Error fetching run status:', error);
+          console.error('[RunExecutionModal] Error fetching run status:', error);
         }
       };
 
-      // Initial fetch
+      // Immediate fetch - don't wait for interval
       fetchStatus();
       
-      // Poll every 1 second for faster updates (was 2 seconds)
-      const interval = setInterval(fetchStatus, 1000);
+      // Poll every 500ms for real-time updates (faster polling for better UX)
+      // For failed runs, continue polling for a few more cycles to ensure all steps are fetched
+      let pollCount = 0;
+      const maxPollCount = runState === 'failed' ? 10 : Infinity; // Poll 10 more times (5 seconds) after failure
+      
+      const interval = setInterval(() => {
+        // Stop polling after maxPollCount for failed runs
+        if (runState === 'failed' && pollCount >= maxPollCount) {
+          console.log('[RunExecutionModal] Stopping polling after failure - all steps should be fetched');
+          clearInterval(interval);
+          return;
+        }
+        pollCount++;
+        fetchStatus();
+      }, 500);
       
       return () => clearInterval(interval);
     }
-  }, [runState, runId]);
+  }, [runState, runId]); // Don't include previousStepCount - use ref instead
+
+  // Force re-render when runSteps changes - this ensures ExecutionLogTab gets updated
+  useEffect(() => {
+    console.log(`[RunExecutionModal] runSteps changed - length: ${runSteps.length}`, {
+      runSteps,
+      timestamp: new Date().toISOString()
+    });
+    // The renderKey is already being updated in the polling function, but this ensures we log the change
+  }, [runSteps]);
 
   // Auto-transition from started to running immediately when we get status
   useEffect(() => {
     if (runState === 'started' && runId && runStatus?.status) {
       // Immediately transition to running if status indicates it
-      if (runStatus.status === 'running' || runStatus.status === 'queued') {
+      if (runStatus.status === 'running') {
         setRunState('running');
       } else if (runStatus.status === 'succeeded') {
         setRunState('completed');
-            } else if (runStatus.status === 'failed' || runStatus.status === 'cancelled') {
-              setRunState('failed');
-            }
+      } else if (runStatus.status === 'failed' || runStatus.status === 'cancelled') {
+        setRunState('failed');
+      }
+      // Note: 'queued' status stays in 'started' state until it becomes 'running'
     }
   }, [runState, runId, runStatus]);
 
@@ -355,13 +460,15 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
       setRunId(null);
       setRunStatus(null);
       setRunSteps([]);
+      runStepsRef.current = [];
+      previousStepCountRef.current = 0;
       setPreviousStepCount(0);
       setRunMetrics(null);
       setElapsedTime(0);
       setStartTime(null);
       setAnnouncement("");
       setRunName("");
-      setMethod("TabDDPM");
+      setMethod("ddpm");
       setPrivacyLevel("Medium");
       setUseAgentic(false);
       setDescription("");
@@ -400,14 +507,20 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
       }
 
       const methodMapping: { [key: string]: string } = {
-        'TabDDPM': 'tvae',
+        'ddpm': 'ddpm',
+        'TabDDPM': 'ddpm', // Legacy support
         'CTGAN': 'ctgan', 
-        'DP-GAN': 'gc',
-        'PATE-GAN': 'gc',
+        'ctgan': 'ctgan', // Lowercase support
+        'TVAE': 'tvae',
+        'tvae': 'tvae', // Lowercase support
+        'VAE': 'tvae', // VAE maps to TVAE
+        'DP-GAN': 'dpctgan', // DP-GAN maps to dpctgan
+        'PATE-GAN': 'pategan', // PATE-GAN maps to pategan
+        'WGAN-GP': 'wgan', // WGAN-GP maps to wgan
         'Auto': 'auto'
       };
 
-      const backendMethod = methodMapping[method] || 'tvae';
+      const backendMethod = methodMapping[method] || 'ddpm'; // Default to ddpm instead of tvae
       const mode = useAgentic ? 'agent' : 'custom';
 
       const requestBody = {
@@ -429,7 +542,7 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
           })
         }
       };
-
+      
       const response = await fetch(`${base}/v1/runs`, {
         method: 'POST',
         headers: {
@@ -445,41 +558,56 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
       }
 
       const result = await response.json();
-      console.log('Run started successfully:', result);
+      console.log('[RunExecutionModal] Run started successfully:', result);
       
       // Set runId immediately to trigger polling
       if (result.run_id) {
+        console.log('[RunExecutionModal] Setting runId and starting polling:', result.run_id);
         setRunId(result.run_id);
+        setRunStatus({ status: 'queued', name: name });
+        setStartTime(new Date()); // Start the timer
         
         // Immediately fetch initial data (don't wait for polling interval)
-        const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || 'http://localhost:8000';
-        const supabase = createSupabaseBrowserClient();
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session?.access_token) {
+        // This ensures steps appear as soon as they're created
+        try {
           const headers = {
             'Authorization': `Bearer ${session.access_token}`,
           };
           
-          // Initial fetch to get steps and run data immediately
-          Promise.all([
-            fetch(`${base}/v1/runs/${result.run_id}`, { headers }).then(r => r.ok ? r.json() : null).catch(() => null),
-            fetch(`${base}/v1/runs/${result.run_id}/steps`, { headers }).then(r => r.ok ? r.json() : null).catch(() => null),
-          ]).then(([runData, steps]) => {
-            if (runData) {
-              setRunData(runData);
-              setRunStatus({ 
-                status: runData.status,
-                name: runData.name 
-              });
-              // Auto-transition if status is already running
-              if (runData.status === 'running' || runData.status === 'queued') {
-                setRunState('running');
-              }
+          // Fetch run data and steps in parallel for faster loading
+          const [runDataRes, stepsRes] = await Promise.all([
+            fetch(`${base}/v1/runs/${result.run_id}`, { headers }),
+            fetch(`${base}/v1/runs/${result.run_id}/steps`, { headers })
+          ]);
+          
+          if (runDataRes.ok) {
+            const runData = await runDataRes.json();
+            setRunData(runData);
+            setRunStatus({ 
+              status: runData.status || 'queued',
+              name: runData.name || name 
+            });
+            // Auto-transition if status is already running
+            if (runData.status === 'running') {
+              setRunState('running');
             }
-            if (steps && Array.isArray(steps)) {
-              setRunSteps(steps);
-              setPreviousStepCount(steps.length);
+          }
+          
+          if (stepsRes.ok) {
+            const steps = await stepsRes.json();
+            if (Array.isArray(steps)) {
+              console.log(`[RunExecutionModal] Initial fetch: ${steps.length} steps for run ${result.run_id}:`, steps);
+              // Sort steps by step_no to ensure correct order
+              const sortedSteps = [...steps].sort((a, b) => (a.step_no || 0) - (b.step_no || 0));
+              const newStepsArray = [...sortedSteps];
+              
+              // Simple state update - create new array reference
+              runStepsRef.current = newStepsArray; // Update ref for comparison
+              setRunSteps(newStepsArray); // Simple state update like RunDetailsExpansion
+              setRenderKey(prev => prev + 1); // Force re-render
+              previousStepCountRef.current = sortedSteps.length;
+              setPreviousStepCount(sortedSteps.length);
+              console.log(`[RunExecutionModal] Initial fetch complete: ${newStepsArray.length} steps`);
               if (steps.length > 0) {
                 const latestStep = steps[steps.length - 1];
                 let announcementText = '';
@@ -487,6 +615,8 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
                   const methodMatch = latestStep.detail?.match(/method=(\w+)/i);
                   const methodName = methodMatch ? methodMatch[1].toUpperCase() : '';
                   announcementText = `Training started for ${methodName || 'model'} at step ${latestStep.step_no}`;
+                } else if (latestStep.title === 'planned') {
+                  announcementText = `Agent plan created at step ${latestStep.step_no}`;
                 } else {
                   announcementText = `Step ${latestStep.step_no}: ${latestStep.title}`;
                 }
@@ -496,15 +626,16 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
                 }
               }
             }
-          }).catch(err => {
-            console.error('Error in initial fetch:', err);
-            // Don't block the UI, polling will catch up
-          });
+          }
+        } catch (err) {
+          console.warn('[RunExecutionModal] Error in initial fetch (polling will catch up):', err);
+          // Don't block the UI, polling will catch up
         }
       }
       
-      // Notify parent
+      // Notify parent (but don't close modal - keep it open to show progress)
       onSuccess();
+      // Modal stays open to show run progress
     } catch (error: any) {
       console.error('Error starting run:', error);
       // Revert UI to config if starting failed
@@ -526,15 +657,71 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
     setShowNameConfirm(false);
   };
 
-  const handleClose = () => {
-    if (runState === 'config' || runState === 'completed' || runState === 'failed') {
-      setRunName("");
-      setMethod("TabDDPM");
-      setPrivacyLevel("Medium");
-      setUseAgentic(false);
-      setDescription("");
-      onClose();
+  const handleCancelRun = async () => {
+    if (!runId) return;
+    
+    setIsCancelling(true);
+    setShowCancelConfirm(false);
+    
+    try {
+      const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || 'http://localhost:8000';
+      const supabase = createSupabaseBrowserClient();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session?.access_token) {
+        throw new Error('Authentication failed. Please sign in again.');
+      }
+
+      const response = await fetch(`${base}/v1/runs/${runId}/cancel`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to cancel run: ${response.status} - ${errorText}`);
+      }
+
+      // Update state to reflect cancellation
+      setRunState('failed');
+      setRunStatus(prev => prev ? { ...prev, status: 'cancelled' } : { status: 'cancelled', name: runName });
+      
+      // Add a cancellation step to the steps list
+      setRunSteps(prev => {
+        const newSteps = [...prev, {
+          step_no: prev.length + 1,
+          title: 'cancelled',
+          detail: 'Run cancelled by user',
+          created_at: new Date().toISOString()
+        }];
+        runStepsRef.current = newSteps; // Update ref
+        return newSteps;
+      });
+      
+    } catch (error: any) {
+      console.error('Error cancelling run:', error);
+      alert(`Failed to cancel run: ${error.message || 'Unknown error'}`);
+      setShowCancelConfirm(true); // Re-show confirmation dialog on error
+    } finally {
+      setIsCancelling(false);
     }
+  };
+
+  const handleClose = () => {
+    // Only allow closing if run is not in progress
+    if (runState === 'config' || runState === 'completed' || runState === 'failed') {
+    setRunName("");
+    setMethod("ddpm");
+    setPrivacyLevel("Medium");
+    setUseAgentic(false);
+    setDescription("");
+    onClose();
+    }
+    // If run is in progress, show a warning or prevent closing
+    // For now, we'll just prevent closing during active runs
   };
 
   const handleDownloadReport = async () => {
@@ -606,8 +793,23 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
 
   // Render different views based on state
   if (runState === 'started') {
-    return (
-      <Dialog open={isOpen} onOpenChange={handleClose} className="w-[95vw] sm:max-w-6xl lg:max-w-7xl max-h-[90vh] overflow-y-auto">
+    // Debug: Log current runSteps in render - THIS IS CRITICAL TO SEE WHAT REACT SEES
+    console.log(`[RunExecutionModal] RENDER (started state):`, {
+      runSteps_length: runSteps.length,
+      runStepsRef_length: runStepsRef.current.length,
+      runSteps: runSteps,
+      runStepsRef: runStepsRef.current,
+      runId,
+      runState
+    });
+    
+    // Calculate progress based on steps even in 'started' state
+    const progress = runSteps.length > 0 
+      ? Math.min((runSteps.length / 12) * 50, 50) // Cap at 50% in started state
+      : 5;
+
+  return (
+      <Dialog open={isOpen} onOpenChange={() => {}} className="w-[95vw] sm:max-w-6xl lg:max-w-7xl max-h-[90vh] overflow-y-auto">
         <DialogContent className="p-6">
           {/* Aria-live announcement for screen readers */}
           <div role="alert" aria-live="assertive" aria-atomic="true" className="sr-only">
@@ -615,36 +817,87 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
           </div>
           
           <DialogHeader>
-            <DialogTitle className="flex items-center space-x-2">
-              <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
-              <span>{getDynamicStatus()}</span>
-            </DialogTitle>
-            <DialogDescription>
-              {runSteps.length > 0 
-                ? `Processing step ${runSteps.length} of synthesis pipeline...`
-                : 'Your synthesis run has been initiated. Preparing to start...'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-6">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4">
-                <Play className="h-8 w-8 text-blue-600" />
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <DialogTitle className="flex items-center space-x-2">
+                  <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
+                  <span>{getDynamicStatus()}</span>
+                  <Badge className="bg-green-100 text-green-800 border-green-300 ml-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-1.5"></div>
+                    LIVE
+                  </Badge>
+                </DialogTitle>
+                <DialogDescription>
+                  {runStatus?.name || runName || 'Synthetic data generation in progress'}
+                  {runSteps.length > 0 && ` • ${runSteps.length} step${runSteps.length !== 1 ? 's' : ''} completed`}
+                </DialogDescription>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">{runName || 'Synthesis Run'}</h3>
-              <p className="text-sm text-gray-600">Initializing synthesis process...</p>
+              {(runStatus?.status === 'running' || runStatus?.status === 'queued') && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setShowCancelConfirm(true)}
+                  disabled={isCancelling}
+                  className="ml-4 bg-red-500 hover:bg-red-600 text-white"
+                >
+                  <StopCircle className="h-4 w-4 mr-2" />
+                  {isCancelling ? 'Cancelling...' : 'Cancel'}
+                </Button>
+              )}
             </div>
-
-            {/* Indeterminate progress while preparing */}
+          </DialogHeader>
+          
+          {/* Cancel Confirmation Dialog */}
+          {showCancelConfirm && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+              <Card className="w-full max-w-md mx-4 bg-white shadow-xl">
+                <CardContent className="p-6">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <AlertTriangle className="h-6 w-6 text-yellow-600" />
+                    <h3 className="text-lg font-semibold text-gray-900">Cancel Run?</h3>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-6">
+                    Are you sure you want to cancel this run? This action cannot be undone. Any progress made so far will be lost.
+                  </p>
+                  <div className="flex justify-end space-x-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowCancelConfirm(false)}
+                      disabled={isCancelling}
+                    >
+                      Keep Running
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={handleCancelRun}
+                      disabled={isCancelling}
+                      className="bg-red-500 hover:bg-red-600"
+                    >
+                      {isCancelling ? 'Cancelling...' : 'Yes, Cancel Run'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+          
+          <div className="space-y-6">
+            {/* Progress Section */}
             <div className="space-y-2">
               <div className="flex justify-between items-center text-sm">
                 <span className="text-gray-600">Progress</span>
-                <span className="font-medium">Starting…</span>
+                <span className="font-medium">{Math.round(progress)}%</span>
               </div>
-              <Progress indeterminate className="w-full h-2" />
+              <Progress value={progress} className="w-full h-2 transition-all duration-300 ease-in-out" />
+              {runSteps.length > 0 && (
+                <p className="text-xs text-gray-500 mt-1">
+                  {runSteps.length} step{runSteps.length !== 1 ? 's' : ''} executed
+                </p>
+              )}
             </div>
 
-            {/* Time and ETA */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* Time, Status, Quick Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center space-x-2 mb-2">
@@ -652,26 +905,61 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
                     <span className="text-sm font-medium text-gray-700">Elapsed Time</span>
                   </div>
                   <p className="text-2xl font-bold text-gray-900">{formatElapsedTime(elapsedTime)}</p>
+                  <p className="text-xs text-gray-500 mt-1">ETA: {calculateEstimatedTime()}</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center space-x-2 mb-2">
                     <Database className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm font-medium text-gray-700">Estimated Time</span>
+                    <span className="text-sm font-medium text-gray-700">Status</span>
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">{calculateEstimatedTime()}</p>
+                  <Badge className="bg-blue-100 text-blue-800">
+                    {runStatus?.status || 'starting'}
+                  </Badge>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <TrendingUp className="h-4 w-4 text-gray-500" />
+                    <span className="text-sm font-medium text-gray-700">Quick Metrics</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="bg-gray-50 rounded p-2">
+                      <div className="text-gray-600">KS Mean</div>
+                      <div className="font-mono text-sm">{runMetrics?.utility?.ks_mean?.toFixed(3) || '—'}</div>
+                    </div>
+                    <div className="bg-gray-50 rounded p-2">
+                      <div className="text-gray-600">Corr Δ</div>
+                      <div className="font-mono text-sm">{runMetrics?.utility?.corr_delta?.toFixed(3) || '—'}</div>
+                    </div>
+                    <div className="bg-gray-50 rounded p-2">
+                      <div className="text-gray-600">MIA AUC</div>
+                      <div className="font-mono text-sm">{runMetrics?.privacy?.mia_auc?.toFixed(3) || '—'}</div>
+                    </div>
+                    <div className="bg-gray-50 rounded p-2">
+                      <div className="text-gray-600">Dup%</div>
+                      <div className="font-mono text-sm">{runMetrics?.privacy?.dup_rate ? `${(runMetrics.privacy.dup_rate*100).toFixed(1)}%` : '—'}</div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Agent Plan Section - Show when agent plan is available (detected from run data) */}
+            {/* Agent Plan Section - Show when agent plan is available */}
             {runData?.config_json?.plan && (
               <div className="space-y-4 mt-6">
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 flex-wrap gap-2">
                   <Brain className="h-5 w-5 text-purple-600" />
                   <h4 className="text-base font-semibold text-gray-900">Agent Planning Decisions</h4>
                   <Badge className="bg-purple-100 text-purple-800">AI Agent</Badge>
+                  {runData?.agent_interventions?.used_backup && (
+                    <Badge className="bg-orange-100 text-orange-800">Backup Used</Badge>
+                  )}
+                  {runData?.agent_interventions?.replanned && (
+                    <Badge className="bg-blue-100 text-blue-800">Re-planned</Badge>
+                  )}
                 </div>
                 <div className="border rounded-lg bg-white p-4 max-h-[35vh] overflow-y-auto">
                   <AgentPlanTab 
@@ -695,15 +983,34 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
                 ref={timelineRef}
                 className="max-h-[40vh] overflow-y-auto border rounded-lg bg-white p-4"
               >
-                {runSteps.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <Loader2 className="h-8 w-8 mx-auto mb-3 text-gray-400 animate-spin" />
-                    <p className="text-sm">Waiting for execution steps...</p>
-                    <p className="text-xs mt-1">Steps will appear here as the run progresses</p>
-                  </div>
-                ) : (
-                  <ExecutionLogTab steps={runSteps} />
-                )}
+                {(() => {
+                  console.log(`[RunExecutionModal] RENDERING Execution Timeline (started): runSteps.length=${runSteps.length}`, {
+                    runSteps,
+                    timestamp: new Date().toISOString()
+                  });
+                  
+                  if (runSteps.length === 0) {
+                    return (
+                      <div className="text-center py-8 text-gray-500">
+                        <Loader2 className="h-8 w-8 mx-auto mb-3 text-gray-400 animate-spin" />
+                        <p className="text-sm">Waiting for execution steps...</p>
+                        <p className="text-xs mt-1">Steps will appear here as the run progresses</p>
+                        <p className="text-xs mt-2 text-gray-400">Debug: runSteps.length = {runSteps.length}</p>
+                      </div>
+                    );
+                  }
+                  
+                  console.log(`[RunExecutionModal] About to render ExecutionLogTab with ${runSteps.length} steps`);
+                  // Use renderKey to force re-render when steps change
+                  const stepKey = `steps-${runSteps.length}-${runSteps.map(s => s.step_no).join('-')}-${renderKey}`;
+                  console.log(`[RunExecutionModal] ExecutionLogTab key: ${stepKey}, renderKey: ${renderKey}`);
+                  return (
+                    <ExecutionLogTab 
+                      key={stepKey} 
+                      steps={[...runSteps]} // Pass a new array reference to ensure React detects change
+                    />
+                  );
+                })()}
               </div>
             </div>
           </div>
@@ -713,6 +1020,16 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
   }
 
   if (runState === 'running') {
+    // Debug: Log current runSteps in render
+    console.log(`[RunExecutionModal] RENDER (running state):`, {
+      runSteps_length: runSteps.length,
+      runStepsRef_length: runStepsRef.current.length,
+      runSteps: runSteps,
+      runStepsRef: runStepsRef.current,
+      runId,
+      runState
+    });
+    
     const latestStep = runSteps.length > 0 ? runSteps[runSteps.length - 1] : null;
     // Calculate progress more accurately based on step count and status
     // Each training attempt typically has: training -> metrics (or error)
@@ -899,15 +1216,34 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
                 ref={timelineRef}
                 className="max-h-[50vh] overflow-y-auto border rounded-lg bg-white p-4"
               >
-                {runSteps.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <Loader2 className="h-8 w-8 mx-auto mb-3 text-gray-400 animate-spin" />
-                    <p className="text-sm">Waiting for execution steps...</p>
-                    <p className="text-xs mt-1">Steps will appear here as the run progresses</p>
-                  </div>
-                ) : (
-                  <ExecutionLogTab steps={runSteps} />
-                )}
+                {(() => {
+                  console.log(`[RunExecutionModal] RENDERING Execution Timeline (running): runSteps.length=${runSteps.length}`, {
+                    runSteps,
+                    timestamp: new Date().toISOString()
+                  });
+                  
+                  if (runSteps.length === 0) {
+                    return (
+                      <div className="text-center py-8 text-gray-500">
+                        <Loader2 className="h-8 w-8 mx-auto mb-3 text-gray-400 animate-spin" />
+                        <p className="text-sm">Waiting for execution steps...</p>
+                        <p className="text-xs mt-1">Steps will appear here as the run progresses</p>
+                        <p className="text-xs mt-2 text-gray-400">Debug: runSteps.length = {runSteps.length}</p>
+                      </div>
+                    );
+                  }
+                  
+                  console.log(`[RunExecutionModal] About to render ExecutionLogTab with ${runSteps.length} steps`);
+                  // Use renderKey to force re-render when steps change
+                  const stepKey = `steps-${runSteps.length}-${runSteps.map(s => s.step_no).join('-')}-${renderKey}`;
+                  console.log(`[RunExecutionModal] ExecutionLogTab key: ${stepKey}, renderKey: ${renderKey}`);
+                  return (
+                    <ExecutionLogTab 
+                      key={stepKey} 
+                      steps={[...runSteps]} // Pass a new array reference to ensure React detects change
+                    />
+                  );
+                })()}
               </div>
             </div>
           </div>
@@ -1039,7 +1375,7 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
 
   if (runState === 'failed') {
     return (
-      <Dialog open={isOpen} onOpenChange={handleClose} className="w-[95vw] sm:max-w-5xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={isOpen} onOpenChange={handleClose} className="w-[95vw] sm:max-w-6xl lg:max-w-7xl max-h-[90vh] overflow-y-auto">
         <DialogContent className="p-6">
           <DialogHeader>
             <DialogTitle className="flex items-center space-x-2">
@@ -1047,26 +1383,58 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
               <span>Run Failed</span>
             </DialogTitle>
             <DialogDescription>
-              The synthesis run encountered an error
+              The synthesis run encountered an error. Review the execution steps below to see what happened.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-8">
-            <div className="text-center mb-4">
-              <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Run Failed</h3>
-              <p className="text-sm text-gray-600">
-                Please check the execution steps or try again with different parameters.
-              </p>
-            </div>
-            {runSteps.length > 0 && (
-              <div className="mt-4 max-h-48 overflow-y-auto space-y-2">
-                {runSteps.map((step: any, index: number) => (
-                  <div key={index} className="p-2 bg-gray-50 rounded text-xs">
-                    <span className="font-medium">Step {step.step_no}:</span> {step.title}
+          
+          <div className="space-y-6 mt-4">
+            {/* Execution Timeline - Show all steps even on failure */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-base font-semibold text-gray-900">Execution Timeline</h4>
+                {runSteps.length > 0 && (
+                  <Badge variant="outline" className="text-sm">{runSteps.length} steps</Badge>
+                )}
+              </div>
+              <div 
+                ref={timelineRef}
+                className="max-h-[50vh] overflow-y-auto border rounded-lg bg-white p-4"
+              >
+                {runSteps.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <AlertCircle className="h-8 w-8 mx-auto mb-3 text-gray-400" />
+                    <p className="text-sm">No execution steps available</p>
+                    <p className="text-xs mt-1">Steps may still be loading...</p>
                   </div>
-                ))}
+                ) : (
+                  <>
+                    <div className="mb-2 text-xs text-gray-500">Debug: Rendering {runSteps.length} steps (key: {runSteps.length}-{runSteps.map(s => s.step_no).join('-')})</div>
+                    <ExecutionLogTab 
+                      key={`steps-${runSteps.length}-${runSteps.map(s => s.step_no).join('-')}`} 
+                      steps={[...runSteps]} 
+                    />
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Agent Plan if available */}
+            {runData?.config_json?.plan && (
+              <div className="space-y-4 mt-6">
+                <div className="flex items-center space-x-2 flex-wrap gap-2">
+                  <Brain className="h-5 w-5 text-purple-600" />
+                  <h4 className="text-base font-semibold text-gray-900">Agent Planning Decisions</h4>
+                </div>
+                <div className="border rounded-lg bg-white p-4 max-h-[35vh] overflow-y-auto">
+                  <AgentPlanTab 
+                    plan={runData.config_json.plan} 
+                    interventions={runData.agent_interventions || null}
+                    finalMethod={runData.method}
+                  />
+                </div>
               </div>
             )}
+
             <div className="flex justify-end mt-6">
               <Button onClick={handleClose} variant="outline">
                 Close
@@ -1146,7 +1514,17 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
                         <span className="font-medium text-sm">{methodOption.label}</span>
+                          {methodOption.badge && (
+                            <span className="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded font-semibold" title="2025 state-of-the-art diffusion model — best clinical data fidelity">
+                              {methodOption.badge}
+                            </span>
+                          )}
+                          {methodOption.recommended && !methodOption.badge && (
+                            <span className="text-xs text-yellow-600">⭐</span>
+                          )}
+                        </div>
                         <div className={`w-4 h-4 rounded-full border-2 ${
                           method === methodOption.value ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
                         }`}>
@@ -1155,11 +1533,13 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
                           )}
                         </div>
                       </div>
-                      <p className="text-xs text-gray-600 mb-2 line-clamp-2">{methodOption.description}</p>
+                      <p className="text-xs text-gray-600 mb-2 line-clamp-2" title={methodOption.value === "ddpm" ? "2025 state-of-the-art diffusion model — best clinical data fidelity" : methodOption.description}>
+                        {methodOption.description}
+                      </p>
                       <div className="flex items-center justify-between">
                         <Badge variant="outline" className="text-xs">{methodOption.category}</Badge>
                         {methodOption.recommended && (
-                          <Badge variant="secondary" className="text-xs">★</Badge>
+                          <Badge variant="secondary" className="text-xs">⭐ Recommended</Badge>
                         )}
                       </div>
                     </button>
@@ -1226,7 +1606,20 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
                     </div>
                     <div className="flex justify-between items-center py-1">
                       <span className="text-blue-700 font-medium text-xs">Method:</span>
+                      <div className="flex items-center gap-1 flex-wrap justify-end">
                       <span className="font-semibold text-blue-900 text-xs">{selectedMethod?.label}</span>
+                        {selectedMethod?.value === 'ddpm' && (
+                          <span className="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded font-semibold" title="2025 state-of-the-art diffusion model — best clinical data fidelity">
+                            SOTA
+                          </span>
+                        )}
+                        {/* Show recommendation if agent suggests TabDDPM */}
+                        {runData?.config_json?.plan?.choice?.method === 'ddpm' && (
+                          <span className="text-xs bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded font-semibold" title="AI Agent recommended TabDDPM for this dataset">
+                            ⭐ Recommended: TabDDPM
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <div className="flex justify-between items-center py-1">
                       <span className="text-blue-700 font-medium text-xs">Privacy:</span>

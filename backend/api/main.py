@@ -709,6 +709,42 @@ def start_run(body: StartRun, user: Dict[str, Any] = Depends(require_user)):
         if mode_in == "agent":
             pref = cfg.get("preference") if isinstance(cfg.get("preference"), dict) else {"tradeoff": cfg.get("mode") or cfg.get("tradeoff") or "balanced"}
             plan = _agent_plan_internal(body.dataset_id, pref, cfg.get("goal"), cfg.get("prompt"))
+            
+            # IMPORTANT: If user explicitly selected a method, respect it and use as primary
+            # Agent plan will be used only for backup methods
+            if method_l and method_l in ["ddpm", "gc", "ctgan", "tvae", "pategan", "dpgan", "dp-ctgan"]:
+                print(f"[api][agent] User explicitly selected method: '{method_l}' - using as primary, agent plan as backups")
+                # Use user's method as primary choice
+                user_choice = {"method": method_l, "hyperparams": plan.get("hyperparams", {})}
+                # Get agent's primary as first backup (if different)
+                agent_choice = plan.get("choice", {})
+                agent_method = agent_choice.get("method") if isinstance(agent_choice, dict) else plan.get("method")
+                backups = plan.get("backup", [])
+                
+                # Build new plan with user's method as primary
+                new_plan = {
+                    "choice": user_choice,
+                    "hyperparams": plan.get("hyperparams", {}),
+                    "dp": plan.get("dp", {"enabled": False}),
+                    "backup": [],
+                    "rationale": f"User selected {method_l.upper()}, agent suggested {agent_method}" if agent_method else f"User selected {method_l.upper()}"
+                }
+                
+                # Add agent's primary as backup if different
+                if agent_method and agent_method.lower() != method_l.lower():
+                    new_plan["backup"].append({
+                        "method": agent_method,
+                        "hyperparams": agent_choice.get("hyperparams", {}) if isinstance(agent_choice, dict) else {}
+                    })
+                
+                # Add agent's backups (excluding user's method)
+                for backup in backups:
+                    backup_method = backup.get("method") if isinstance(backup, dict) else backup
+                    if backup_method and backup_method.lower() != method_l.lower():
+                        new_plan["backup"].append(backup if isinstance(backup, dict) else {"method": backup_method})
+                
+                plan = new_plan
+            
             cfg["plan"] = plan
         elif mode_in == "custom":
             hp = {
@@ -1043,10 +1079,31 @@ def rename_run(run_id: str, body: RenameBody, user: Dict[str, Any] = Depends(req
 
 @app.get("/v1/runs/{run_id}/metrics")
 def run_metrics(run_id: str, user: Dict[str, Any] = Depends(require_user)):
-    m = supabase.table("metrics").select("payload_json").eq("run_id", run_id).single().execute()
-    if m.data is None:
+    """Get metrics for a run. Returns empty dict if run was cancelled/failed before metrics were generated."""
+    # Check run status first - cancelled/failed runs may not have metrics
+    r = supabase.table("runs").select("id,status,project_id").eq("id", run_id).single().execute()
+    if not r.data:
+        raise HTTPException(status_code=404, detail="Run not found")
+    
+    # Ownership check
+    proj = supabase.table("projects").select("owner_id").eq("id", r.data["project_id"]).single().execute()
+    if not proj.data or proj.data.get("owner_id") != user["id"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    
+    # For cancelled or failed runs, return empty dict gracefully
+    if r.data.get("status") in ("cancelled", "failed"):
         return {}
-    return m.data.get("payload_json") or {}
+    
+    # Try to fetch metrics
+    try:
+        m = supabase.table("metrics").select("payload_json").eq("run_id", run_id).maybe_single().execute()
+        if m.data is None:
+            return {}
+        return m.data.get("payload_json") or {}
+    except Exception as e:
+        # If metrics don't exist, return empty dict (graceful degradation)
+        print(f"[api] Warning: Could not fetch metrics for run {run_id}: {e}")
+        return {}
 
 @app.get("/v1/runs/{run_id}/artifacts")
 def run_artifacts(run_id: str, user: Dict[str, Any] = Depends(require_user)):
@@ -1803,13 +1860,18 @@ def _agent_plan_internal(dataset_id: str, preference: Optional[Dict[str, Any]], 
     system = (
         "You are a senior synthetic-data scientist for healthcare tabular data.\n"
         "Return ONLY valid JSON per schema:\n"
-        "{\n \"choice\":{\"method\":\"gc|ctgan|tvae\"},\n \"hyperparams\":{\"sample_multiplier\":number,\"max_synth_rows\":number,\"ctgan\":{\"epochs\":int,\"batch_size\":int,\"embedding_dim\":int}?,\"tvae\":{\"epochs\":int,\"batch_size\":int,\"embedding_dim\":int}?},\n \"dp\":{\"enabled\":false},\n \"backup\":[{\"method\":\"gc|ctgan|tvae\",\"hyperparams\":{...}}...],\n \"rationale\":\"short reason\"\n}\n"
+        "{\n \"choice\":{\"method\":\"ddpm|gc|ctgan|tvae\"},\n \"hyperparams\":{\"sample_multiplier\":number,\"max_synth_rows\":number,\"ctgan\":{\"epochs\":int,\"batch_size\":int,\"embedding_dim\":int}?,\"tvae\":{\"epochs\":int,\"batch_size\":int,\"embedding_dim\":int}?,\"ddpm\":{\"n_iter\":int}?},\n \"dp\":{\"enabled\":false},\n \"backup\":[{\"method\":\"ddpm|gc|ctgan|tvae\",\"hyperparams\":{...}}...],\n \"rationale\":\"short reason\"\n}\n"
         "Guidance:\n"
-        "- GC for small/mixed data with many categoricals or when stability is needed.\n"
-        "- CTGAN for complex categorical/non-Gaussian data:\n"
+        "- TabDDPM (ddpm) is RECOMMENDED for datasets with >20 columns or mixed types (2025 SOTA diffusion model for clinical data):\n"
+        "  * Best for high-dimensional clinical datasets with mixed numeric/categorical columns\n"
+        "  * n_iter: 300-500 for fast test, 500-1000 for production quality\n"
+        "  * Highest fidelity for complex healthcare data\n"
+        "- GC for small/mixed data with many categoricals, high-cardinality columns (>1000 unique values), or when stability is needed.\n"
+        "- CTGAN for complex categorical/non-Gaussian data (AVOID if any column has >1000 unique values - CTGAN will hang):\n"
         "  * Small datasets (<1000 rows): epochs 300-400, batch 64-128, embedding_dim 128-256\n"
         "  * Medium (1000-10000): epochs 400-500, batch 128-256, embedding_dim 256-512\n"
         "  * Large (>10000): epochs 500-600, batch 256-512, embedding_dim 512\n"
+        "- NEVER use CTGAN if dataset has columns with >1000 unique values - use GC, TVAE, or ddpm instead.\n"
         "- TVAE for continuous-heavy data:\n"
         "  * Small: epochs 250-350, batch 64-128, embedding_dim 64-128\n"
         "  * Medium: epochs 350-450, batch 128-256, embedding_dim 128-256\n"
@@ -1866,15 +1928,36 @@ def _agent_plan_internal(dataset_id: str, preference: Optional[Dict[str, Any]], 
     # Fallback: craft a conservative default plan from summary
     try:
         cols = summary.get("schema", {}).get("columns", []) if isinstance(summary, dict) else []
+        total_cols = len(cols)
         # estimate categorical weight
         cat_like = 0
+        num_like = 0
+        max_cardinality = 0
         for c in cols:
             t = str((c or {}).get("type") or "").lower()
             if t and not any(x in t for x in ["int","float","double","number","decimal","datetime","date"]):
                 cat_like += 1
-        method = "ctgan" if (cat_like and len(cols) and (cat_like/len(cols) > 0.5)) else "gc"
+            elif any(x in t for x in ["int","float","double","number","decimal"]):
+                num_like += 1
+            # Check for high cardinality (unique_count in summary)
+            unique_count = (c or {}).get("unique_count") or (c or {}).get("nunique") or 0
+            if unique_count > max_cardinality:
+                max_cardinality = unique_count
+        
+        # Recommend TabDDPM for datasets with >20 columns or mixed types
+        num_ratio = num_like / total_cols if total_cols > 0 else 0
+        is_mixed = (0.2 <= num_ratio <= 0.8) if total_cols > 0 else False
+        if total_cols > 20 or (is_mixed and total_cols > 10):
+            method = "ddpm"  # TabDDPM recommended for high-dimensional or mixed-type datasets
+        # Avoid CTGAN if high-cardinality columns detected
+        elif max_cardinality > 1000:
+            method = "gc"  # Use GC for high-cardinality data
+        elif cat_like and len(cols) and (cat_like/len(cols) > 0.5):
+            method = "ctgan"
+        else:
+            method = "gc"
     except Exception:
-        method = "gc"
+        method = "ddpm"  # Default to TabDDPM for new users
     rows = int((summary or {}).get("rows_count") or 0)
     max_rows = min(50000, max(2000, rows or 2000))
     return {
@@ -1885,7 +1968,7 @@ def _agent_plan_internal(dataset_id: str, preference: Optional[Dict[str, Any]], 
             {"method": "gc", "hyperparams": {"sample_multiplier": 1.0, "max_synth_rows": max_rows}},
             {"method": "tvae", "hyperparams": {"sample_multiplier": 1.0, "max_synth_rows": max_rows}},
         ],
-        "rationale": "Fallback default plan (LLM unavailable)",
+        "rationale": f"Fallback default plan (LLM unavailable). {'Using TabDDPM for high-dimensional/mixed-type dataset' if (total_cols > 20 or (is_mixed and total_cols > 10)) else ('Avoiding CTGAN due to high-cardinality columns' if max_cardinality > 1000 else '')}",
     }
 
 

@@ -3,8 +3,20 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
 
 export async function authedFetch(path: string, init: RequestInit = {}) {
   const supabase = createSupabaseBrowserClient();
-  const { data } = await supabase.auth.getSession();
-  const token = data.session?.access_token;
+  const { data, error } = await supabase.auth.getSession();
+  
+  // Handle refresh token errors gracefully
+  if (error && error.message?.includes('Refresh Token')) {
+    console.warn('[API] Auth error, signing out:', error.message);
+    await supabase.auth.signOut().catch(() => {});
+    // Redirect to sign in if we're in the browser
+    if (typeof window !== 'undefined') {
+      window.location.href = '/signin';
+    }
+    throw new Error('Authentication expired. Please sign in again.');
+  }
+  
+  const token = data?.session?.access_token;
   const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || "";
   
   if (!base) {
@@ -100,7 +112,7 @@ export async function downloadAllArtifactsZip(runId: string) {
 export type StartRunBody =
   | {
       dataset_id: string;
-      method: 'gc'|'ctgan'|'tvae';
+      method: 'ddpm'|'gc'|'ctgan'|'tvae';
       mode: 'balanced'|'privacy-first'|'utility-first';
       config_json: { sample_multiplier: number; max_synth_rows: number };
     }
@@ -144,7 +156,7 @@ export async function renameRun(runId: string, name: string) {
 }
 
 export type StartRunOptions = {
-  method?: "gc" | "ctgan" | "tvae";
+  method?: "ddpm" | "gc" | "ctgan" | "tvae";
   mode?: "balanced" | "privacy-first" | "utility-first" | "agent";
   prompt?: string;
   sampleMultiplier?: number;                   // e.g., 1.0
@@ -160,7 +172,7 @@ export type StartRunOptions = {
 
 export async function startRun(datasetId: string, opts: StartRunOptions = {}) {
   const {
-    method = "gc",
+    method = "ddpm",
     mode = "balanced",
     prompt = "",
     sampleMultiplier,

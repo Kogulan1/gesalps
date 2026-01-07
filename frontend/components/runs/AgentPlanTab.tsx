@@ -78,6 +78,7 @@ export function AgentPlanTab({ plan, interventions, finalMethod }: AgentPlanTabP
 
   const getMethodBadgeColor = (method: string) => {
     const m = method.toLowerCase();
+    if (m === "ddpm") return "bg-yellow-100 text-yellow-800";
     if (m === "gc") return "bg-blue-100 text-blue-800";
     if (m === "ctgan") return "bg-purple-100 text-purple-800";
     if (m === "tvae") return "bg-green-100 text-green-800";
@@ -86,6 +87,7 @@ export function AgentPlanTab({ plan, interventions, finalMethod }: AgentPlanTabP
 
   const getMethodIcon = (method: string) => {
     const m = method.toLowerCase();
+    if (m === "ddpm") return "⭐";
     if (m === "gc") return "🔵";
     if (m === "ctgan") return "🟣";
     if (m === "tvae") return "🟢";

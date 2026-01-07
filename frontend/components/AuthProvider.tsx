@@ -26,13 +26,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(({ data, error }) => {
       if (!mounted) return;
-      setSession(data.session);
+      if (error) {
+        // Handle refresh token errors gracefully
+        console.warn('[Auth] Session error:', error.message);
+        // Clear invalid session
+        if (error.message?.includes('Refresh Token')) {
+          supabase.auth.signOut().catch(() => {});
+        }
+        setSession(null);
+      } else {
+        setSession(data.session);
+      }
       setLoading(false);
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession);
+    const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
+      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+        setSession(newSession);
+      } else {
+        setSession(newSession);
+      }
     });
     return () => {
       mounted = false;

@@ -306,11 +306,10 @@
         "title": "Tutoriels",
         "description": "Tutoriels étape par étape et meilleures pratiques"
       }
-    }
-  },
-  "auth": {
-    "backToHome": "Retour à l'accueil",
-    "signIn": {
+    },
+    "auth": {
+      "backToHome": "Retour à l'accueil",
+      "signIn": {
       "title": "Bon retour",
       "subtitle": "Connectez-vous à votre compte pour continuer",
       "formTitle": "Se connecter à votre compte",
@@ -323,8 +322,8 @@
       "signingIn": "Connexion en cours...",
       "noAccount": "Pas de compte ?",
       "signUp": "S'inscrire"
-    },
-    "signUp": {
+      },
+      "signUp": {
       "title": "Créer votre compte",
       "subtitle": "Commencez avec GESALP AI dès aujourd'hui",
       "formTitle": "Créer votre compte",
@@ -343,22 +342,22 @@
       "creatingAccount": "Création du compte...",
       "haveAccount": "Déjà un compte ?",
       "signIn": "Se connecter"
-    },
-    "errors": {
+      },
+      "errors": {
       "fillAllFields": "Veuillez remplir tous les champs",
       "passwordsDontMatch": "Les mots de passe ne correspondent pas",
       "passwordTooShort": "Le mot de passe doit contenir au moins 6 caractères",
       "agreeToTerms": "Veuillez accepter les conditions",
       "signInFailed": "Échec de la connexion",
       "signUpFailed": "Échec de l'inscription"
-    },
-    "success": {
+      },
+      "success": {
       "signedIn": "Connexion réussie",
       "checkEmail": "Vérifiez votre e-mail",
       "checkEmailDescription": "Nous vous avons envoyé un lien de confirmation pour vérifier votre compte"
-    }
-  },
-  "footer": {
+      }
+    },
+    "footer": {
       "product": {
         "title": "Produit",
         "overview": "Aperçu",
