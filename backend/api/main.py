@@ -6,12 +6,18 @@ import json
 import time
 import smtplib
 import requests
+import logging
+import sys
 from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 from dotenv import load_dotenv
+
+# Configure logging to stdout
+logging.basicConfig(level=logging.INFO, stream=sys.stdout, format='[%(levelname)s] %(message)s')
+logger = logging.getLogger(__name__)
 
 import pandas as pd
 import httpx
@@ -653,16 +659,14 @@ def list_runs(user: Dict[str, Any] = Depends(require_user)):
                 # Extract privacy and utility metrics
                 if payload.get("privacy"):
                     metrics["privacy"] = payload["privacy"]
-                    print(f"[api][list_runs] Run {run['id'][:8]}...: Set privacy metrics: {metrics['privacy']}")
+                    logger.info(f"[list_runs] Run {run['id'][:8]}...: Set privacy metrics: {metrics['privacy']}")
                 if payload.get("utility"):
                     metrics["utility"] = payload["utility"]
-                    print(f"[api][list_runs] Run {run['id'][:8]}...: Set utility metrics: {metrics['utility']}")
+                    logger.info(f"[list_runs] Run {run['id'][:8]}...: Set utility metrics: {metrics['utility']}")
             else:
-                print(f"[api][list_runs] Run {run['id'][:8]}...: No metrics record found (m.data={m.data is not None})")
+                logger.info(f"[list_runs] Run {run['id'][:8]}...: No metrics record found (m.data={m.data is not None})")
         except Exception as e:
-            print(f"[api][list_runs] Run {run['id'][:8]}...: Exception fetching metrics: {type(e).__name__}: {e}")
-            import traceback
-            traceback.print_exc()
+            logger.error(f"[list_runs] Run {run['id'][:8]}...: Exception fetching metrics: {type(e).__name__}: {e}", exc_info=True)
                 # Extract meta info for rows/columns
                 meta = payload.get("meta", {})
                 metrics["rows_generated"] = meta.get("n_synth", 0)
@@ -676,7 +680,7 @@ def list_runs(user: Dict[str, Any] = Depends(require_user)):
                 metrics["utility_audit_passed"] = ks_mean <= 0.10 and corr_delta <= 0.15
         except Exception as e:
             # If metrics don't exist or error, use defaults
-            print(f"[api] Warning: Could not fetch metrics for run {run['id']}: {e}")
+            logger.warning(f"Could not fetch metrics for run {run['id']}: {e}")
             if run["status"] == "succeeded":
                 # Fallback to mock data only if no metrics found
                 metrics.update({
@@ -691,10 +695,10 @@ def list_runs(user: Dict[str, Any] = Depends(require_user)):
         privacy = metrics.get("privacy")
         utility = metrics.get("utility")
         
-        # Debug: log what we're about to return
+        # Debug: log what we're about to return for the TabDDPM run
         if run["id"] == "0f6d5294-efe8-45a9-a9ea-caf8d9386485":
-            print(f"[api][list_runs] DEBUG Run {run['id'][:8]}...: privacy={privacy}, utility={utility}")
-            print(f"[api][list_runs] DEBUG metrics dict: {metrics}")
+            logger.info(f"[list_runs] DEBUG Run {run['id'][:8]}...: privacy={privacy}, utility={utility}")
+            logger.info(f"[list_runs] DEBUG metrics dict keys: {list(metrics.keys())}, privacy type: {type(privacy)}, utility type: {type(utility)}")
         
         runs_with_metadata.append({
             **run,
