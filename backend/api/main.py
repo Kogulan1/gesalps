@@ -653,13 +653,16 @@ def list_runs(user: Dict[str, Any] = Depends(require_user)):
                 # Extract privacy and utility metrics
                 if payload.get("privacy"):
                     metrics["privacy"] = payload["privacy"]
+                    print(f"[api][list_runs] Run {run['id'][:8]}...: Set privacy metrics: {metrics['privacy']}")
                 if payload.get("utility"):
                     metrics["utility"] = payload["utility"]
-                # Debug: log when metrics are found
-                if metrics.get("privacy") or metrics.get("utility"):
-                    print(f"[api][list_runs] Run {run['id'][:8]}...: metrics found - privacy: {bool(metrics.get('privacy'))}, utility: {bool(metrics.get('utility'))}")
+                    print(f"[api][list_runs] Run {run['id'][:8]}...: Set utility metrics: {metrics['utility']}")
             else:
-                print(f"[api][list_runs] Run {run['id'][:8]}...: No metrics data found in database")
+                print(f"[api][list_runs] Run {run['id'][:8]}...: No metrics record found (m.data={m.data is not None})")
+        except Exception as e:
+            print(f"[api][list_runs] Run {run['id'][:8]}...: Exception fetching metrics: {type(e).__name__}: {e}")
+            import traceback
+            traceback.print_exc()
                 # Extract meta info for rows/columns
                 meta = payload.get("meta", {})
                 metrics["rows_generated"] = meta.get("n_synth", 0)
