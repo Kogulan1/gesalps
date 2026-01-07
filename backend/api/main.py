@@ -1824,14 +1824,18 @@ def _agent_plan_internal(dataset_id: str, preference: Optional[Dict[str, Any]], 
     system = (
         "You are a senior synthetic-data scientist for healthcare tabular data.\n"
         "Return ONLY valid JSON per schema:\n"
-        "{\n \"choice\":{\"method\":\"gc|ctgan|tvae\"},\n \"hyperparams\":{\"sample_multiplier\":number,\"max_synth_rows\":number,\"ctgan\":{\"epochs\":int,\"batch_size\":int,\"embedding_dim\":int}?,\"tvae\":{\"epochs\":int,\"batch_size\":int,\"embedding_dim\":int}?},\n \"dp\":{\"enabled\":false},\n \"backup\":[{\"method\":\"gc|ctgan|tvae\",\"hyperparams\":{...}}...],\n \"rationale\":\"short reason\"\n}\n"
+        "{\n \"choice\":{\"method\":\"ddpm|gc|ctgan|tvae\"},\n \"hyperparams\":{\"sample_multiplier\":number,\"max_synth_rows\":number,\"ctgan\":{\"epochs\":int,\"batch_size\":int,\"embedding_dim\":int}?,\"tvae\":{\"epochs\":int,\"batch_size\":int,\"embedding_dim\":int}?,\"ddpm\":{\"n_iter\":int}?},\n \"dp\":{\"enabled\":false},\n \"backup\":[{\"method\":\"ddpm|gc|ctgan|tvae\",\"hyperparams\":{...}}...],\n \"rationale\":\"short reason\"\n}\n"
         "Guidance:\n"
+        "- TabDDPM (ddpm) is RECOMMENDED for datasets with >20 columns or mixed types (2025 SOTA diffusion model for clinical data):\n"
+        "  * Best for high-dimensional clinical datasets with mixed numeric/categorical columns\n"
+        "  * n_iter: 300-500 for fast test, 500-1000 for production quality\n"
+        "  * Highest fidelity for complex healthcare data\n"
         "- GC for small/mixed data with many categoricals, high-cardinality columns (>1000 unique values), or when stability is needed.\n"
         "- CTGAN for complex categorical/non-Gaussian data (AVOID if any column has >1000 unique values - CTGAN will hang):\n"
         "  * Small datasets (<1000 rows): epochs 300-400, batch 64-128, embedding_dim 128-256\n"
         "  * Medium (1000-10000): epochs 400-500, batch 128-256, embedding_dim 256-512\n"
         "  * Large (>10000): epochs 500-600, batch 256-512, embedding_dim 512\n"
-        "- NEVER use CTGAN if dataset has columns with >1000 unique values - use GC or TVAE instead.\n"
+        "- NEVER use CTGAN if dataset has columns with >1000 unique values - use GC, TVAE, or ddpm instead.\n"
         "- TVAE for continuous-heavy data:\n"
         "  * Small: epochs 250-350, batch 64-128, embedding_dim 64-128\n"
         "  * Medium: epochs 350-450, batch 128-256, embedding_dim 128-256\n"
@@ -1888,27 +1892,36 @@ def _agent_plan_internal(dataset_id: str, preference: Optional[Dict[str, Any]], 
     # Fallback: craft a conservative default plan from summary
     try:
         cols = summary.get("schema", {}).get("columns", []) if isinstance(summary, dict) else []
+        total_cols = len(cols)
         # estimate categorical weight
         cat_like = 0
+        num_like = 0
         max_cardinality = 0
         for c in cols:
             t = str((c or {}).get("type") or "").lower()
             if t and not any(x in t for x in ["int","float","double","number","decimal","datetime","date"]):
                 cat_like += 1
+            elif any(x in t for x in ["int","float","double","number","decimal"]):
+                num_like += 1
             # Check for high cardinality (unique_count in summary)
             unique_count = (c or {}).get("unique_count") or (c or {}).get("nunique") or 0
             if unique_count > max_cardinality:
                 max_cardinality = unique_count
         
+        # Recommend TabDDPM for datasets with >20 columns or mixed types
+        num_ratio = num_like / total_cols if total_cols > 0 else 0
+        is_mixed = (0.2 <= num_ratio <= 0.8) if total_cols > 0 else False
+        if total_cols > 20 or (is_mixed and total_cols > 10):
+            method = "ddpm"  # TabDDPM recommended for high-dimensional or mixed-type datasets
         # Avoid CTGAN if high-cardinality columns detected
-        if max_cardinality > 1000:
+        elif max_cardinality > 1000:
             method = "gc"  # Use GC for high-cardinality data
         elif cat_like and len(cols) and (cat_like/len(cols) > 0.5):
             method = "ctgan"
         else:
             method = "gc"
     except Exception:
-        method = "gc"
+        method = "ddpm"  # Default to TabDDPM for new users
     rows = int((summary or {}).get("rows_count") or 0)
     max_rows = min(50000, max(2000, rows or 2000))
     return {
@@ -1919,7 +1932,7 @@ def _agent_plan_internal(dataset_id: str, preference: Optional[Dict[str, Any]], 
             {"method": "gc", "hyperparams": {"sample_multiplier": 1.0, "max_synth_rows": max_rows}},
             {"method": "tvae", "hyperparams": {"sample_multiplier": 1.0, "max_synth_rows": max_rows}},
         ],
-        "rationale": f"Fallback default plan (LLM unavailable). {'Avoiding CTGAN due to high-cardinality columns' if max_cardinality > 1000 else ''}",
+        "rationale": f"Fallback default plan (LLM unavailable). {'Using TabDDPM for high-dimensional/mixed-type dataset' if (total_cols > 20 or (is_mixed and total_cols > 10)) else ('Avoiding CTGAN due to high-cardinality columns' if max_cardinality > 1000 else '')}",
     }
 
 

@@ -5,7 +5,7 @@ import { useToast } from "@/components/toast/Toaster";
 import { useLocale } from "next-intl";
 
 type Mode = "balanced" | "privacy-first" | "utility-first";
-type Method = "gc" | "ctgan" | "tvae";
+type Method = "ddpm" | "gc" | "ctgan" | "tvae";
 
 type Props = {
   datasetId: string;
@@ -19,7 +19,7 @@ type Props = {
   defaultMode?: Mode;
 };
 
-export default function StartRun({ datasetId, defaultAgentEnabled, defaultModel, defaultProvider, defaultTemperature, defaultSampleMult, defaultMaxRows, defaultMethod = "gc", defaultMode = "balanced" }: Props) {
+export default function StartRun({ datasetId, defaultAgentEnabled, defaultModel, defaultProvider, defaultTemperature, defaultSampleMult, defaultMaxRows, defaultMethod = "ddpm", defaultMode = "balanced" }: Props) {
   const { toast } = useToast();
   const locale = useLocale();
   const [agentEnabled, setAgentEnabled] = useState<boolean>(true);
@@ -151,7 +151,9 @@ export default function StartRun({ datasetId, defaultAgentEnabled, defaultModel,
           className="border rounded px-2 py-1 bg-transparent"
           value={method}
           onChange={(e)=>setMethod(e.target.value as Method)}
+          title="TabDDPM = 2025 SOTA diffusion model for clinical data"
         >
+          <option value="ddpm">TabDDPM (Diffusion - Highest Fidelity) ⭐ SOTA</option>
           <option value="gc">Gaussian Copula</option>
           <option value="ctgan">CTGAN</option>
           <option value="tvae">TVAE</option>
