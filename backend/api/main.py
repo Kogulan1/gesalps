@@ -653,8 +653,10 @@ def list_runs(user: Dict[str, Any] = Depends(require_user)):
                 # Extract privacy and utility metrics
                 if payload.get("privacy"):
                     metrics["privacy"] = payload["privacy"]
+                    print(f"[api][list_runs] Run {run['id']}: Found privacy metrics: {metrics['privacy']}")
                 if payload.get("utility"):
                     metrics["utility"] = payload["utility"]
+                    print(f"[api][list_runs] Run {run['id']}: Found utility metrics: {metrics['utility']}")
                 # Extract meta info for rows/columns
                 meta = payload.get("meta", {})
                 metrics["rows_generated"] = meta.get("n_synth", 0)
