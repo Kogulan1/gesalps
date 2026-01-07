@@ -112,7 +112,7 @@ export async function downloadAllArtifactsZip(runId: string) {
 export type StartRunBody =
   | {
       dataset_id: string;
-      method: 'gc'|'ctgan'|'tvae';
+      method: 'ddpm'|'gc'|'ctgan'|'tvae';
       mode: 'balanced'|'privacy-first'|'utility-first';
       config_json: { sample_multiplier: number; max_synth_rows: number };
     }
@@ -156,7 +156,7 @@ export async function renameRun(runId: string, name: string) {
 }
 
 export type StartRunOptions = {
-  method?: "gc" | "ctgan" | "tvae";
+  method?: "ddpm" | "gc" | "ctgan" | "tvae";
   mode?: "balanced" | "privacy-first" | "utility-first" | "agent";
   prompt?: string;
   sampleMultiplier?: number;                   // e.g., 1.0
@@ -172,7 +172,7 @@ export type StartRunOptions = {
 
 export async function startRun(datasetId: string, opts: StartRunOptions = {}) {
   const {
-    method = "gc",
+    method = "ddpm",
     mode = "balanced",
     prompt = "",
     sampleMultiplier,

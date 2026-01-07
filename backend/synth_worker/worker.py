@@ -559,6 +559,7 @@ def _analyze_schema(df: pd.DataFrame) -> Dict[str, Any]:
 def choose_model_by_schema(df: pd.DataFrame) -> str:
     """Heuristically select a model based on schema shape.
 
+    - TabDDPM (ddpm) recommended for datasets with >20 columns or mixed types (2025 SOTA)
     - If dataset is small (< 2000 rows) → 'gc'
     - If >70% categorical → 'ctgan'
     - If >70% continuous numeric → 'tvae'
@@ -590,6 +591,15 @@ def choose_model_by_schema(df: pd.DataFrame) -> str:
                         max_cardinality = card
                 except Exception:
                     pass
+        
+        # Recommend TabDDPM for datasets with >20 columns or mixed types (best for clinical data)
+        is_mixed = (0.2 <= num_ratio <= 0.8)  # Mixed numeric and categorical
+        if total_cols > 20 or is_mixed:
+            try:
+                print(f"[worker][schema] recommending TabDDPM (ddpm) for {'high-dimensional' if total_cols > 20 else 'mixed-type'} dataset ({total_cols} cols, {num_ratio:.1%} numeric)")
+            except Exception:
+                pass
+            return "ddpm"
         
         # If high-cardinality detected, avoid CTGAN
         if max_cardinality > 1000:

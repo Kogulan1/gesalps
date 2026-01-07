@@ -50,7 +50,11 @@ def create_synthesizer(
                 hyperparams=hyperparams,
             )
             is_dp = method.startswith("dp-") or method in {"pategan", "dpgan"} or dp_requested
-            logger.info(f"[factory] Using SynthCity backend for method '{method}' (plugin: {synthesizer._plugin_name})")
+            # Special logging for TabDDPM (SOTA diffusion model)
+            if method == "ddpm":
+                logger.info(f"[factory] Using TabDDPM diffusion (SOTA) for method '{method}' (plugin: {synthesizer._plugin_name})")
+            else:
+                logger.info(f"[factory] Using SynthCity backend for method '{method}' (plugin: {synthesizer._plugin_name})")
             return synthesizer, is_dp
         except ImportError as e:
             # SynthCity not installed - fallback to SDV

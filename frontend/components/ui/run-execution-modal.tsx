@@ -65,7 +65,7 @@ export function RunExecutionModal({
   const [selectedDatasetId, setSelectedDatasetId] = useState(datasetId || "");
   const [runName, setRunName] = useState("");
   const [mode, setMode] = useState<'agent' | 'custom'>('agent');
-  const [customMethod, setCustomMethod] = useState('gc');
+  const [customMethod, setCustomMethod] = useState('ddpm');
   const [customConfig, setCustomConfig] = useState({
     sample_multiplier: 1.0,
     max_synth_rows: 2000,
@@ -84,7 +84,7 @@ export function RunExecutionModal({
       setSelectedDatasetId(datasetId || "");
       setRunName("");
       setMode('agent');
-      setCustomMethod('gc');
+      setCustomMethod('ddpm');
       setCustomConfig({
         sample_multiplier: 1.0,
         max_synth_rows: 2000,
@@ -384,7 +384,9 @@ export function RunExecutionModal({
                     onChange={(e) => setCustomMethod(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                     disabled={starting || loadingPlan}
+                    title="TabDDPM = 2025 SOTA diffusion model for clinical data"
                   >
+                    <option value="ddpm">TabDDPM (Diffusion - Highest Fidelity) ⭐ SOTA</option>
                     <option value="gc">Gaussian Copula (GC)</option>
                     <option value="ctgan">CTGAN</option>
                     <option value="tvae">TVAE</option>
