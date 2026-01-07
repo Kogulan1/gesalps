@@ -102,6 +102,14 @@ class SynthcitySynthesizer(BaseSynthesizer):
         Args:
             data: Either a pandas DataFrame or a SynthCity DataLoader
         """
+        # Log TabDDPM training start with expected time
+        if self.method == "ddpm" or self._plugin_name == "ddpm":
+            n_iter = getattr(self._plugin, 'n_iter', None) or (self.hyperparams or {}).get('n_iter', 300)
+            try:
+                print(f"[worker][TabDDPM] Starting training with n_iter={n_iter} (this may take 5-15 minutes depending on dataset size)")
+            except Exception:
+                pass
+        
         # Check if data is a SynthCity DataLoader
         if hasattr(data, 'dataframe') or (hasattr(data, '__class__') and 'DataLoader' in str(type(data))):
             # It's a DataLoader - use it directly
@@ -125,6 +133,13 @@ class SynthcitySynthesizer(BaseSynthesizer):
                 self._plugin.fit(data)
             except Exception as e:
                 raise RuntimeError(f"SynthCity plugin fit failed: {e}")
+        
+        # Log TabDDPM training completion
+        if self.method == "ddpm" or self._plugin_name == "ddpm":
+            try:
+                print(f"[worker][TabDDPM] Training completed successfully")
+            except Exception:
+                pass
     
     def sample(self, num_rows: int) -> pd.DataFrame:
         """Generate synthetic data."""

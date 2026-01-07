@@ -1852,6 +1852,24 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
                     "generator_lr": 2e-4,
                     "discriminator_lr": 2e-4,
                 }
+            if m == "ddpm" or m == "tabddpm":
+                # TabDDPM (diffusion model) - optimize n_iter for speed vs quality
+                # Smaller datasets: faster training (200-300 iterations)
+                # Medium datasets: balanced (300-400 iterations)
+                # Large datasets: higher quality (400-500 iterations)
+                if n_rows < 1000:
+                    n_iter = 200  # Fast training for small datasets
+                elif n_rows < 5000:
+                    n_iter = 300  # Balanced for medium datasets
+                elif n_rows < 20000:
+                    n_iter = 400  # Higher quality for larger datasets
+                else:
+                    n_iter = 500  # Maximum quality for very large datasets
+                
+                return {
+                    "n_iter": n_iter,
+                    "batch_size": min(256, max(64, n_rows // 20)),  # Adaptive batch size
+                }
             if m == "tvae":
                 # Adaptive epochs for TVAE
                 if n_rows < 1000:
