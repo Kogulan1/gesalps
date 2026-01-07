@@ -709,6 +709,42 @@ def start_run(body: StartRun, user: Dict[str, Any] = Depends(require_user)):
         if mode_in == "agent":
             pref = cfg.get("preference") if isinstance(cfg.get("preference"), dict) else {"tradeoff": cfg.get("mode") or cfg.get("tradeoff") or "balanced"}
             plan = _agent_plan_internal(body.dataset_id, pref, cfg.get("goal"), cfg.get("prompt"))
+            
+            # IMPORTANT: If user explicitly selected a method, respect it and use as primary
+            # Agent plan will be used only for backup methods
+            if method_l and method_l in ["ddpm", "gc", "ctgan", "tvae", "pategan", "dpgan", "dp-ctgan"]:
+                print(f"[api][agent] User explicitly selected method: '{method_l}' - using as primary, agent plan as backups")
+                # Use user's method as primary choice
+                user_choice = {"method": method_l, "hyperparams": plan.get("hyperparams", {})}
+                # Get agent's primary as first backup (if different)
+                agent_choice = plan.get("choice", {})
+                agent_method = agent_choice.get("method") if isinstance(agent_choice, dict) else plan.get("method")
+                backups = plan.get("backup", [])
+                
+                # Build new plan with user's method as primary
+                new_plan = {
+                    "choice": user_choice,
+                    "hyperparams": plan.get("hyperparams", {}),
+                    "dp": plan.get("dp", {"enabled": False}),
+                    "backup": [],
+                    "rationale": f"User selected {method_l.upper()}, agent suggested {agent_method}" if agent_method else f"User selected {method_l.upper()}"
+                }
+                
+                # Add agent's primary as backup if different
+                if agent_method and agent_method.lower() != method_l.lower():
+                    new_plan["backup"].append({
+                        "method": agent_method,
+                        "hyperparams": agent_choice.get("hyperparams", {}) if isinstance(agent_choice, dict) else {}
+                    })
+                
+                # Add agent's backups (excluding user's method)
+                for backup in backups:
+                    backup_method = backup.get("method") if isinstance(backup, dict) else backup
+                    if backup_method and backup_method.lower() != method_l.lower():
+                        new_plan["backup"].append(backup if isinstance(backup, dict) else {"method": backup_method})
+                
+                plan = new_plan
+            
             cfg["plan"] = plan
         elif mode_in == "custom":
             hp = {
