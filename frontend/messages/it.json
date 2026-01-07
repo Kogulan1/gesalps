@@ -306,11 +306,10 @@
         "title": "Tutorial",
         "description": "Tutorial passo-passo e best practice"
       }
-    }
-  },
-  "auth": {
-    "backToHome": "Torna alla home",
-    "signIn": {
+    },
+    "auth": {
+      "backToHome": "Torna alla home",
+      "signIn": {
       "title": "Bentornato",
       "subtitle": "Accedi al tuo account per continuare",
       "formTitle": "Accedi al tuo account",
@@ -323,8 +322,8 @@
       "signingIn": "Accesso in corso...",
       "noAccount": "Non hai un account?",
       "signUp": "Registrati"
-    },
-    "signUp": {
+      },
+      "signUp": {
       "title": "Crea il tuo account",
       "subtitle": "Inizia con GESALP AI oggi",
       "formTitle": "Crea il tuo account",
@@ -343,22 +342,22 @@
       "creatingAccount": "Creazione account...",
       "haveAccount": "Hai già un account?",
       "signIn": "Accedi"
-    },
-    "errors": {
+      },
+      "errors": {
       "fillAllFields": "Compila tutti i campi",
       "passwordsDontMatch": "Le password non corrispondono",
       "passwordTooShort": "La password deve essere di almeno 6 caratteri",
       "agreeToTerms": "Accetta i termini e le condizioni",
       "signInFailed": "Accesso fallito",
       "signUpFailed": "Registrazione fallita"
-    },
-    "success": {
+      },
+      "success": {
       "signedIn": "Accesso riuscito",
       "checkEmail": "Controlla la tua email",
       "checkEmailDescription": "Ti abbiamo inviato un link di conferma per verificare il tuo account"
-    }
-  },
-  "footer": {
+      }
+    },
+    "footer": {
       "product": {
         "title": "Prodotto",
         "overview": "Panoramica",
