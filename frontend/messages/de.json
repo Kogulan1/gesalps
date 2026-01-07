@@ -306,11 +306,10 @@
         "title": "Tutorials",
         "description": "Schritt-für-Schritt-Tutorials und Best Practices"
       }
-    }
-  },
-  "auth": {
-    "backToHome": "Zurück zur Startseite",
-    "signIn": {
+    },
+    "auth": {
+      "backToHome": "Zurück zur Startseite",
+      "signIn": {
       "title": "Willkommen zurück",
       "subtitle": "Melden Sie sich in Ihrem Konto an, um fortzufahren",
       "formTitle": "Bei Ihrem Konto anmelden",
@@ -323,8 +322,8 @@
       "signingIn": "Anmeldung läuft...",
       "noAccount": "Noch kein Konto?",
       "signUp": "Registrieren"
-    },
-    "signUp": {
+      },
+      "signUp": {
       "title": "Konto erstellen",
       "subtitle": "Starten Sie noch heute mit GESALP AI",
       "formTitle": "Ihr Konto erstellen",
@@ -343,22 +342,22 @@
       "creatingAccount": "Konto wird erstellt...",
       "haveAccount": "Bereits ein Konto?",
       "signIn": "Anmelden"
-    },
-    "errors": {
+      },
+      "errors": {
       "fillAllFields": "Bitte füllen Sie alle Felder aus",
       "passwordsDontMatch": "Passwörter stimmen nicht überein",
       "passwordTooShort": "Passwort muss mindestens 6 Zeichen lang sein",
       "agreeToTerms": "Bitte stimmen Sie den Bedingungen zu",
       "signInFailed": "Anmeldung fehlgeschlagen",
       "signUpFailed": "Registrierung fehlgeschlagen"
-    },
-    "success": {
+      },
+      "success": {
       "signedIn": "Erfolgreich angemeldet",
       "checkEmail": "E-Mail prüfen",
       "checkEmailDescription": "Wir haben Ihnen einen Bestätigungslink gesendet, um Ihr Konto zu verifizieren"
-    }
-  },
-  "footer": {
+      }
+    },
+    "footer": {
       "product": {
         "title": "Produkt",
         "overview": "Überblick",

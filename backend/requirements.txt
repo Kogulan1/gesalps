@@ -10,3 +10,12 @@ httpx==0.25.2
 gotrue==2.8.1
 python-dotenv==1.0.1
 reportlab==4.2.5
+
+# PyTorch ecosystem (pinned for Mac Apple Silicon compatibility)
+# Using torch 2.2.2 (compatible with SynthCity <2.3 requirement)
+# Opacus 1.5.4 is patched to work with torch 2.2.2 (rms_norm.py handles missing RMSNorm)
+torch==2.2.2
+torchvision==0.17.2
+torchaudio==2.2.2
+opacus==1.5.4
+synthcity
