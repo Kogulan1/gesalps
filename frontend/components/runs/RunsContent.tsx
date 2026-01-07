@@ -657,8 +657,9 @@ export function RunsContent() {
                 });
                 
                 let computedStatus = run.status || runDetail.status;
+                let metricsData = null;
                 if ((computedStatus === 'succeeded' || computedStatus === 'completed') && metricsResponse.ok) {
-                  const metricsData = await metricsResponse.json();
+                  metricsData = await metricsResponse.json();
                   const privacyPassed = (metricsData?.privacy?.mia_auc || 1) <= 0.6 && (metricsData?.privacy?.dup_rate || 1) <= 0.05;
                   const utilityPassed = (metricsData?.utility?.ks_mean || 1) <= 0.1 && (metricsData?.utility?.corr_delta || 1) <= 0.15;
                   if (!privacyPassed || !utilityPassed) {
@@ -666,26 +667,26 @@ export function RunsContent() {
                   }
                 }
                 
-                // Merge metrics from both sources (API response and individual fetch)
+                // Merge metrics from all sources (API response, runDetail, and metricsData)
+                // Priority: metricsData > run.privacy/utility > runDetail.privacy/utility
                 const mergedRun = { 
                   ...run, 
                   status: computedStatus,
                   agent_interventions: runDetail.agent_interventions,
-                  // Ensure privacy/utility from original API response are preserved
-                  privacy: run.privacy || runDetail.privacy,
-                  utility: run.utility || runDetail.utility,
-                  metrics: run.metrics || runDetail.metrics
+                  // Use metricsData first (most complete), then fallback to run or runDetail
+                  privacy: metricsData?.privacy || run.privacy || runDetail.privacy,
+                  utility: metricsData?.utility || run.utility || runDetail.utility,
+                  metrics: metricsData || run.metrics || runDetail.metrics
                 };
                 
                 // Debug logging for TabDDPM runs
-                if (run.id === '0f6d5294-efe8-45a9-a9ea-caf8d9386485' || run.id === '76e916ea-7bae-43fd-89b9-a711417bf6b2') {
+                if (run.id === '0f6d5294-efe8-45a9-a9ea-caf8d9386485' || run.id === '76e916ea-7bae-43fd-89b9-a711417bf6b2' || run.id === 'baa9996f-f9fb-485a-9e74-5d9f99aea928') {
                   console.log('[RunsContent] Run data:', {
                     runId: run.id,
                     originalPrivacy: run.privacy,
                     originalUtility: run.utility,
-                    originalMetrics: run.metrics,
-                    detailPrivacy: runDetail.privacy,
-                    detailUtility: runDetail.utility,
+                    metricsDataPrivacy: metricsData?.privacy,
+                    metricsDataUtility: metricsData?.utility,
                     mergedPrivacy: mergedRun.privacy,
                     mergedUtility: mergedRun.utility
                   });
