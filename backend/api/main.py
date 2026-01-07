@@ -679,8 +679,9 @@ def list_runs(user: Dict[str, Any] = Depends(require_user)):
                 })
         
         # Add top-level privacy and utility for frontend compatibility
-        privacy = metrics.get("privacy")
-        utility = metrics.get("utility")
+        # Only set if they exist (not None) to avoid frontend showing 0
+        privacy = metrics.get("privacy") if metrics.get("privacy") is not None else None
+        utility = metrics.get("utility") if metrics.get("utility") is not None else None
         
         runs_with_metadata.append({
             **run,
