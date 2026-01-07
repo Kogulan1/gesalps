@@ -1286,6 +1286,104 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
             return False, ["Error evaluating thresholds"]
 
     # -------------------- Plan-driven execution (if plan present) --------------------
+    
+    # Define _defaults() helper BEFORE plan-driven execution (needed for applying defaults)
+    def _defaults(m: str) -> Dict[str, Any]:
+        """Provide default hyperparameters for a method based on dataset size."""
+        n_rows = len(real_clean)
+        n_cols = len(real_clean.columns)
+        
+        # Adaptive hyperparameters based on dataset characteristics
+        if m in ("ctgan", "ct"):
+            # Adaptive epochs: more for larger/complex datasets
+            if n_rows < 1000:
+                epochs = 300
+            elif n_rows < 10000:
+                epochs = 400
+            else:
+                epochs = 500
+            
+            # Adaptive batch size: balance speed and quality
+            if n_rows < 500:
+                batch_size = max(32, min(64, n_rows // 10))
+            elif n_rows < 5000:
+                batch_size = 128
+            else:
+                batch_size = 256
+            
+            # Adaptive embedding dimension: scale with columns
+            if n_cols < 10:
+                embedding_dim = 128
+            elif n_cols < 30:
+                embedding_dim = 256
+            else:
+                embedding_dim = 512
+            
+            return {
+                "epochs": epochs,
+                "batch_size": batch_size,
+                "embedding_dim": embedding_dim,
+                "pac": 10,
+                "generator_lr": 2e-4,
+                "discriminator_lr": 2e-4,
+            }
+        if m == "ddpm" or m == "tabddpm":
+            # TabDDPM (diffusion model) - optimize n_iter for speed vs quality
+            # Smaller datasets: faster training (200-300 iterations)
+            # Medium datasets: balanced (300-400 iterations)
+            # Large datasets: higher quality (400-500 iterations)
+            if n_rows < 1000:
+                n_iter = 200  # Fast training for small datasets
+            elif n_rows < 5000:
+                n_iter = 300  # Balanced for medium datasets
+            elif n_rows < 20000:
+                n_iter = 400  # Higher quality for larger datasets
+            else:
+                n_iter = 500  # Maximum quality for very large datasets
+            
+            return {
+                "n_iter": n_iter,
+                "batch_size": min(256, max(64, n_rows // 20)),  # Adaptive batch size
+            }
+        if m == "tvae":
+            # Adaptive epochs for TVAE
+            if n_rows < 1000:
+                epochs = 250
+            elif n_rows < 10000:
+                epochs = 350
+            else:
+                epochs = 450
+            
+            # Adaptive batch size
+            if n_rows < 500:
+                batch_size = max(32, min(64, n_rows // 10))
+            elif n_rows < 5000:
+                batch_size = 128
+            else:
+                batch_size = 256
+            
+            # Adaptive embedding dimension
+            if n_cols < 10:
+                embedding_dim = 64
+            elif n_cols < 30:
+                embedding_dim = 128
+            else:
+                embedding_dim = 256
+            
+            return {
+                "epochs": epochs,
+                "batch_size": batch_size,
+                "embedding_dim": embedding_dim,
+            }
+        return {}
+    
+    # Helper to apply defaults to a method
+    def _apply_defaults(method: str, existing_hp: Dict[str, Any] = None) -> Dict[str, Any]:
+        """Apply default hyperparameters for a method."""
+        existing_hp = existing_hp or {}
+        defaults = _defaults(method)
+        return {**defaults, **existing_hp}  # Existing hyperparams override defaults
+    
     try:
         cfg_for_plan = run.get("config_json") or {}
         plan = cfg_for_plan.get("plan") if isinstance(cfg_for_plan, dict) else None
@@ -1301,8 +1399,8 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
             print(f"[worker][agent] User explicitly selected method: '{user_explicit_method}' - using as primary")
             print(f"[worker][agent] Agent plan will be used only for backup methods")
             
-            # Use user's method as primary, agent plan for backups
-            first = {"method": user_explicit_method, "hyperparams": {}}
+            # Use user's method as primary with defaults applied
+            first = {"method": user_explicit_method, "hyperparams": _apply_defaults(user_explicit_method)}
             backups = []
             
             # Normalize agent plan for backups
@@ -1343,11 +1441,15 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
             attempts_list: list[Dict[str, Any]] = []
             def _norm(x):
                 if not isinstance(x, dict):
-                    return {"method": str(x)}
+                    method = str(x)
+                    return {"method": method, "hyperparams": _apply_defaults(method)}
                 if "choice" in x and isinstance(x["choice"], dict):
                     m = x["choice"].get("method")
-                    return {"method": m, "hyperparams": x.get("hyperparams") or {}}
-                return {"method": x.get("method"), "hyperparams": x.get("hyperparams") or {}}
+                    existing_hp = x.get("hyperparams") or {}
+                    return {"method": m, "hyperparams": _apply_defaults(m, existing_hp)}
+                method = x.get("method")
+                existing_hp = x.get("hyperparams") or {}
+                return {"method": method, "hyperparams": _apply_defaults(method, existing_hp)}
             attempts_list.append(_norm(first))
             for b in backups:
                 attempts_list.append(_norm(b))
@@ -1813,94 +1915,8 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
                 next_method = "gc"
                 next_hparams = {}
 
-        # Provide default knobs for chosen model with adaptive tuning
-        def _defaults(m: str) -> Dict[str, Any]:
-            n_rows = len(real_clean)
-            n_cols = len(real_clean.columns)
-            
-            # Adaptive hyperparameters based on dataset characteristics
-            if m in ("ctgan", "ct"):
-                # Adaptive epochs: more for larger/complex datasets
-                if n_rows < 1000:
-                    epochs = 300
-                elif n_rows < 10000:
-                    epochs = 400
-                else:
-                    epochs = 500
-                
-                # Adaptive batch size: balance speed and quality
-                if n_rows < 500:
-                    batch_size = max(32, min(64, n_rows // 10))
-                elif n_rows < 5000:
-                    batch_size = 128
-                else:
-                    batch_size = 256
-                
-                # Adaptive embedding dimension: scale with columns
-                if n_cols < 10:
-                    embedding_dim = 128
-                elif n_cols < 30:
-                    embedding_dim = 256
-                else:
-                    embedding_dim = 512
-                
-                return {
-                    "epochs": epochs,
-                    "batch_size": batch_size,
-                    "embedding_dim": embedding_dim,
-                    "pac": 10,
-                    "generator_lr": 2e-4,
-                    "discriminator_lr": 2e-4,
-                }
-            if m == "ddpm" or m == "tabddpm":
-                # TabDDPM (diffusion model) - optimize n_iter for speed vs quality
-                # Smaller datasets: faster training (200-300 iterations)
-                # Medium datasets: balanced (300-400 iterations)
-                # Large datasets: higher quality (400-500 iterations)
-                if n_rows < 1000:
-                    n_iter = 200  # Fast training for small datasets
-                elif n_rows < 5000:
-                    n_iter = 300  # Balanced for medium datasets
-                elif n_rows < 20000:
-                    n_iter = 400  # Higher quality for larger datasets
-                else:
-                    n_iter = 500  # Maximum quality for very large datasets
-                
-                return {
-                    "n_iter": n_iter,
-                    "batch_size": min(256, max(64, n_rows // 20)),  # Adaptive batch size
-                }
-            if m == "tvae":
-                # Adaptive epochs for TVAE
-                if n_rows < 1000:
-                    epochs = 250
-                elif n_rows < 10000:
-                    epochs = 350
-                else:
-                    epochs = 450
-                
-                # Adaptive batch size
-                if n_rows < 500:
-                    batch_size = max(32, min(64, n_rows // 10))
-                elif n_rows < 5000:
-                    batch_size = 128
-                else:
-                    batch_size = 256
-                
-                # Adaptive embedding dimension
-                if n_cols < 10:
-                    embedding_dim = 64
-                elif n_cols < 30:
-                    embedding_dim = 128
-                else:
-                    embedding_dim = 256
-                
-                return {
-                    "epochs": epochs,
-                    "batch_size": batch_size,
-                    "embedding_dim": embedding_dim,
-                }
-            return {}
+        # Use the _defaults() function defined earlier (before plan-driven execution)
+        # No need to redefine it here
         current_method = next_method
         current_hparams = {**_defaults(next_method), **_sanitize_hparams(next_method, next_hparams)}
         prev_metrics = metrics
@@ -2072,8 +2088,21 @@ def _attempt_train(plan_item: Dict[str, Any], real_df: pd.DataFrame, metadata: S
         base_hp = _sanitize_hparams(method, {**(hp_all.get("ctgan", {})), **{k: v for k, v in hp_all.items() if k in ("epochs","batch_size","embedding_dim","pac")}})
     elif method == "tvae":
         base_hp = _sanitize_hparams(method, {**(hp_all.get("tvae", {})), **{k: v for k, v in hp_all.items() if k in ("epochs","batch_size","embedding_dim")}})
+    elif method in ("ddpm", "tabddpm", "diffusion"):
+        # TabDDPM hyperparameters: n_iter, batch_size
+        base_hp = {k: v for k, v in hp_all.items() if k in ("n_iter", "batch_size")}
+        # Also check for method-specific nested hyperparams
+        if "ddpm" in hp_all:
+            base_hp.update({k: v for k, v in hp_all.get("ddpm", {}).items() if k in ("n_iter", "batch_size")})
+    elif method == "gc":
+        # GC doesn't need hyperparameters, but keep method as-is
+        base_hp = {}
     else:
-        method = "gc"
+        # For other methods (e.g., SynthCity methods), pass hyperparams as-is
+        base_hp = {k: v for k, v in hp_all.items() if k not in ("sample_multiplier", "max_synth_rows")}
+        # Also check for method-specific nested hyperparams
+        if method in hp_all:
+            base_hp.update(hp_all.get(method, {}))
     
     model, _ = create_synthesizer(method, metadata, base_hp)
     

@@ -88,8 +88,25 @@ class SynthcitySynthesizer(BaseSynthesizer):
         
         # Initialize plugin
         try:
+            # Log hyperparameters for TabDDPM debugging
+            if self.method == "ddpm" or chosen == "ddpm":
+                n_iter = (hyperparams or {}).get("n_iter")
+                batch_size = (hyperparams or {}).get("batch_size")
+                try:
+                    print(f"[factory][TabDDPM] Initializing with n_iter={n_iter}, batch_size={batch_size}, hyperparams={hyperparams}")
+                except Exception:
+                    pass
             self._plugin = Plugins().get(chosen, **(hyperparams or {}))
             self._plugin_name = chosen
+            # Verify hyperparameters were applied for TabDDPM
+            if self.method == "ddpm" or chosen == "ddpm":
+                try:
+                    # Check if n_iter was actually set (SynthCity plugins store params differently)
+                    plugin_params = getattr(self._plugin, '_params', {}) or getattr(self._plugin, 'args', {}) or {}
+                    actual_n_iter = plugin_params.get('n_iter') or (hyperparams or {}).get('n_iter')
+                    print(f"[factory][TabDDPM] Plugin initialized, n_iter={actual_n_iter}")
+                except Exception:
+                    pass
         except Exception as e:
             raise RuntimeError(f"Failed to initialize SynthCity plugin '{chosen}': {e}")
         
