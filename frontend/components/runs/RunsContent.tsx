@@ -677,9 +677,10 @@ export function RunsContent() {
                   metrics: run.metrics || runDetail.metrics
                 };
                 
-                // Debug logging for the TabDDPM run
-                if (run.id === '0f6d5294-efe8-45a9-a9ea-caf8d9386485') {
-                  console.log('[RunsContent] TabDDPM run data:', {
+                // Debug logging for TabDDPM runs
+                if (run.id === '0f6d5294-efe8-45a9-a9ea-caf8d9386485' || run.id === '76e916ea-7bae-43fd-89b9-a711417bf6b2') {
+                  console.log('[RunsContent] Run data:', {
+                    runId: run.id,
                     originalPrivacy: run.privacy,
                     originalUtility: run.utility,
                     originalMetrics: run.metrics,
