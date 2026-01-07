@@ -415,7 +415,19 @@ def _utility_metrics_synthcity(real: pd.DataFrame, synth: pd.DataFrame) -> Optio
     Returns dict with ks_mean, corr_delta if successful, None otherwise.
     """
     try:
-        from synthcity.metrics.eval import Metrics  # type: ignore
+        # Import Metrics class correctly - handle both old and new API
+        try:
+            from synthcity.metrics.eval import Metrics  # type: ignore
+        except (ImportError, AttributeError):
+            # Fallback: try alternative import paths
+            try:
+                from synthcity.metrics import Metrics  # type: ignore
+            except (ImportError, AttributeError):
+                return None
+        
+        # Ensure Metrics is a class, not a module
+        if not isinstance(Metrics, type):
+            return None
         
         # Use Metrics().evaluate() API (correct way to call SynthCity evaluators)
         metrics_evaluator = Metrics()
@@ -813,7 +825,19 @@ def _privacy_metrics_synthcity(real: pd.DataFrame, synth: pd.DataFrame) -> Optio
     Returns dict with mia_auc, dup_rate if successful, None otherwise.
     """
     try:
-        from synthcity.metrics.eval import Metrics  # type: ignore
+        # Import Metrics class correctly - handle both old and new API
+        try:
+            from synthcity.metrics.eval import Metrics  # type: ignore
+        except (ImportError, AttributeError):
+            # Fallback: try alternative import paths
+            try:
+                from synthcity.metrics import Metrics  # type: ignore
+            except (ImportError, AttributeError):
+                return None
+        
+        # Ensure Metrics is a class, not a module
+        if not isinstance(Metrics, type):
+            return None
         
         # Use Metrics().evaluate() API (correct way to call SynthCity evaluators)
         metrics_evaluator = Metrics()
