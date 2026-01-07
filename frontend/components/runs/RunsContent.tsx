@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { RenameModal } from "@/components/common/RenameModal";
 import { RunDetailsExpansion } from "@/components/runs/RunDetailsExpansion";
+import Progress from "@/components/ui/progress";
 
 interface Run {
   id: string;
@@ -422,7 +423,7 @@ export function RunsContent() {
         
         setCancellingRunId(runId);
         try {
-          const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
+          const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE || 'http://localhost:8000';
           if (!base) {
             throw new Error('Backend API URL not configured');
           }
@@ -468,7 +469,7 @@ export function RunsContent() {
           const confirmed = window.confirm('Delete this run? This action cannot be undone.');
           if (!confirmed) return;
 
-          const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
+          const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE || 'http://localhost:8000';
           
           if (!base) {
             alert('Backend API URL not configured. Please set NEXT_PUBLIC_BACKEND_API_BASE in Vercel environment variables.');
@@ -541,7 +542,7 @@ export function RunsContent() {
       const activeRuns = runs.filter(r => r.status === 'running' || r.status === 'queued');
       if (activeRuns.length === 0) return;
 
-      const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
+      const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE || 'http://localhost:8000';
       if (!base) return;
 
       try {
@@ -590,7 +591,7 @@ export function RunsContent() {
     setLoading(true);
     setError(null);
 
-    const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
+    const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE || 'http://localhost:8000';
 
     try {
       if (!base) {
@@ -665,11 +666,31 @@ export function RunsContent() {
                   }
                 }
                 
-                return { 
+                // Merge metrics from both sources (API response and individual fetch)
+                const mergedRun = { 
                   ...run, 
                   status: computedStatus,
-                  agent_interventions: runDetail.agent_interventions 
+                  agent_interventions: runDetail.agent_interventions,
+                  // Ensure privacy/utility from original API response are preserved
+                  privacy: run.privacy || runDetail.privacy,
+                  utility: run.utility || runDetail.utility,
+                  metrics: run.metrics || runDetail.metrics
                 };
+                
+                // Debug logging for the TabDDPM run
+                if (run.id === '0f6d5294-efe8-45a9-a9ea-caf8d9386485') {
+                  console.log('[RunsContent] TabDDPM run data:', {
+                    originalPrivacy: run.privacy,
+                    originalUtility: run.utility,
+                    originalMetrics: run.metrics,
+                    detailPrivacy: runDetail.privacy,
+                    detailUtility: runDetail.utility,
+                    mergedPrivacy: mergedRun.privacy,
+                    mergedUtility: mergedRun.utility
+                  });
+                }
+                
+                return mergedRun;
               }
             } catch {
               // Ignore errors for individual run details
@@ -916,8 +937,18 @@ export function RunsContent() {
                     {datasetRuns.map((run: Run) => {
                       const isRunning = run.status === 'running' || run.status === 'queued';
                       const steps = runSteps[run.id] || [];
-                      const progress = isRunning && steps.length > 0 
-                        ? Math.min((steps.length / 12) * 95, 95) // Estimate progress from steps
+                      // Calculate progress: completed steps / total steps
+                      // If no steps yet, show 0%, otherwise show percentage of completed steps
+                      const completedSteps = steps.filter((s: any) => 
+                        s.status === 'completed' || s.status === 'success' || s.status === 'done'
+                      ).length;
+                      const inProgressSteps = steps.filter((s: any) => 
+                        s.status === 'running' || s.status === 'in_progress'
+                      ).length;
+                      const totalSteps = steps.length;
+                      // Progress: completed steps count, with a small boost if there's a step in progress
+                      const progress = totalSteps > 0 
+                        ? Math.min(100, Math.round(((completedSteps + (inProgressSteps * 0.5)) / totalSteps) * 100))
                         : 0;
                       const latestStep = steps.length > 0 ? steps[steps.length - 1] : null;
                       
@@ -925,17 +956,6 @@ export function RunsContent() {
                       <div key={run.id}>
                         <Card className="hover:shadow-md transition-shadow">
                           <CardContent className="py-3">
-                            {/* Progress bar for running runs */}
-                            {isRunning && (
-                              <div className="mb-2 -mx-3 -mt-3">
-                                <div className="h-0.5 bg-gray-200">
-                                  <div 
-                                    className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-300"
-                                    style={{ width: `${progress}%` }}
-                                  />
-                                </div>
-                              </div>
-                            )}
                             <div className="flex items-center justify-between">
                               {/* Left side: Run name and status */}
                               <div className="flex items-center space-x-3 flex-1 min-w-0">
@@ -1048,15 +1068,19 @@ export function RunsContent() {
                                 </DropdownMenu>
                               </div>
                             </div>
-                            {/* Current step info for running runs */}
-                            {isRunning && latestStep && (
-                              <div className="mt-2 pt-2 border-t border-gray-200">
-                                <p className="text-xs text-gray-600">
-                                  <span className="font-medium">Step {latestStep.step_no}:</span> {latestStep.title}
-                                  {latestStep.detail && (
-                                    <span className="text-gray-500 ml-1">• {latestStep.detail.substring(0, 50)}{latestStep.detail.length > 50 ? '...' : ''}</span>
-                                  )}
-                                </p>
+                            {/* Progress bar and current step for active runs */}
+                            {isRunning && (
+                              <div className="mt-3 pt-3 border-t border-gray-200 space-y-2">
+                                <div className="flex items-center justify-between text-xs">
+                                  <span className="text-gray-600">Progress</span>
+                                  <span className="font-medium text-gray-900">{progress}%</span>
+                                </div>
+                                <Progress value={progress} className="h-1.5" />
+                                {latestStep && (
+                                  <div className="text-xs text-gray-600 truncate">
+                                    <span className="font-medium">Current:</span> {latestStep.title || latestStep.step_name || 'Processing...'}
+                                  </div>
+                                )}
                               </div>
                             )}
                           </CardContent>
