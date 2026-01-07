@@ -1409,11 +1409,17 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
             
             def _norm(x):
                 if not isinstance(x, dict):
-                    return {"method": str(x)}
+                    method = str(x)
+                    return {"method": method, "hyperparams": _apply_defaults(method)}
                 if "choice" in x and isinstance(x["choice"], dict):
                     m = x["choice"].get("method")
-                    return {"method": m, "hyperparams": x.get("hyperparams") or {}}
-                return {"method": x.get("method"), "hyperparams": x.get("hyperparams") or {}}
+                    existing_hp = x.get("hyperparams") or {}
+                    # Apply defaults to ensure n_iter, batch_size, etc. are included
+                    return {"method": m, "hyperparams": _apply_defaults(m, existing_hp)}
+                method = x.get("method")
+                existing_hp = x.get("hyperparams") or {}
+                # Apply defaults to ensure n_iter, batch_size, etc. are included
+                return {"method": method, "hyperparams": _apply_defaults(method, existing_hp)}
             
             # Add agent's primary as first backup (if different from user's choice)
             agent_primary = _norm(agent_first)
@@ -1446,9 +1452,11 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
                 if "choice" in x and isinstance(x["choice"], dict):
                     m = x["choice"].get("method")
                     existing_hp = x.get("hyperparams") or {}
+                    # Apply defaults to ensure n_iter, batch_size, etc. are included
                     return {"method": m, "hyperparams": _apply_defaults(m, existing_hp)}
                 method = x.get("method")
                 existing_hp = x.get("hyperparams") or {}
+                # Apply defaults to ensure n_iter, batch_size, etc. are included
                 return {"method": method, "hyperparams": _apply_defaults(method, existing_hp)}
             attempts_list.append(_norm(first))
             for b in backups:
