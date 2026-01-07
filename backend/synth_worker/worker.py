@@ -415,37 +415,40 @@ def _utility_metrics_synthcity(real: pd.DataFrame, synth: pd.DataFrame) -> Optio
     Returns dict with ks_mean, corr_delta if successful, None otherwise.
     """
     try:
-        from synthcity.metrics import eval_statistical  # type: ignore
+        from synthcity.metrics.eval import Metrics  # type: ignore
         
-        # SynthCity eval_statistical returns a dict with various metrics
-        synthcity_results = eval_statistical(real, synth)
+        # Use Metrics().evaluate() API (correct way to call SynthCity evaluators)
+        metrics_evaluator = Metrics()
+        metrics_df = metrics_evaluator.evaluate(
+            real,
+            synth,
+            metrics={
+                "stats": ["ks_test", "feature_corr", "jensenshannon_dist"]
+            },
+            reduction="mean"
+        )
         
-        if not isinstance(synthcity_results, dict):
+        if metrics_df.empty:
             return None
         
-        # Map SynthCity results to our format
-        # Try common SynthCity metric names
-        ks_mean = (
-            synthcity_results.get("statistical_ks") or
-            synthcity_results.get("ks_statistic") or
-            synthcity_results.get("ks_mean") or
-            synthcity_results.get("ks") or
-            None
-        )
+        # Extract metrics from DataFrame
+        ks_mean = None
+        corr_delta = None
         
-        corr_delta = (
-            synthcity_results.get("statistical_correlation") or
-            synthcity_results.get("corr_delta") or
-            synthcity_results.get("correlation_delta") or
-            synthcity_results.get("corr") or
-            None
-        )
+        for idx in metrics_df.index:
+            metric_name = str(idx).lower()
+            mean_val = metrics_df.loc[idx, "mean"] if "mean" in metrics_df.columns else None
+            
+            if "ks" in metric_name or "kolmogorov" in metric_name:
+                ks_mean = float(mean_val) if mean_val is not None else None
+            elif "corr" in metric_name or "correlation" in metric_name:
+                corr_delta = float(mean_val) if mean_val is not None else None
         
         # Return if we got at least one valid metric
         if ks_mean is not None or corr_delta is not None:
             return {
-                "ks_mean": float(ks_mean) if ks_mean is not None else None,
-                "corr_delta": float(corr_delta) if corr_delta is not None else None,
+                "ks_mean": ks_mean,
+                "corr_delta": corr_delta,
                 "auroc": None,
                 "c_index": None,
             }
@@ -810,37 +813,44 @@ def _privacy_metrics_synthcity(real: pd.DataFrame, synth: pd.DataFrame) -> Optio
     Returns dict with mia_auc, dup_rate if successful, None otherwise.
     """
     try:
-        from synthcity.metrics import eval_privacy  # type: ignore
+        from synthcity.metrics.eval import Metrics  # type: ignore
         
-        # SynthCity eval_privacy returns a dict with privacy metrics
-        synthcity_results = eval_privacy(real, synth)
+        # Use Metrics().evaluate() API (correct way to call SynthCity evaluators)
+        metrics_evaluator = Metrics()
+        metrics_df = metrics_evaluator.evaluate(
+            real,
+            synth,
+            metrics={
+                "privacy": ["k-anonymization", "identifiability_score", "delta-presence"]
+            },
+            reduction="mean"
+        )
         
-        if not isinstance(synthcity_results, dict):
+        if metrics_df.empty:
             return None
         
-        # Map SynthCity results to our format
-        # Try common SynthCity metric names
-        mia_auc = (
-            synthcity_results.get("privacy_mia_auc") or
-            synthcity_results.get("mia_auc") or
-            synthcity_results.get("membership_inference_auc") or
-            synthcity_results.get("mia") or
-            None
-        )
+        # Extract metrics from DataFrame
+        mia_auc = None
+        dup_rate = None
         
-        dup_rate = (
-            synthcity_results.get("privacy_duplicate_rate") or
-            synthcity_results.get("duplicate_rate") or
-            synthcity_results.get("dup_rate") or
-            synthcity_results.get("duplicates") or
-            None
-        )
+        for idx in metrics_df.index:
+            metric_name = str(idx).lower()
+            mean_val = metrics_df.loc[idx, "mean"] if "mean" in metrics_df.columns else None
+            
+            if "mia" in metric_name or "membership" in metric_name or "inference" in metric_name:
+                mia_auc = float(mean_val) if mean_val is not None else None
+            elif "duplicate" in metric_name or "dup" in metric_name:
+                dup_rate = float(mean_val) if mean_val is not None else None
+            elif "identifiability" in metric_name:
+                # Identifiability score can be used as a privacy metric
+                if mia_auc is None:
+                    mia_auc = float(mean_val) if mean_val is not None else None
         
         # Return if we got at least one valid metric
         if mia_auc is not None or dup_rate is not None:
             return {
-                "mia_auc": float(mia_auc) if mia_auc is not None else None,
-                "dup_rate": float(dup_rate) if dup_rate is not None else None,
+                "mia_auc": mia_auc,
+                "dup_rate": dup_rate,
             }
         
         return None
@@ -1060,14 +1070,23 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
         except Exception:
             pass
 
-    # Method can come from run.method, or agent plan in config_json.method, or env
-    method = (run.get("method") or _cfg_get(run, "method", "")).lower()
+    # Method can come from run.method (user's explicit choice), or agent plan in config_json.method, or env
+    # IMPORTANT: Respect user's explicit method selection - only use agent plan if no explicit method
+    user_explicit_method = run.get("method") or _cfg_get(run, "method", "")
+    method = user_explicit_method.lower() if user_explicit_method else ""
+    
     # If no explicit method, choose by schema heuristics
     if not method:
         picked = choose_model_by_schema(real_clean)
         method = picked
         try:
             print(f"[worker][schema] picked='{picked}' via schema heuristics")
+        except Exception:
+            pass
+    else:
+        # User explicitly selected a method - log it
+        try:
+            print(f"[worker][method] User explicitly selected method: '{method}'")
         except Exception:
             pass
 
@@ -1248,29 +1267,68 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
         plan = cfg_for_plan.get("plan") if isinstance(cfg_for_plan, dict) else None
     except Exception:
         plan = None
+    
+    # Check if user explicitly selected a method - if so, respect it and only use agent plan for backups
+    user_explicit_method = (run.get("method") or _cfg_get(run, "method", "")).lower()
+    
     if isinstance(plan, dict) and (plan.get("choice") or plan.get("method")):
-        # Log agent plan execution
-        print(f"[worker][agent] EXECUTING agent plan for run {run['id']}")
-        print(f"[worker][agent] Plan choice: {plan.get('choice')}")
-        print(f"[worker][agent] Plan rationale: {plan.get('rationale', 'N/A')}")
-        print(f"[worker][agent] Plan backups: {len(plan.get('backup') or [])} backup methods")
-        
-        # Normalize attempts list
-        first = plan.get("choice") or {"method": plan.get("method"), "hyperparams": plan.get("hyperparams", {})}
-        backups = plan.get("backup") or []
-        attempts_list: list[Dict[str, Any]] = []
-        def _norm(x):
-            if not isinstance(x, dict):
-                return {"method": str(x)}
-            if "choice" in x and isinstance(x["choice"], dict):
-                m = x["choice"].get("method")
-                return {"method": m, "hyperparams": x.get("hyperparams") or {}}
-            return {"method": x.get("method"), "hyperparams": x.get("hyperparams") or {}}
-        attempts_list.append(_norm(first))
-        for b in backups:
-            attempts_list.append(_norm(b))
-        
-        print(f"[worker][agent] Will attempt {len(attempts_list)} methods: {[a.get('method') for a in attempts_list]}")
+        # If user explicitly selected a method, use it as primary and agent plan as backups
+        if user_explicit_method:
+            print(f"[worker][agent] User explicitly selected method: '{user_explicit_method}' - using as primary")
+            print(f"[worker][agent] Agent plan will be used only for backup methods")
+            
+            # Use user's method as primary, agent plan for backups
+            first = {"method": user_explicit_method, "hyperparams": {}}
+            backups = []
+            
+            # Normalize agent plan for backups
+            agent_first = plan.get("choice") or {"method": plan.get("method"), "hyperparams": plan.get("hyperparams", {})}
+            agent_backups = plan.get("backup") or []
+            
+            def _norm(x):
+                if not isinstance(x, dict):
+                    return {"method": str(x)}
+                if "choice" in x and isinstance(x["choice"], dict):
+                    m = x["choice"].get("method")
+                    return {"method": m, "hyperparams": x.get("hyperparams") or {}}
+                return {"method": x.get("method"), "hyperparams": x.get("hyperparams") or {}}
+            
+            # Add agent's primary as first backup (if different from user's choice)
+            agent_primary = _norm(agent_first)
+            if agent_primary.get("method") != user_explicit_method:
+                backups.append(agent_primary)
+            
+            # Add agent's backups
+            for b in agent_backups:
+                backup_method = _norm(b)
+                if backup_method.get("method") != user_explicit_method:
+                    backups.append(backup_method)
+            
+            attempts_list = [first] + backups
+            print(f"[worker][agent] Will attempt {len(attempts_list)} methods: {[a.get('method') for a in attempts_list]}")
+        else:
+            # No explicit user method - use agent plan as primary
+            print(f"[worker][agent] EXECUTING agent plan for run {run['id']}")
+            print(f"[worker][agent] Plan choice: {plan.get('choice')}")
+            print(f"[worker][agent] Plan rationale: {plan.get('rationale', 'N/A')}")
+            print(f"[worker][agent] Plan backups: {len(plan.get('backup') or [])} backup methods")
+            
+            # Normalize attempts list
+            first = plan.get("choice") or {"method": plan.get("method"), "hyperparams": plan.get("hyperparams", {})}
+            backups = plan.get("backup") or []
+            attempts_list: list[Dict[str, Any]] = []
+            def _norm(x):
+                if not isinstance(x, dict):
+                    return {"method": str(x)}
+                if "choice" in x and isinstance(x["choice"], dict):
+                    m = x["choice"].get("method")
+                    return {"method": m, "hyperparams": x.get("hyperparams") or {}}
+                return {"method": x.get("method"), "hyperparams": x.get("hyperparams") or {}}
+            attempts_list.append(_norm(first))
+            for b in backups:
+                attempts_list.append(_norm(b))
+            
+            print(f"[worker][agent] Will attempt {len(attempts_list)} methods: {[a.get('method') for a in attempts_list]}")
 
         accepted: Optional[Dict[str, Any]] = None
         best: Optional[Dict[str, Any]] = None
