@@ -165,6 +165,9 @@ class SynthcitySynthesizer(BaseSynthesizer):
         try:
             # Try generate() first (common in SynthCity)
             out = self._plugin.generate(num_rows)
+            # Debug: log output type for TabDDPM
+            if self.method in ("ddpm", "tabddpm", "diffusion"):
+                print(f"[SynthcitySynthesizer][TabDDPM] generate() returned type: {type(out)}, hasattr dataframe: {hasattr(out, 'dataframe') if out is not None else 'N/A'}")
         except Exception as e:
             # Fallback to sample() if available
             if hasattr(self._plugin, "sample"):
@@ -180,15 +183,32 @@ class SynthcitySynthesizer(BaseSynthesizer):
             raise ValueError("SynthCity plugin returned None. Training may have failed.")
         
         # Handle SynthCity DataLoader (common for TabDDPM and other plugins)
-        if hasattr(out, 'dataframe'):
+        # Check for DataLoader by class name or dataframe method
+        is_dataloader = (
+            hasattr(out, 'dataframe') or 
+            (hasattr(out, '__class__') and 'DataLoader' in str(type(out))) or
+            (hasattr(out, '__class__') and 'GenericDataLoader' in str(type(out)))
+        )
+        if is_dataloader:
             # It's a DataLoader - extract DataFrame
             try:
-                df = out.dataframe()
-                if df is None or len(df) == 0:
+                if hasattr(out, 'dataframe'):
+                    df = out.dataframe()
+                elif hasattr(out, 'to_pandas'):
+                    df = out.to_pandas()
+                elif hasattr(out, 'data'):
+                    df = out.data
+                else:
+                    # Try to convert directly
+                    df = pd.DataFrame(out)
+                
+                if df is None or (isinstance(df, pd.DataFrame) and len(df) == 0):
                     raise ValueError("SynthCity DataLoader returned empty DataFrame")
+                if not isinstance(df, pd.DataFrame):
+                    df = pd.DataFrame(df)
                 return df.head(num_rows).reset_index(drop=True)
             except Exception as e:
-                raise ValueError(f"Failed to extract DataFrame from SynthCity DataLoader: {e}")
+                raise ValueError(f"Failed to extract DataFrame from SynthCity DataLoader (type: {type(out)}): {e}")
         
         # Ensure DataFrame output
         if isinstance(out, pd.DataFrame):
