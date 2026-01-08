@@ -1528,7 +1528,14 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
                 try:
                     metrics_detail = "; ".join(reasons)[:500]
                     print(f"[worker][step] INSERTING step {i}: metrics - {metrics_detail}")
-                    print(f"[worker][metrics] Run {run['id']} attempt {i}: KS={met.get('utility', {}).get('ks_mean'):.3f}, Corr={met.get('utility', {}).get('corr_delta'):.3f}, MIA={met.get('privacy', {}).get('mia_auc'):.3f}")
+                    # Safe formatting - handle None values
+                    ks_val = met.get('utility', {}).get('ks_mean')
+                    corr_val = met.get('utility', {}).get('corr_delta')
+                    mia_val = met.get('privacy', {}).get('mia_auc')
+                    ks_str = f"{ks_val:.3f}" if ks_val is not None else "N/A"
+                    corr_str = f"{corr_val:.3f}" if corr_val is not None else "N/A"
+                    mia_str = f"{mia_val:.3f}" if mia_val is not None else "N/A"
+                    print(f"[worker][metrics] Run {run['id']} attempt {i}: KS={ks_str}, Corr={corr_str}, MIA={mia_str}")
                     supabase.table("run_steps").insert({
                         "run_id": run["id"],
                         "step_no": i,
