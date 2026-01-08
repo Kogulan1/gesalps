@@ -34,6 +34,29 @@ from models import (
 )
 from models.synthcity_models import SynthcitySynthesizer
 
+# Auto-optimization module
+try:
+    from optimizer import get_optimizer, FailureType
+    OPTIMIZER_AVAILABLE = True
+except ImportError:
+    OPTIMIZER_AVAILABLE = False
+    get_optimizer = None
+    FailureType = None
+
+# Compliance evaluation module
+try:
+    import sys
+    from pathlib import Path
+    # Add parent directory to path for compliance module
+    libs_path = Path(__file__).parent.parent / "libs"
+    if libs_path.exists():
+        sys.path.insert(0, str(libs_path.parent))
+    from libs.compliance import get_compliance_evaluator
+    COMPLIANCE_AVAILABLE = True
+except ImportError:
+    COMPLIANCE_AVAILABLE = False
+    get_compliance_evaluator = None
+
 # Silence only the deprecation warning coming from old lite API paths (if any)
 warnings.filterwarnings("ignore", category=FutureWarning, module="sdv.lite.single_table")
 
@@ -63,6 +86,9 @@ CORR_MAX = float(os.getenv("CORR_MAX", "0.10"))
 MIA_MAX = float(os.getenv("MIA_MAX", "0.60"))
 # Use SynthCity evaluators for metrics (default: true)
 USE_SYNTHCITY_METRICS = (os.getenv("USE_SYNTHCITY_METRICS", "true").strip().lower() in ("1","true","yes","on"))
+# Compliance level for evaluation (default: hipaa_like)
+COMPLIANCE_LEVEL = os.getenv("COMPLIANCE_LEVEL", "hipaa_like").strip().lower()
+
 def _cfg_get(run: Dict[str, Any], key: str, default):
     cfg = run.get("config_json") or {}
     return cfg.get(key, default)
@@ -1570,6 +1596,27 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
 
         # Compose final metrics + fairness + meta
         final_metrics = chosen["metrics"]
+        
+        # Evaluate compliance for plan-driven execution
+        if COMPLIANCE_AVAILABLE and get_compliance_evaluator and "compliance" not in final_metrics:
+            try:
+                cfg = run.get("config_json") or {}
+                compliance_level = (cfg.get("compliance_level") or COMPLIANCE_LEVEL).strip().lower()
+                evaluator = get_compliance_evaluator(compliance_level)
+                compliance_result = evaluator.evaluate(final_metrics)
+                final_metrics["compliance"] = compliance_result
+                
+                # Log compliance status
+                status = "PASSED" if compliance_result.get("passed", False) else "FAILED"
+                score = compliance_result.get("score", 0.0)
+                violations_count = len(compliance_result.get("violations", []))
+                print(f"[worker][compliance] Plan-driven Status: {status}, Score: {score:.2%}, Violations: {violations_count}")
+            except Exception as e:
+                try:
+                    print(f"[worker][compliance] Plan-driven compliance evaluation failed: {type(e).__name__}: {e}")
+                except Exception:
+                    pass
+        
         # Ensure meta info
         try:
             fm = final_metrics.setdefault("meta", {})
@@ -1827,6 +1874,46 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
         }
         metrics = {"utility": util, "privacy": priv, "composite": composite, "meta": metrics_meta}
 
+        # Evaluate compliance
+        compliance_result = None
+        if COMPLIANCE_AVAILABLE and get_compliance_evaluator:
+            try:
+                # Get compliance level from run config or use default
+                cfg = run.get("config_json") or {}
+                compliance_level = (cfg.get("compliance_level") or COMPLIANCE_LEVEL).strip().lower()
+                evaluator = get_compliance_evaluator(compliance_level)
+                compliance_result = evaluator.evaluate(metrics)
+                
+                # Add compliance results to metrics
+                metrics["compliance"] = compliance_result
+                
+                # Log compliance status
+                try:
+                    status = "PASSED" if compliance_result.get("passed", False) else "FAILED"
+                    score = compliance_result.get("score", 0.0)
+                    violations_count = len(compliance_result.get("violations", []))
+                    print(f"[worker][compliance] Status: {status}, Score: {score:.2%}, Violations: {violations_count}")
+                    
+                    if violations_count > 0:
+                        print(f"[worker][compliance] Violations:")
+                        for violation in compliance_result.get("violations", [])[:5]:  # Log first 5 violations
+                            print(f"[worker][compliance]   - {violation}")
+                        if violations_count > 5:
+                            print(f"[worker][compliance]   ... and {violations_count - 5} more")
+                except Exception as log_err:
+                    print(f"[worker][compliance] Evaluation completed but logging failed: {type(log_err).__name__}")
+            except Exception as e:
+                try:
+                    print(f"[worker][compliance] Compliance evaluation failed: {type(e).__name__}: {e}")
+                except Exception:
+                    pass
+                # Continue without compliance evaluation if it fails
+        else:
+            try:
+                print("[worker][compliance] Compliance evaluator not available")
+            except Exception:
+                pass
+
         # Log step (for agent visibility)
         overall_ok, reasons = _thresholds_status(metrics)
         if mode == "agent":
@@ -1850,6 +1937,42 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
                 "attempt": attempts,
             }
 
+        # Initialize optimizer if available
+        optimizer = None
+        if OPTIMIZER_AVAILABLE and get_optimizer:
+            try:
+                optimizer = get_optimizer()
+            except Exception:
+                optimizer = None
+        
+        # Use optimizer to analyze failure if metrics don't pass thresholds
+        failure_analysis = None
+        if optimizer and not overall_ok and attempts < max_attempts:
+            try:
+                dataset_size = (len(real_clean), len(real_clean.columns))
+                failure_type, root_cause, suggestions = optimizer.analyze_failure(
+                    metrics=metrics,
+                    hyperparams=current_hparams,
+                    method=current_method,
+                    dataset_size=dataset_size,
+                )
+                failure_analysis = {
+                    "failure_type": failure_type.value if hasattr(failure_type, 'value') else str(failure_type),
+                    "root_cause": root_cause,
+                    "suggestions": suggestions,
+                }
+                try:
+                    print(f"[worker][optimizer] Failure analysis: {root_cause}")
+                    if suggestions:
+                        print(f"[worker][optimizer] Suggestions: {', '.join(suggestions)}")
+                except Exception:
+                    pass
+            except Exception as e:
+                try:
+                    print(f"[worker][optimizer] Failure analysis error: {type(e).__name__}")
+                except Exception:
+                    pass
+
         if mode != "agent" or overall_ok or attempts >= max_attempts:
             final_metrics = best_bundle.get("metrics", metrics)
             final_synth = best_bundle.get("synth", synth)
@@ -1862,6 +1985,37 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
         # Agent-led re-plan; fallback to simple heuristic on failure
         next_method = None
         next_hparams: Dict[str, Any] = {}
+        
+        # Use optimizer suggestions if available and failure was analyzed
+        if optimizer and failure_analysis:
+            try:
+                dataset_size = (len(real_clean), len(real_clean.columns))
+                cfg = run.get("config_json") or {}
+                dp_raw = (cfg or {}).get("dp")
+                dp_backend, _, _ = resolve_dp_backend(dp_raw if (dp_raw is True or isinstance(dp_raw, dict)) else None)
+                dp_requested = dp_backend != "none"
+                
+                # Get optimized hyperparameters based on failure
+                optimized_hparams = optimizer.suggest_hyperparameters(
+                    method=current_method,
+                    dataset_size=dataset_size,
+                    previous_metrics=metrics,
+                    dp_requested=dp_requested,
+                )
+                
+                if optimized_hparams:
+                    # Merge with existing, giving priority to optimizer suggestions
+                    next_hparams = {**current_hparams, **optimized_hparams}
+                    next_method = current_method  # Keep same method, just optimize params
+                    try:
+                        print(f"[worker][optimizer] Applying optimized hyperparams: {json.dumps(optimized_hparams)}")
+                    except Exception:
+                        pass
+            except Exception as e:
+                try:
+                    print(f"[worker][optimizer] Optimization error: {type(e).__name__}")
+                except Exception:
+                    pass
         # Simple reactive rule: switch model if KS worsens notably vs previous
         try:
             if prev_metrics is not None:
@@ -1937,6 +2091,26 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
         prev_metrics = metrics
         attempts += 1
 
+    # Ensure compliance evaluation is in final metrics (if not already added)
+    if COMPLIANCE_AVAILABLE and get_compliance_evaluator and "compliance" not in final_metrics:
+        try:
+            cfg = run.get("config_json") or {}
+            compliance_level = (cfg.get("compliance_level") or COMPLIANCE_LEVEL).strip().lower()
+            evaluator = get_compliance_evaluator(compliance_level)
+            compliance_result = evaluator.evaluate(final_metrics)
+            final_metrics["compliance"] = compliance_result
+            
+            # Log final compliance status
+            status = "PASSED" if compliance_result.get("passed", False) else "FAILED"
+            score = compliance_result.get("score", 0.0)
+            violations_count = len(compliance_result.get("violations", []))
+            print(f"[worker][compliance] Final Status: {status}, Score: {score:.2%}, Violations: {violations_count}")
+        except Exception as e:
+            try:
+                print(f"[worker][compliance] Final compliance evaluation failed: {type(e).__name__}: {e}")
+            except Exception:
+                pass
+    
     print("[worker] metrics:", json.dumps(final_metrics, indent=2))
     # Save meta-run record (best-effort)
     try:
