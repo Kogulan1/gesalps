@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -102,7 +102,7 @@ export function ExecutionLogTab({ steps }: ExecutionLogTabProps) {
     return sections;
   };
 
-  if (steps.length === 0) {
+  if (!steps || steps.length === 0) {
     return (
       <div className="text-center py-12 text-gray-500">
         <AlertCircle className="h-12 w-12 mx-auto mb-4 text-gray-400" />

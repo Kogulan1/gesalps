@@ -125,13 +125,34 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
       const runDataResult = await runResponse.json();
       setRunData(runDataResult);
 
-      // Fetch metrics
-      const metricsResponse = await fetch(`${base}/v1/runs/${runId}/metrics`, { headers });
-      const metricsData = metricsResponse.ok ? await metricsResponse.json() : {};
+      // Fetch metrics (may not exist for cancelled/failed runs)
+      let metricsData = {};
+      try {
+        const metricsResponse = await fetch(`${base}/v1/runs/${runId}/metrics`, { headers });
+        if (metricsResponse.ok) {
+          metricsData = await metricsResponse.json();
+        } else if (metricsResponse.status !== 404) {
+          // 404 is expected for cancelled/failed runs, other errors should be logged
+          console.warn(`[RunDetailsExpansion] Metrics fetch returned ${metricsResponse.status}`);
+        }
+      } catch (err) {
+        console.warn('[RunDetailsExpansion] Error fetching metrics (may not exist for cancelled runs):', err);
+        // Continue without metrics - cancelled runs won't have them
+      }
 
-      // Fetch steps
-      const stepsResponse = await fetch(`${base}/v1/runs/${runId}/steps`, { headers });
-      const stepsData = stepsResponse.ok ? await stepsResponse.json() : [];
+      // Fetch steps (should always exist, even for cancelled runs)
+      let stepsData: RunStep[] = [];
+      try {
+        const stepsResponse = await fetch(`${base}/v1/runs/${runId}/steps`, { headers });
+        if (stepsResponse.ok) {
+          stepsData = await stepsResponse.json();
+        } else {
+          console.warn(`[RunDetailsExpansion] Steps fetch returned ${stepsResponse.status}`);
+        }
+      } catch (err) {
+        console.error('[RunDetailsExpansion] Error fetching steps:', err);
+        // Steps are important, but don't fail completely if they can't be loaded
+      }
       setSteps(stepsData);
 
       // Calculate duration
@@ -143,13 +164,20 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
       }
 
       // Calculate status based on metrics (if run completed)
-      let computedStatus = runDataResult.status === 'succeeded' ? 'Completed' : runDataResult.status;
-      if (runDataResult.status === 'succeeded' && metricsData) {
-        const privacyPassed = (metricsData?.privacy?.mia_auc || 1) <= 0.6 && (metricsData?.privacy?.dup_rate || 1) <= 0.05;
-        const utilityPassed = (metricsData?.utility?.ks_mean || 1) <= 0.1 && (metricsData?.utility?.corr_delta || 1) <= 0.15;
-        if (!privacyPassed || !utilityPassed) {
-          computedStatus = 'Completed with Failures';
+      let computedStatus = runDataResult.status;
+      if (runDataResult.status === 'cancelled') {
+        computedStatus = 'Cancelled';
+      } else if (runDataResult.status === 'succeeded') {
+        computedStatus = 'Completed';
+        if (metricsData && Object.keys(metricsData).length > 0) {
+          const privacyPassed = (metricsData?.privacy?.mia_auc || 1) <= 0.6 && (metricsData?.privacy?.dup_rate || 1) <= 0.05;
+          const utilityPassed = (metricsData?.utility?.ks_mean || 1) <= 0.1 && (metricsData?.utility?.corr_delta || 1) <= 0.15;
+          if (!privacyPassed || !utilityPassed) {
+            computedStatus = 'Completed with Failures';
+          }
         }
+      } else if (runDataResult.status === 'failed') {
+        computedStatus = 'Failed';
       }
 
       // Build results object
@@ -290,7 +318,8 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
             <Badge className={
               results.status === 'Completed' ? 'bg-green-100 text-green-800' :
               results.status === 'Completed with Failures' ? 'bg-orange-100 text-orange-800' :
-              results.status === 'failed' ? 'bg-red-100 text-red-800' :
+              results.status === 'Cancelled' ? 'bg-yellow-100 text-yellow-800' :
+              results.status === 'Failed' || results.status === 'failed' ? 'bg-red-100 text-red-800' :
               'bg-gray-100 text-gray-800'
             }>
               {results.status}

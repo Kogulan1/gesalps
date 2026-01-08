@@ -33,74 +33,75 @@ interface ActivityItem {
   status?: 'success' | 'error' | 'warning' | 'info';
 }
 
+// Mock activity data - to be replaced with API call
+const MOCK_ACTIVITIES: ActivityItem[] = [
+  {
+    id: "act-1",
+    type: "run_completed",
+    title: "Run completed successfully",
+    description: "fresh_run finished with AUROC 0.87",
+    timestamp: "2 hours ago",
+    user: "kogulan1",
+    project_name: "new project",
+    dataset_name: "student_mental_health.csv",
+    run_name: "fresh_run",
+    status: "success"
+  },
+  {
+    id: "act-2",
+    type: "run_started",
+    title: "New run started",
+    description: "test_run is now running",
+    timestamp: "4 hours ago",
+    user: "kogulan1",
+    project_name: "new project",
+    dataset_name: "student_mental_health.csv",
+    run_name: "test_run",
+    status: "info"
+  },
+  {
+    id: "act-3",
+    type: "dataset_uploaded",
+    title: "Dataset uploaded",
+    description: "sample_clinical_trial.csv added to new project",
+    timestamp: "1 day ago",
+    user: "kogulan1",
+    project_name: "new project",
+    dataset_name: "sample_clinical_trial.csv",
+    status: "success"
+  },
+  {
+    id: "act-4",
+    type: "project_created",
+    title: "Project created",
+    description: "new project was created",
+    timestamp: "2 days ago",
+    user: "kogulan1",
+    project_name: "new project",
+    status: "success"
+  },
+  {
+    id: "act-5",
+    type: "run_failed",
+    title: "Run failed",
+    description: "failed_run encountered an error",
+    timestamp: "3 days ago",
+    user: "kogulan1",
+    project_name: "new project",
+    dataset_name: "student_mental_health.csv",
+    run_name: "failed_run",
+    status: "error"
+  }
+];
+
 export function ActivityContent() {
   const t = useTranslations('dashboard');
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Mock data for now
-    const mockActivities: ActivityItem[] = [
-      {
-        id: "act-1",
-        type: "run_completed",
-        title: "Run completed successfully",
-        description: "fresh_run finished with AUROC 0.87",
-        timestamp: "2 hours ago",
-        user: "kogulan1",
-        project_name: "new project",
-        dataset_name: "student_mental_health.csv",
-        run_name: "fresh_run",
-        status: "success"
-      },
-      {
-        id: "act-2",
-        type: "run_started",
-        title: "New run started",
-        description: "test_run is now running",
-        timestamp: "4 hours ago",
-        user: "kogulan1",
-        project_name: "new project",
-        dataset_name: "student_mental_health.csv",
-        run_name: "test_run",
-        status: "info"
-      },
-      {
-        id: "act-3",
-        type: "dataset_uploaded",
-        title: "Dataset uploaded",
-        description: "sample_clinical_trial.csv added to new project",
-        timestamp: "1 day ago",
-        user: "kogulan1",
-        project_name: "new project",
-        dataset_name: "sample_clinical_trial.csv",
-        status: "success"
-      },
-      {
-        id: "act-4",
-        type: "project_created",
-        title: "Project created",
-        description: "new project was created",
-        timestamp: "2 days ago",
-        user: "kogulan1",
-        project_name: "new project",
-        status: "success"
-      },
-      {
-        id: "act-5",
-        type: "run_failed",
-        title: "Run failed",
-        description: "failed_run encountered an error",
-        timestamp: "3 days ago",
-        user: "kogulan1",
-        project_name: "new project",
-        dataset_name: "student_mental_health.csv",
-        run_name: "failed_run",
-        status: "error"
-      }
-    ];
-    
-    setActivities(mockActivities);
+    // Mock data for now - to be replaced with API call
+    setActivities(MOCK_ACTIVITIES);
     setLoading(false);
   }, []);
 
