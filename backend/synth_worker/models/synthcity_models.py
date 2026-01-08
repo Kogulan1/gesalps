@@ -160,28 +160,65 @@ class SynthcitySynthesizer(BaseSynthesizer):
     
     def sample(self, num_rows: int) -> pd.DataFrame:
         """Generate synthetic data."""
+        import numpy as np
+        
         try:
             # Try generate() first (common in SynthCity)
             out = self._plugin.generate(num_rows)
-        except Exception:
+        except Exception as e:
             # Fallback to sample() if available
             if hasattr(self._plugin, "sample"):
-                out = self._plugin.sample(num_rows)
+                try:
+                    out = self._plugin.sample(num_rows)
+                except Exception as e2:
+                    raise RuntimeError(f"SynthCity plugin generate() and sample() both failed: {e}, {e2}")
             else:
-                raise RuntimeError("SynthCity plugin does not expose generate() or sample()")
+                raise RuntimeError(f"SynthCity plugin does not expose generate() or sample(). Error: {e}")
+        
+        # Handle None or empty output
+        if out is None:
+            raise ValueError("SynthCity plugin returned None. Training may have failed.")
         
         # Ensure DataFrame output
         if isinstance(out, pd.DataFrame):
+            if len(out) == 0:
+                raise ValueError("SynthCity plugin returned empty DataFrame")
             return out.head(num_rows).reset_index(drop=True)
         
         # Convert array to DataFrame
-        import numpy as np
-        arr = np.asarray(out)
-        if arr.ndim == 2 and self._columns and arr.shape[1] == len(self._columns):
-            return pd.DataFrame(arr[:num_rows], columns=self._columns)
+        try:
+            arr = np.asarray(out)
+        except Exception as e:
+            raise ValueError(f"Failed to convert plugin output to array: {e}. Output type: {type(out)}")
         
-        # Last resort
-        return pd.DataFrame(arr[:num_rows], columns=self._columns[:arr.shape[1]] if arr.ndim == 2 else [])
+        # Handle different array dimensions
+        if arr.ndim == 0:
+            # Scalar - this shouldn't happen for tabular data, but handle it
+            raise ValueError(f"SynthCity plugin returned scalar value instead of array. This indicates a plugin error.")
+        elif arr.ndim == 1:
+            # 1D array - reshape to 2D (single column)
+            if len(arr) == 0:
+                raise ValueError("SynthCity plugin returned empty array")
+            arr = arr.reshape(-1, 1)
+            cols = self._columns[:1] if self._columns and len(self._columns) > 0 else [f"col_0"]
+            return pd.DataFrame(arr[:num_rows], columns=cols)
+        elif arr.ndim == 2:
+            # 2D array - normal case
+            if arr.shape[0] == 0:
+                raise ValueError("SynthCity plugin returned empty 2D array")
+            if self._columns and arr.shape[1] == len(self._columns):
+                return pd.DataFrame(arr[:num_rows], columns=self._columns)
+            # Handle mismatched column count
+            num_cols = arr.shape[1]
+            if self._columns and len(self._columns) >= num_cols:
+                return pd.DataFrame(arr[:num_rows], columns=self._columns[:num_cols])
+            else:
+                # Generate column names if we don't have enough
+                cols = self._columns + [f"col_{i}" for i in range(len(self._columns), num_cols)] if self._columns else [f"col_{i}" for i in range(num_cols)]
+                return pd.DataFrame(arr[:num_rows], columns=cols)
+        else:
+            # Higher dimensions - flatten first dimension
+            raise ValueError(f"Unexpected array dimension {arr.ndim} from SynthCity plugin. Expected 1 or 2 dimensions.")
     
     def get_supported_hyperparams(self) -> list[str]:
         """Return plugin-specific hyperparameters.
