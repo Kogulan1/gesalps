@@ -179,6 +179,17 @@ class SynthcitySynthesizer(BaseSynthesizer):
         if out is None:
             raise ValueError("SynthCity plugin returned None. Training may have failed.")
         
+        # Handle SynthCity DataLoader (common for TabDDPM and other plugins)
+        if hasattr(out, 'dataframe'):
+            # It's a DataLoader - extract DataFrame
+            try:
+                df = out.dataframe()
+                if df is None or len(df) == 0:
+                    raise ValueError("SynthCity DataLoader returned empty DataFrame")
+                return df.head(num_rows).reset_index(drop=True)
+            except Exception as e:
+                raise ValueError(f"Failed to extract DataFrame from SynthCity DataLoader: {e}")
+        
         # Ensure DataFrame output
         if isinstance(out, pd.DataFrame):
             if len(out) == 0:
