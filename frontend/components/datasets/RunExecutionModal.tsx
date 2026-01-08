@@ -213,7 +213,6 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
   // Continue polling even when failed to ensure all steps are fetched
   useEffect(() => {
     if (runId && (runState === 'running' || runState === 'started' || runState === 'failed')) {
-      console.log(`[RunExecutionModal] Polling useEffect: runId=${runId}, runState=${runState}`);
       const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || 'http://localhost:8000';
       
       const fetchStatus = async () => {
@@ -282,16 +281,6 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
             const steps = await stepsResponse.json();
             const newSteps = Array.isArray(steps) ? steps : [];
             
-            // Enhanced debug logging
-            const currentCount = previousStepCountRef.current;
-            console.log(`[RunExecutionModal] Polling: Fetched ${newSteps.length} steps (previous ref: ${currentCount})`, {
-              timestamp: new Date().toISOString(),
-              runState,
-              runId,
-              stepCounts: newSteps.map(s => `${s.step_no}:${s.title}`),
-              allSteps: newSteps
-            });
-            
             // Sort steps by step_no to ensure correct order
             const sortedSteps = [...newSteps].sort((a, b) => (a.step_no || 0) - (b.step_no || 0));
             
@@ -307,14 +296,6 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
                        step.detail !== currentStep.detail;
               });
             
-            console.log(`[RunExecutionModal] Steps comparison:`, {
-              newCount: sortedSteps.length,
-              currentCount: currentSteps.length,
-              stepsChanged,
-              newSteps: sortedSteps.map(s => `${s.step_no}:${s.title}`),
-              currentSteps: currentSteps.map(s => `${s.step_no}:${s.title}`)
-            });
-            
             // Simple state update - create a NEW array reference (like RunDetailsExpansion does)
             // This is the key: always create a new array so React detects the change
             const newStepsArray = [...sortedSteps];
@@ -322,27 +303,15 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
             // Update ref for comparison logic
             runStepsRef.current = newStepsArray;
             
-            // Simple state update - React will handle re-render
-            console.log(`[RunExecutionModal] Updating steps: ${newStepsArray.length} steps`, {
-              newStepsArray,
-              timestamp: new Date().toISOString(),
-              willTriggerRender: true
-            });
-            
             // CRITICAL: Update both state and ref synchronously
             // Update ref first for comparison logic
             runStepsRef.current = newStepsArray;
             
             // Update state - use direct assignment, not callback, to ensure immediate update
             setRunSteps(newStepsArray);
-            console.log(`[RunExecutionModal] setRunSteps called with ${newStepsArray.length} steps`);
             
             // Force a re-render by updating render key - this ensures React re-renders
-            setRenderKey(prev => {
-              const newKey = prev + 1;
-              console.log(`[RunExecutionModal] Updating renderKey from ${prev} to ${newKey} to force re-render`);
-              return newKey;
-            });
+            setRenderKey(prev => prev + 1);
             
             // Detect new steps and announce them
             if (newSteps.length > currentCount) {
@@ -419,10 +388,6 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
 
   // Force re-render when runSteps changes - this ensures ExecutionLogTab gets updated
   useEffect(() => {
-    console.log(`[RunExecutionModal] runSteps changed - length: ${runSteps.length}`, {
-      runSteps,
-      timestamp: new Date().toISOString()
-    });
     // The renderKey is already being updated in the polling function, but this ensures we log the change
   }, [runSteps]);
 
@@ -596,7 +561,6 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
           if (stepsRes.ok) {
             const steps = await stepsRes.json();
             if (Array.isArray(steps)) {
-              console.log(`[RunExecutionModal] Initial fetch: ${steps.length} steps for run ${result.run_id}:`, steps);
               // Sort steps by step_no to ensure correct order
               const sortedSteps = [...steps].sort((a, b) => (a.step_no || 0) - (b.step_no || 0));
               const newStepsArray = [...sortedSteps];
@@ -607,7 +571,6 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
               setRenderKey(prev => prev + 1); // Force re-render
               previousStepCountRef.current = sortedSteps.length;
               setPreviousStepCount(sortedSteps.length);
-              console.log(`[RunExecutionModal] Initial fetch complete: ${newStepsArray.length} steps`);
               if (steps.length > 0) {
                 const latestStep = steps[steps.length - 1];
                 let announcementText = '';
@@ -793,16 +756,6 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
 
   // Render different views based on state
   if (runState === 'started') {
-    // Debug: Log current runSteps in render - THIS IS CRITICAL TO SEE WHAT REACT SEES
-    console.log(`[RunExecutionModal] RENDER (started state):`, {
-      runSteps_length: runSteps.length,
-      runStepsRef_length: runStepsRef.current.length,
-      runSteps: runSteps,
-      runStepsRef: runStepsRef.current,
-      runId,
-      runState
-    });
-    
     // Calculate progress based on steps even in 'started' state
     const progress = runSteps.length > 0 
       ? Math.min((runSteps.length / 12) * 50, 50) // Cap at 50% in started state
@@ -984,26 +937,18 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
                 className="max-h-[40vh] overflow-y-auto border rounded-lg bg-white p-4"
               >
                 {(() => {
-                  console.log(`[RunExecutionModal] RENDERING Execution Timeline (started): runSteps.length=${runSteps.length}`, {
-                    runSteps,
-                    timestamp: new Date().toISOString()
-                  });
-                  
                   if (runSteps.length === 0) {
                     return (
                       <div className="text-center py-8 text-gray-500">
                         <Loader2 className="h-8 w-8 mx-auto mb-3 text-gray-400 animate-spin" />
                         <p className="text-sm">Waiting for execution steps...</p>
                         <p className="text-xs mt-1">Steps will appear here as the run progresses</p>
-                        <p className="text-xs mt-2 text-gray-400">Debug: runSteps.length = {runSteps.length}</p>
                       </div>
                     );
                   }
                   
-                  console.log(`[RunExecutionModal] About to render ExecutionLogTab with ${runSteps.length} steps`);
                   // Use renderKey to force re-render when steps change
                   const stepKey = `steps-${runSteps.length}-${runSteps.map(s => s.step_no).join('-')}-${renderKey}`;
-                  console.log(`[RunExecutionModal] ExecutionLogTab key: ${stepKey}, renderKey: ${renderKey}`);
                   return (
                     <ExecutionLogTab 
                       key={stepKey} 
@@ -1020,15 +965,6 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
   }
 
   if (runState === 'running') {
-    // Debug: Log current runSteps in render
-    console.log(`[RunExecutionModal] RENDER (running state):`, {
-      runSteps_length: runSteps.length,
-      runStepsRef_length: runStepsRef.current.length,
-      runSteps: runSteps,
-      runStepsRef: runStepsRef.current,
-      runId,
-      runState
-    });
     
     const latestStep = runSteps.length > 0 ? runSteps[runSteps.length - 1] : null;
     // Calculate progress more accurately based on step count and status
@@ -1217,26 +1153,18 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
                 className="max-h-[50vh] overflow-y-auto border rounded-lg bg-white p-4"
               >
                 {(() => {
-                  console.log(`[RunExecutionModal] RENDERING Execution Timeline (running): runSteps.length=${runSteps.length}`, {
-                    runSteps,
-                    timestamp: new Date().toISOString()
-                  });
-                  
                   if (runSteps.length === 0) {
                     return (
                       <div className="text-center py-8 text-gray-500">
                         <Loader2 className="h-8 w-8 mx-auto mb-3 text-gray-400 animate-spin" />
                         <p className="text-sm">Waiting for execution steps...</p>
                         <p className="text-xs mt-1">Steps will appear here as the run progresses</p>
-                        <p className="text-xs mt-2 text-gray-400">Debug: runSteps.length = {runSteps.length}</p>
                       </div>
                     );
                   }
                   
-                  console.log(`[RunExecutionModal] About to render ExecutionLogTab with ${runSteps.length} steps`);
                   // Use renderKey to force re-render when steps change
                   const stepKey = `steps-${runSteps.length}-${runSteps.map(s => s.step_no).join('-')}-${renderKey}`;
-                  console.log(`[RunExecutionModal] ExecutionLogTab key: ${stepKey}, renderKey: ${renderKey}`);
                   return (
                     <ExecutionLogTab 
                       key={stepKey} 
@@ -1408,7 +1336,6 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
                   </div>
                 ) : (
                   <>
-                    <div className="mb-2 text-xs text-gray-500">Debug: Rendering {runSteps.length} steps (key: {runSteps.length}-{runSteps.map(s => s.step_no).join('-')})</div>
                     <ExecutionLogTab 
                       key={`steps-${runSteps.length}-${runSteps.map(s => s.step_no).join('-')}`} 
                       steps={[...runSteps]} 

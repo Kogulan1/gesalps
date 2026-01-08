@@ -9,11 +9,6 @@ import { useLocale } from "next-intl";
 export function Hero() {
   const t = useTranslations('site.hero');
   const locale = useLocale();
-  
-  // Debug: Log translation values
-  console.log('Hero - Locale:', locale);
-  console.log('Hero - Title:', t('title'));
-  console.log('Hero - Subtitle:', t('subtitle'));
 
   return (
         <section className="relative overflow-hidden">
