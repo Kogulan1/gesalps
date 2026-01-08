@@ -21,7 +21,7 @@ RUN pip install --no-cache-dir "shap>=0.45.0"
 RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu \
     torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2
 
-COPY requirements.txt .
+COPY synth_worker/requirements.txt .
 # Install remaining dependencies (numpy/pandas/shap already installed, so pip will skip them)
 # Explicitly install critical packages first to ensure they're available
 RUN pip install --no-cache-dir supabase==2.5.1 python-jose==3.3.0 httpx==0.27.2 sdv==1.26.0 scikit-learn==1.4.2 python-dateutil==2.9.0.post0
@@ -33,14 +33,14 @@ RUN pip install --no-cache-dir -r requirements.txt || \
 RUN pip list | grep -E "(supabase|synthcity|torch|opacus)" || echo "Warning: Some packages may be missing"
 
 # Patch Opacus to work with torch 2.2.2 (RMSNorm doesn't exist in torch <2.3)
-COPY patch_opacus.py /tmp/patch_opacus.py
+COPY synth_worker/patch_opacus.py /tmp/patch_opacus.py
 RUN python /tmp/patch_opacus.py && rm /tmp/patch_opacus.py
 
 # Copy synth_worker files
-COPY . .
+COPY synth_worker/ /app/
 
-# Copy libs directory from parent (for compliance module)
-COPY ../libs /app/libs
+# Copy libs directory (for compliance module)
+COPY libs/ /app/libs/
 
 # Ensure unbuffered stdout/stderr so logs appear in `docker logs`
 ENV PYTHONUNBUFFERED=1
