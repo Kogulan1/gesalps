@@ -26,7 +26,9 @@ services:
     restart: unless-stopped
 
   synth-worker:
-    build: ./synth_worker
+    build:
+      context: .
+      dockerfile: synth_worker/Dockerfile
     container_name: gesalps_worker
     env_file: .env
     environment:
