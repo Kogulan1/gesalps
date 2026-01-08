@@ -1,0 +1,8 @@
+# Ignore temporary or draft log files
+*.tmp
+*.draft
+*.backup
+
+# But keep all actual log files (YYYY-MM-DD-*.md)
+# This ensures transparency and auditability
+
