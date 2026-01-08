@@ -36,7 +36,11 @@ RUN pip list | grep -E "(supabase|synthcity|torch|opacus)" || echo "Warning: Som
 COPY patch_opacus.py /tmp/patch_opacus.py
 RUN python /tmp/patch_opacus.py && rm /tmp/patch_opacus.py
 
+# Copy synth_worker files
 COPY . .
+
+# Copy libs directory from parent (for compliance module)
+COPY ../libs /app/libs
 
 # Ensure unbuffered stdout/stderr so logs appear in `docker logs`
 ENV PYTHONUNBUFFERED=1
