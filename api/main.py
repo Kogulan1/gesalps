@@ -224,6 +224,88 @@ def list_projects(user: Dict[str, Any] = Depends(require_user)):
     
     return projects_with_metadata
 
+@app.get("/v1/projects/{project_id}")
+def get_project(project_id: str, user: Dict[str, Any] = Depends(require_user)):
+    """Get a single project by ID with all metadata, datasets, and runs."""
+    # Verify the project belongs to the user
+    res = supabase.table("projects").select("id, name, owner_id, created_at").eq("id", project_id).eq("owner_id", user["id"]).single().execute()
+    if not res.data:
+        raise HTTPException(status_code=404, detail="Project not found")
+    
+    project = res.data
+    
+    # Get datasets for this project
+    datasets_res = supabase.table("datasets").select("id, name, project_id, file_url, rows_count, cols_count, created_at").eq("project_id", project["id"]).order("created_at", desc=True).execute()
+    datasets_data = datasets_res.data or []
+    
+    # Get runs for this project (via datasets)
+    dataset_ids = [d["id"] for d in datasets_data]
+    runs_data = []
+    if dataset_ids:
+        runs_res = supabase.table("runs").select("id, name, dataset_id, status, started_at, finished_at, config_json").in_("dataset_id", dataset_ids).order("started_at", desc=True).execute()
+        runs_data = runs_res.data or []
+    
+    # Get datasets count
+    datasets_count = len(datasets_data)
+    
+    # Get runs count
+    runs_count = len(runs_data)
+    
+    # Get last activity (most recent run)
+    last_activity = "No activity yet"
+    if runs_data and runs_data[0].get("started_at"):
+        from datetime import datetime, timezone
+        last_run_time = datetime.fromisoformat(runs_data[0]["started_at"].replace('Z', '+00:00'))
+        now = datetime.now(timezone.utc)
+        diff = now - last_run_time
+        if diff.days > 0:
+            last_activity = f"{diff.days} day{'s' if diff.days > 1 else ''} ago"
+        elif diff.seconds > 3600:
+            hours = diff.seconds // 3600
+            last_activity = f"{hours} hour{'s' if hours > 1 else ''} ago"
+        elif diff.seconds > 60:
+            minutes = diff.seconds // 60
+            last_activity = f"{minutes} minute{'s' if minutes > 1 else ''} ago"
+        else:
+            last_activity = "Just now"
+    
+    # Format datasets for response
+    datasets_formatted = []
+    for dataset in datasets_data:
+        # Get runs count for this dataset
+        dataset_runs_res = supabase.table("runs").select("id", count="exact").eq("dataset_id", dataset["id"]).execute()
+        runs_count_for_dataset = dataset_runs_res.count or 0
+        
+        datasets_formatted.append({
+            **dataset,
+            "file_name": dataset.get("file_url", "").split("/")[-1] if dataset.get("file_url") else "",
+            "file_size": 0,  # Not stored in database
+            "rows": dataset.get("rows_count", 0),
+            "columns": dataset.get("cols_count", 0),
+            "runs_count": runs_count_for_dataset,
+            "status": "Ready"
+        })
+    
+    # Format runs for response
+    runs_formatted = []
+    dataset_names = {d["id"]: d["name"] for d in datasets_data}
+    for run in runs_data:
+        runs_formatted.append({
+            **run,
+            "dataset_name": dataset_names.get(run.get("dataset_id"), "Unknown Dataset"),
+            "completed_at": run.get("finished_at")
+        })
+    
+    return {
+        **project,
+        "datasets_count": datasets_count,
+        "runs_count": runs_count,
+        "last_activity": last_activity,
+        "status": "Active" if runs_count > 0 else "Ready",
+        "datasets": datasets_formatted,
+        "runs": runs_formatted
+    }
+
 @app.post("/v1/projects")
 def create_project(p: CreateProject, user: Dict[str, Any] = Depends(require_user)):
     if not is_enterprise(user):
