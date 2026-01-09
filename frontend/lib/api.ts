@@ -72,6 +72,28 @@ export async function deleteRun(runId: string) {
   return await res.json();
 }
 
+export async function getRunDetails(runId: string) {
+  const res = await authedFetch(`/v1/runs/${runId}`);
+  if (!res.ok) {
+    let msg = `HTTP ${res.status}`;
+    try { const j = await res.json(); msg = j?.detail || j?.message || msg; } catch {}
+    throw new Error(msg);
+  }
+  return await res.json();
+}
+
+export async function getRunMetrics(runId: string) {
+  const res = await authedFetch(`/v1/runs/${runId}/metrics`);
+  if (!res.ok) {
+    // 404 is expected for cancelled/failed runs, return empty object
+    if (res.status === 404) return {};
+    let msg = `HTTP ${res.status}`;
+    try { const j = await res.json(); msg = j?.detail || j?.message || msg; } catch {}
+    throw new Error(msg);
+  }
+  return await res.json();
+}
+
 export async function getRunSteps(runId: string) {
   const res = await authedFetch(`/v1/runs/${runId}/steps`);
   if (!res.ok) return [] as any[]; // graceful fallback if endpoint missing

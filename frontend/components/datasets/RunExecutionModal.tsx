@@ -374,7 +374,6 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
       const interval = setInterval(() => {
         // Stop polling after maxPollCount for failed runs
         if (runState === 'failed' && pollCount >= maxPollCount) {
-          console.log('[RunExecutionModal] Stopping polling after failure - all steps should be fetched');
           clearInterval(interval);
           return;
         }
@@ -523,11 +522,9 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
       }
 
       const result = await response.json();
-      console.log('[RunExecutionModal] Run started successfully:', result);
       
       // Set runId immediately to trigger polling
       if (result.run_id) {
-        console.log('[RunExecutionModal] Setting runId and starting polling:', result.run_id);
         setRunId(result.run_id);
         setRunStatus({ status: 'queued', name: name });
         setStartTime(new Date()); // Start the timer

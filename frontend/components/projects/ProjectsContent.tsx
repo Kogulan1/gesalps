@@ -130,7 +130,6 @@ export function ProjectsContent() {
   };
 
   const handleProjectArchive = (projectId: string) => {
-    console.log('Archive project:', projectId);
     // TODO: Implement project archive
   };
 
@@ -174,7 +173,6 @@ export function ProjectsContent() {
   };
 
   const handleStartRun = (projectId: string) => {
-    console.log('Start run for project:', projectId);
     // Navigate to datasets page with project filter to select datasets for running
     router.push(`/en/datasets?project=${projectId}`);
   };
@@ -185,7 +183,11 @@ export function ProjectsContent() {
     try {
       const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
       
-      if (base) {
+      if (!base) {
+        throw new Error('Backend API base URL not configured');
+      }
+
+      {
         const supabase = createSupabaseBrowserClient();
         const { data: { session } } = await supabase.auth.getSession();
         
@@ -193,8 +195,8 @@ export function ProjectsContent() {
           throw new Error('No authentication token available');
         }
 
-        const response = await fetch(`${base}/v1/projects/${renameModal.projectId}`, {
-          method: 'PATCH',
+        const response = await fetch(`${base}/v1/projects/${renameModal.projectId}/rename`, {
+          method: 'PUT',
           headers: {
             'Authorization': `Bearer ${session.access_token}`,
             'Content-Type': 'application/json'
@@ -203,7 +205,8 @@ export function ProjectsContent() {
         });
 
         if (!response.ok) {
-          throw new Error(`Failed to rename project: ${response.status}`);
+          const errorData = await response.json().catch(() => ({ detail: `HTTP ${response.status}` }));
+          throw new Error(errorData.detail || `Failed to rename project: ${response.status}`);
         }
       }
 
@@ -214,8 +217,10 @@ export function ProjectsContent() {
       
       setRenameModal({ isOpen: false, projectId: null, currentName: "" });
     } catch (err) {
-      console.error('Error renaming project:', err);
-      setError(err instanceof Error ? err.message : 'Failed to rename project');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to rename project';
+      setError(errorMessage);
+      // Show error to user
+      alert(errorMessage);
     }
   };
 

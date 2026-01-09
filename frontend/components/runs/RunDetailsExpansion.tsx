@@ -22,6 +22,8 @@ import {
   ChevronUp
 } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
+import { getRunDetails, getRunMetrics, getRunSteps } from "@/lib/api";
+import { getUserFriendlyErrorMessage } from "@/lib/errorMessages";
 import { AgentPlanTab } from "./AgentPlanTab";
 import { AgentTimeline } from "./AgentTimeline";
 import { ExecutionLogTab } from "./ExecutionLogTab";
@@ -83,10 +85,10 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
   const [runData, setRunData] = useState<any>(null);
   const [steps, setSteps] = useState<RunStep[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
 
   useEffect(() => {
-    console.log('RunDetailsExpansion mounted/updated:', { runId, runName });
     if (runId) {
       loadResults();
     }
@@ -98,59 +100,29 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
     setLoading(true);
 
     try {
-      const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE || 'http://localhost:8000';
-      const supabase = createSupabaseBrowserClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.access_token) {
-        throw new Error('No authentication token available');
-      }
-
-      const headers = {
-        'Authorization': `Bearer ${session.access_token}`,
-        'Content-Type': 'application/json'
-      };
-
       // Fetch run details with plan
-      const runResponse = await fetch(`${base}/v1/runs/${runId}`, { headers });
-      if (!runResponse.ok) {
-        // If run not found (404) or method not allowed (405), it might have been deleted
-        if (runResponse.status === 404 || runResponse.status === 405) {
-          console.warn(`[RunDetailsExpansion] Run ${runId} not found or deleted`);
-          onClose(); // Close the expansion if run is deleted
-          return;
-        }
-        throw new Error(`Failed to load run: ${runResponse.status}`);
-      }
-      const runDataResult = await runResponse.json();
+      const runDataResult = await getRunDetails(runId);
       setRunData(runDataResult);
 
       // Fetch metrics (may not exist for cancelled/failed runs)
       let metricsData = {};
       try {
-        const metricsResponse = await fetch(`${base}/v1/runs/${runId}/metrics`, { headers });
-        if (metricsResponse.ok) {
-          metricsData = await metricsResponse.json();
-        } else if (metricsResponse.status !== 404) {
-          // 404 is expected for cancelled/failed runs, other errors should be logged
-          console.warn(`[RunDetailsExpansion] Metrics fetch returned ${metricsResponse.status}`);
-        }
+        metricsData = await getRunMetrics(runId);
       } catch (err) {
-        console.warn('[RunDetailsExpansion] Error fetching metrics (may not exist for cancelled runs):', err);
+        // 404 is expected for cancelled/failed runs, other errors should be logged
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        if (!errorMsg.includes('404')) {
+          console.warn('[RunDetailsExpansion] Error fetching metrics:', err);
+        }
         // Continue without metrics - cancelled runs won't have them
       }
 
       // Fetch steps (should always exist, even for cancelled runs)
       let stepsData: RunStep[] = [];
       try {
-        const stepsResponse = await fetch(`${base}/v1/runs/${runId}/steps`, { headers });
-        if (stepsResponse.ok) {
-          stepsData = await stepsResponse.json();
-        } else {
-          console.warn(`[RunDetailsExpansion] Steps fetch returned ${stepsResponse.status}`);
-        }
+        stepsData = await getRunSteps(runId);
       } catch (err) {
-        console.error('[RunDetailsExpansion] Error fetching steps:', err);
+        console.warn('[RunDetailsExpansion] Error fetching steps:', err);
         // Steps are important, but don't fail completely if they can't be loaded
       }
       setSteps(stepsData);
@@ -170,10 +142,16 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
       } else if (runDataResult.status === 'succeeded') {
         computedStatus = 'Completed';
         if (metricsData && Object.keys(metricsData).length > 0) {
-          const privacyPassed = (metricsData?.privacy?.mia_auc || 1) <= 0.6 && (metricsData?.privacy?.dup_rate || 1) <= 0.05;
-          const utilityPassed = (metricsData?.utility?.ks_mean || 1) <= 0.1 && (metricsData?.utility?.corr_delta || 1) <= 0.15;
-          if (!privacyPassed || !utilityPassed) {
-            computedStatus = 'Completed with Failures';
+          const rowsGenerated = metricsData?.rows_generated || 0;
+          // If 0 rows generated, mark as Failed
+          if (rowsGenerated === 0) {
+            computedStatus = 'Failed';
+          } else {
+            const privacyPassed = (metricsData?.privacy?.mia_auc || 1) <= 0.6 && (metricsData?.privacy?.dup_rate || 1) <= 0.05;
+            const utilityPassed = (metricsData?.utility?.ks_mean || 1) <= 0.1 && (metricsData?.utility?.corr_delta || 1) <= 0.15;
+            if (!privacyPassed || !utilityPassed) {
+              computedStatus = 'Completed with Failures';
+            }
           }
         }
       } else if (runDataResult.status === 'failed') {
@@ -213,8 +191,21 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
         }
       };
       setResults(runResults);
+      setError(null); // Clear any previous errors
     } catch (err) {
+      const errorMessage = getUserFriendlyErrorMessage(err);
       console.error('Error loading results:', err);
+      
+      // Only close expansion if run is truly not found (404)
+      const errorStr = err instanceof Error ? err.message : String(err);
+      if (errorStr.includes('404') || errorStr.includes('not found')) {
+        console.warn(`[RunDetailsExpansion] Run ${runId} not found`);
+        onClose();
+        return;
+      }
+      
+      // For other errors (like 405, CORS, network), show error message
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -285,7 +276,7 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
   };
 
   // Show loading state but keep component visible
-  if (loading || !results) {
+  if (loading || (!results && !error)) {
     return (
       <Card className="mt-3 border-t-2 border-blue-500 shadow-lg" data-expansion>
         <CardHeader className="pb-3">
@@ -303,6 +294,44 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
             <span className="ml-2 text-gray-600">Loading details...</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <Card className="mt-3 border-t-2 border-red-500 shadow-lg" data-expansion>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center space-x-3 text-lg">
+              <span>{runName}</span>
+              <Badge className="bg-red-100 text-red-800">Error</Badge>
+            </CardTitle>
+            <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0">
+              <ChevronUp className="h-4 w-4" />
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="flex flex-col items-center justify-center py-8 space-y-4">
+            <AlertCircle className="h-8 w-8 text-red-600" />
+            <div className="text-center">
+              <p className="text-red-600 font-medium mb-2">Failed to load run details</p>
+              <p className="text-gray-600 text-sm">{error}</p>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => {
+                setError(null);
+                loadResults();
+              }}
+            >
+              Try Again
+            </Button>
           </div>
         </CardContent>
       </Card>

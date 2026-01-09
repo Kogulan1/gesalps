@@ -125,7 +125,6 @@ export function DatasetsContent() {
   };
 
   const handleDatasetArchive = (datasetId: string) => {
-    console.log('Archive dataset:', datasetId);
     // TODO: Implement dataset archive
   };
 
@@ -150,7 +149,6 @@ export function DatasetsContent() {
       }
 
       const url = `${base}/v1/datasets/${datasetId}`;
-      console.log(`[Delete Dataset] Calling: DELETE ${url}`);
 
       const response = await fetch(url, {
         method: 'DELETE',
@@ -168,7 +166,6 @@ export function DatasetsContent() {
 
       // Remove from UI
       setDatasets(prev => prev.filter(d => d.id !== datasetId));
-      console.log(`[Delete Dataset] Successfully deleted dataset ${datasetId}`);
     } catch (err) {
       console.error('Error deleting dataset:', err);
       alert(`Failed to delete dataset: ${err instanceof Error ? err.message : String(err)}`);
@@ -186,28 +183,31 @@ export function DatasetsContent() {
     if (!renameModal.datasetId) return;
 
     try {
-      const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE || 'http://localhost:8000';
+      const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
       
-      if (base) {
-        const supabase = createSupabaseBrowserClient();
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (!session?.access_token) {
-          throw new Error('No authentication token available');
-        }
+      if (!base) {
+        throw new Error('Backend API base URL not configured');
+      }
 
-        const response = await fetch(`${base}/v1/datasets/${renameModal.datasetId}`, {
-          method: 'PATCH',
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ name: newName })
-        });
+      const supabase = createSupabaseBrowserClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('No authentication token available');
+      }
 
-        if (!response.ok) {
-          throw new Error(`Failed to rename dataset: ${response.status}`);
-        }
+      const response = await fetch(`${base}/v1/datasets/${renameModal.datasetId}/rename`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name: newName })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ detail: `HTTP ${response.status}` }));
+        throw new Error(errorData.detail || `Failed to rename dataset: ${response.status}`);
       }
 
       // Update local state

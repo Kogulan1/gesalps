@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
 import { 
   Download, 
   Eye, 
@@ -47,39 +48,75 @@ export function ResultsModal({ isOpen, onClose, runId, runName }: ResultsModalPr
     setError(null);
 
     try {
-      // Mock data for now
-      const mockResults = {
-        id: runId,
-        name: runName,
-        status: "Completed",
-        method: "TabDDPM",
-        started_at: "2024-01-15T11:00:00Z",
-        finished_at: "2024-01-15T11:15:00Z",
-        duration: 15,
+      const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
+      if (!base) {
+        throw new Error('Backend API URL not configured');
+      }
+
+      const supabase = createSupabaseBrowserClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('No authentication token available');
+      }
+
+      const headers = {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      };
+
+      // Fetch run details
+      const runResponse = await fetch(`${base}/v1/runs/${runId}`, { headers });
+      if (!runResponse.ok) {
+        throw new Error(`Failed to load run: ${runResponse.status}`);
+      }
+      const runData = await runResponse.json();
+
+      // Fetch metrics
+      const metricsResponse = await fetch(`${base}/v1/runs/${runId}/metrics`, { headers });
+      const metricsData = metricsResponse.ok ? await metricsResponse.json() : {};
+
+      // Calculate duration
+      let duration = 0;
+      if (runData.started_at && runData.finished_at) {
+        const start = new Date(runData.started_at);
+        const end = new Date(runData.finished_at);
+        duration = Math.floor((end.getTime() - start.getTime()) / 60000); // minutes
+      }
+
+      // Build results object
+      const resultsData = {
+        id: runData.id,
+        name: runData.name || runName,
+        status: runData.status === 'succeeded' ? 'Completed' : runData.status,
+        method: runData.method || 'Unknown',
+        started_at: runData.started_at,
+        finished_at: runData.finished_at,
+        duration,
         scores: {
-          auroc: 0.87,
-          c_index: 0.74,
-          mia_auc: 0.56,
-          dp_epsilon: 1.2,
-          privacy_score: 0.85,
-          utility_score: 0.78
+          auroc: metricsData?.utility?.auroc || 0,
+          c_index: metricsData?.utility?.c_index || 0,
+          mia_auc: metricsData?.privacy?.mia_auc || 0,
+          dp_epsilon: runData.config_json?.dp?.epsilon || 0,
+          privacy_score: metricsData?.privacy_score || 0,
+          utility_score: metricsData?.utility_score || 0
         },
         metrics: {
-          rows_generated: 1500,
-          columns_generated: 25,
-          privacy_audit_passed: true,
-          utility_audit_passed: true,
+          rows_generated: metricsData?.rows_generated || 0,
+          columns_generated: metricsData?.columns_generated || 0,
+          privacy_audit_passed: (metricsData?.privacy?.mia_auc || 1) <= 0.6 && (metricsData?.privacy?.dup_rate || 1) <= 0.05,
+          utility_audit_passed: (metricsData?.utility?.ks_mean || 1) <= 0.1 && (metricsData?.utility?.corr_delta || 1) <= 0.15,
           privacy: {
-            mia_auc: 0.56,
-            dup_rate: 0.03
+            mia_auc: metricsData?.privacy?.mia_auc || 0,
+            dup_rate: metricsData?.privacy?.dup_rate || 0
           },
           utility: {
-            ks_mean: 0.08,
-            corr_delta: 0.12
+            ks_mean: metricsData?.utility?.ks_mean || 0,
+            corr_delta: metricsData?.utility?.corr_delta || 0
           }
         }
       };
-      setResults(mockResults);
+      setResults(resultsData);
     } catch (err) {
       console.error('Error loading results:', err);
       setError(err instanceof Error ? err.message : 'Failed to load results');
@@ -89,13 +126,90 @@ export function ResultsModal({ isOpen, onClose, runId, runName }: ResultsModalPr
   };
 
   const handleDownloadReport = async () => {
-    console.log('Downloading report for run:', runId);
-    // TODO: Implement download logic
+    if (!runId) return;
+    
+    try {
+      const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
+      if (!base) {
+        throw new Error('Backend API URL not configured');
+      }
+
+      const supabase = createSupabaseBrowserClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('No authentication token available');
+      }
+
+      const response = await fetch(`${base}/v1/runs/${runId}/report/pdf`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to generate report: ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (result.signedUrl) {
+        const link = document.createElement('a');
+        link.href = result.signedUrl;
+        link.download = `${runName}-report.pdf`;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        throw new Error('No signed URL returned from server');
+      }
+    } catch (error) {
+      console.error('Error downloading report:', error);
+      alert(error instanceof Error ? error.message : 'Failed to download report');
+    }
   };
 
   const handleDownloadData = async () => {
-    console.log('Downloading synthetic data for run:', runId);
-    // TODO: Implement download logic
+    if (!runId) return;
+    
+    try {
+      const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
+      if (!base) {
+        throw new Error('Backend API URL not configured');
+      }
+
+      const supabase = createSupabaseBrowserClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        throw new Error('No authentication token available');
+      }
+
+      const response = await fetch(`${base}/v1/runs/${runId}/synthetic-data`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to download synthetic data: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${runName}-synthetic-data.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error downloading synthetic data:', error);
+      alert(error instanceof Error ? error.message : 'Failed to download synthetic data');
+    }
   };
 
   const getStatusColor = (status: string) => {
