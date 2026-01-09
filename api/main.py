@@ -122,8 +122,10 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=600,
 )
 app.add_middleware(GZipMiddleware, minimum_size=1024)
 
@@ -176,6 +178,12 @@ class CreateProject(BaseModel):
 
 class RenameBody(BaseModel):
     name: str
+
+@app.options("/v1/projects")
+@app.options("/v1/projects/{project_id}")
+def options_projects():
+    """Handle CORS preflight requests for projects endpoints."""
+    return Response(status_code=200)
 
 @app.get("/v1/projects")
 def list_projects(user: Dict[str, Any] = Depends(require_user)):
