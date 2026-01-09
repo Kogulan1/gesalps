@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
+import { getUserFriendlyErrorMessage } from "@/lib/errorMessages";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -267,7 +268,6 @@ export function RunsContent() {
   };
 
   const handleRunArchive = (runId: string) => {
-    console.log('Archive run:', runId);
     // TODO: Implement run archive
   };
 
@@ -278,14 +278,11 @@ export function RunsContent() {
       event.preventDefault();
     }
     
-    console.log('handleViewResults called:', { runId, currentExpanded: expandedRunId });
     
     // Toggle expansion: if already expanded, collapse; otherwise expand
     if (expandedRunId === runId) {
-      console.log('Collapsing run:', runId);
       setExpandedRunId(null);
     } else {
-      console.log('Expanding run:', runId);
       setExpandedRunId(runId);
     }
   };
@@ -414,7 +411,6 @@ export function RunsContent() {
   };
 
   const handleArchiveRun = (runId: string) => {
-    console.log('Archive run:', runId);
     // TODO: Implement archive functionality
   };
 
@@ -458,7 +454,8 @@ export function RunsContent() {
           }
         } catch (err) {
           console.error('Error cancelling run:', err);
-          alert(`Failed to cancel run: ${err instanceof Error ? err.message : String(err)}`);
+          const friendlyMessage = getUserFriendlyErrorMessage(err);
+          alert(friendlyMessage);
         } finally {
           setCancellingRunId(null);
         }
@@ -482,7 +479,6 @@ export function RunsContent() {
           if (!session?.access_token) throw new Error('No authentication token available');
 
           const url = `${base}/v1/runs/${runId}`;
-          console.log(`[Delete Run] Calling: DELETE ${url}`);
 
           const res = await fetch(url, {
             method: 'DELETE',
@@ -505,10 +501,10 @@ export function RunsContent() {
           
           // Remove from UI
           setRuns(prev => prev.filter(r => r.id !== runId));
-          console.log(`[Delete Run] Successfully deleted run ${runId}`);
         } catch (err) {
           console.error('Error deleting run:', err);
-          alert(`Failed to delete run: ${err instanceof Error ? err.message : String(err)}`);
+          const friendlyMessage = getUserFriendlyErrorMessage(err);
+          alert(friendlyMessage);
         }
       };
 
@@ -660,10 +656,17 @@ export function RunsContent() {
                 let metricsData = null;
                 if ((computedStatus === 'succeeded' || computedStatus === 'completed') && metricsResponse.ok) {
                   metricsData = await metricsResponse.json();
-                  const privacyPassed = (metricsData?.privacy?.mia_auc || 1) <= 0.6 && (metricsData?.privacy?.dup_rate || 1) <= 0.05;
-                  const utilityPassed = (metricsData?.utility?.ks_mean || 1) <= 0.1 && (metricsData?.utility?.corr_delta || 1) <= 0.15;
-                  if (!privacyPassed || !utilityPassed) {
-                    computedStatus = 'Completed with Failures';
+                  const rowsGenerated = metricsData?.rows_generated || 0;
+                  
+                  // If 0 rows generated, mark as Failed
+                  if (rowsGenerated === 0) {
+                    computedStatus = 'failed';
+                  } else {
+                    const privacyPassed = (metricsData?.privacy?.mia_auc || 1) <= 0.6 && (metricsData?.privacy?.dup_rate || 1) <= 0.05;
+                    const utilityPassed = (metricsData?.utility?.ks_mean || 1) <= 0.1 && (metricsData?.utility?.corr_delta || 1) <= 0.15;
+                    if (!privacyPassed || !utilityPassed) {
+                      computedStatus = 'Completed with Failures';
+                    }
                   }
                 }
                 
@@ -678,19 +681,6 @@ export function RunsContent() {
                   utility: metricsData?.utility || run.utility || runDetail.utility,
                   metrics: metricsData || run.metrics || runDetail.metrics
                 };
-                
-                // Debug logging for TabDDPM runs
-                if (run.id === '0f6d5294-efe8-45a9-a9ea-caf8d9386485' || run.id === '76e916ea-7bae-43fd-89b9-a711417bf6b2' || run.id === 'baa9996f-f9fb-485a-9e74-5d9f99aea928') {
-                  console.log('[RunsContent] Run data:', {
-                    runId: run.id,
-                    originalPrivacy: run.privacy,
-                    originalUtility: run.utility,
-                    metricsDataPrivacy: metricsData?.privacy,
-                    metricsDataUtility: metricsData?.utility,
-                    mergedPrivacy: mergedRun.privacy,
-                    mergedUtility: mergedRun.utility
-                  });
-                }
                 
                 return mergedRun;
               }

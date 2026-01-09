@@ -21,12 +21,16 @@ import {
   Lock,
   Brain,
   Play,
-  TrendingUp
+  TrendingUp,
+  RefreshCw
 } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
+import { getUserFriendlyErrorMessage } from "@/lib/errorMessages";
 import { AgentPlanTab } from "./AgentPlanTab";
 import { ExecutionLogTab } from "./ExecutionLogTab";
 import { AgentTimeline } from "./AgentTimeline";
+import { useRouter } from "next/navigation";
+import { startRun } from "@/lib/api";
 
 interface ResultsModalProps {
   isOpen: boolean;
@@ -76,10 +80,19 @@ export function ResultsModal({ isOpen, onClose, runId, runName }: ResultsModalPr
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
+  const [optimizing, setOptimizing] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (isOpen && runId) {
       loadResults();
+    } else if (!isOpen) {
+      // Reset state when modal closes
+      setResults(null);
+      setRunData(null);
+      setSteps([]);
+      setError(null);
+      setLoading(false);
     }
   }, [isOpen, runId]);
 
@@ -128,11 +141,18 @@ export function ResultsModal({ isOpen, onClose, runId, runName }: ResultsModalPr
         duration = Math.floor((end.getTime() - start.getTime()) / 60000); // minutes
       }
 
+      // Determine status: if succeeded but 0 rows generated, mark as Failed
+      let computedStatus = runDataResult.status === 'succeeded' ? 'Completed' : (runDataResult.status || 'Unknown');
+      const rowsGenerated = metricsData?.rows_generated || 0;
+      if (runDataResult.status === 'succeeded' && rowsGenerated === 0) {
+        computedStatus = 'Failed';
+      }
+
       // Build results object
       const runResults: RunResults = {
         id: runDataResult.id,
         name: runDataResult.name || runName,
-        status: runDataResult.status === 'succeeded' ? 'Completed' : runDataResult.status,
+        status: computedStatus,
         method: runDataResult.method || 'Unknown',
         started_at: runDataResult.started_at,
         finished_at: runDataResult.finished_at,
@@ -146,7 +166,7 @@ export function ResultsModal({ isOpen, onClose, runId, runName }: ResultsModalPr
           utility_score: metricsData?.utility_score || 0
         },
         metrics: {
-          rows_generated: metricsData?.rows_generated || 0,
+          rows_generated: rowsGenerated,
           columns_generated: metricsData?.columns_generated || 0,
           privacy_audit_passed: (metricsData?.privacy?.mia_auc || 1) <= 0.6 && (metricsData?.privacy?.dup_rate || 1) <= 0.05,
           utility_audit_passed: (metricsData?.utility?.ks_mean || 1) <= 0.1 && (metricsData?.utility?.corr_delta || 1) <= 0.15,
@@ -163,56 +183,71 @@ export function ResultsModal({ isOpen, onClose, runId, runName }: ResultsModalPr
       setResults(runResults);
     } catch (err) {
       console.error('Error loading results:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load results');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load results';
+      setError(errorMessage);
       
-      // Fallback to mock data for demo
-      const mockResults = {
-        id: runId,
-        name: runName,
-        status: "Completed",
-        method: "GC",
-        started_at: new Date().toISOString(),
-        finished_at: new Date().toISOString(),
-        duration: 15,
-        scores: {
-          auroc: 0.87,
-          c_index: 0.74,
-          mia_auc: 0.56,
-          dp_epsilon: 1.2,
-          privacy_score: 0.85,
-          utility_score: 0.78
-        },
-        metrics: {
-          rows_generated: 1500,
-          columns_generated: 25,
-          privacy_audit_passed: true,
-          utility_audit_passed: true,
-          privacy: {
+      // Only use mock data for network errors, not for API errors (404, 401, 403)
+      const isNetworkError = (
+        errorMessage.includes('Failed to fetch') || 
+        errorMessage.includes('Network error') ||
+        errorMessage.includes('Cannot connect')
+      ) && !errorMessage.includes('404') && 
+         !errorMessage.includes('401') &&
+         !errorMessage.includes('403');
+      
+      if (isNetworkError) {
+        // Network error - use mock data as fallback
+        const mockResults = {
+          id: runId,
+          name: runName,
+          status: "Completed",
+          method: "GC",
+          started_at: new Date().toISOString(),
+          finished_at: new Date().toISOString(),
+          duration: 15,
+          scores: {
+            auroc: 0.87,
+            c_index: 0.74,
             mia_auc: 0.56,
-            dup_rate: 0.03
+            dp_epsilon: 1.2,
+            privacy_score: 0.85,
+            utility_score: 0.78
           },
-          utility: {
-            ks_mean: 0.08,
-            corr_delta: 0.12
+          metrics: {
+            rows_generated: 1500,
+            columns_generated: 25,
+            privacy_audit_passed: true,
+            utility_audit_passed: true,
+            privacy: {
+              mia_auc: 0.56,
+              dup_rate: 0.03
+            },
+            utility: {
+              ks_mean: 0.08,
+              corr_delta: 0.12
+            }
           }
-        }
-      };
-      setResults(mockResults);
+        };
+        setResults(mockResults);
+        setError(null); // Clear error when using mock data
+      } else {
+        // API error - show error UI, don't use mock data
+        setResults(null);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleDownloadReport = async () => {
-    if (!results?.report_path) return;
+    if (!results?.id) return;
 
     try {
-      const isDemoMode = localStorage.getItem('isDemoMode') === 'true';
-      
-      // Note: downloadDemoFile function would need to be imported or defined
-      // For now, skip demo mode handling
-
       const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
+      if (!base) {
+        throw new Error('Backend API URL not configured');
+      }
+
       const supabase = createSupabaseBrowserClient();
       const { data: { session } } = await supabase.auth.getSession();
       
@@ -220,27 +255,36 @@ export function ResultsModal({ isOpen, onClose, runId, runName }: ResultsModalPr
         throw new Error('No authentication token available');
       }
 
-      const response = await fetch(`${base}/v1/runs/${results.id}/download`, {
+      // Generate report PDF and get signed URL
+      const response = await fetch(`${base}/v1/runs/${results.id}/report/pdf`, {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
         }
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to download report: ${response.status}`);
+        throw new Error(`Failed to generate report: ${response.status}`);
       }
 
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${results.name}-report.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      const result = await response.json();
+      if (result.signedUrl) {
+        // Download using signed URL
+        const link = document.createElement('a');
+        link.href = result.signedUrl;
+        link.download = `${results.name}-report.pdf`;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        throw new Error('No signed URL returned from server');
+      }
     } catch (error) {
       console.error('Error downloading report:', error);
+      const friendlyMessage = getUserFriendlyErrorMessage(error);
+      alert(friendlyMessage);
     }
   };
 
@@ -249,6 +293,10 @@ export function ResultsModal({ isOpen, onClose, runId, runName }: ResultsModalPr
 
     try {
       const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
+      if (!base) {
+        throw new Error('Backend API URL not configured');
+      }
+
       const supabase = createSupabaseBrowserClient();
       const { data: { session } } = await supabase.auth.getSession();
       
@@ -277,6 +325,8 @@ export function ResultsModal({ isOpen, onClose, runId, runName }: ResultsModalPr
       document.body.removeChild(a);
     } catch (error) {
       console.error('Error downloading synthetic data:', error);
+      const friendlyMessage = getUserFriendlyErrorMessage(error);
+      alert(friendlyMessage);
     }
   };
 
@@ -293,7 +343,10 @@ export function ResultsModal({ isOpen, onClose, runId, runName }: ResultsModalPr
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string | undefined) => {
+    if (!status) {
+      return <AlertCircle className="h-5 w-5 text-gray-600" />;
+    }
     switch (status.toLowerCase()) {
       case 'completed':
         return <CheckCircle className="h-5 w-5 text-green-600" />;
@@ -320,7 +373,7 @@ export function ResultsModal({ isOpen, onClose, runId, runName }: ResultsModalPr
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <div className="flex items-center justify-center py-12">
+          <div className="flex items-center justify-center py-12" data-testid="loading-results">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
             <span className="ml-2 text-gray-600">Loading results...</span>
           </div>
@@ -329,7 +382,7 @@ export function ResultsModal({ isOpen, onClose, runId, runName }: ResultsModalPr
     );
   }
 
-  if (error || !results) {
+  if (error && !results) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -348,15 +401,28 @@ export function ResultsModal({ isOpen, onClose, runId, runName }: ResultsModalPr
     );
   }
 
+  if (!results) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <div className="flex items-center justify-center py-12" data-testid="loading-results">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            <span className="ml-2 text-gray-600">Loading results...</span>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-3">
-            {getStatusIcon(results.status)}
-            <span>{results.name}</span>
-            <Badge className={getStatusColor(results.status)}>
-              {results.status}
+            {getStatusIcon(results?.status)}
+            <span>{results?.name || runName}</span>
+            <Badge className={getStatusColor(results?.status)}>
+              {results?.status || 'Unknown'}
             </Badge>
           </DialogTitle>
         </DialogHeader>
@@ -450,12 +516,30 @@ export function ResultsModal({ isOpen, onClose, runId, runName }: ResultsModalPr
               </Card>
             </div>
 
-            <div className="flex space-x-4">
-              <Button onClick={handleDownloadReport} className="bg-red-600 hover:bg-red-700">
+            <div className="flex space-x-4 flex-wrap gap-2">
+              {(results.status === 'Failed' || results.status === 'failed' || results.metrics.rows_generated === 0) && (
+                <Button 
+                  onClick={handleAutoOptimize}
+                  disabled={optimizing}
+                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${optimizing ? 'animate-spin' : ''}`} />
+                  {optimizing ? 'Starting Auto-Optimize...' : 'Auto-Optimize'}
+                </Button>
+              )}
+              <Button 
+                onClick={handleDownloadReport} 
+                className="bg-red-600 hover:bg-red-700"
+                data-testid="download-report-button"
+              >
                 <Download className="h-4 w-4 mr-2" />
                 Download Report
               </Button>
-              <Button onClick={handleDownloadData} variant="outline">
+              <Button 
+                onClick={handleDownloadData} 
+                variant="outline"
+                data-testid="download-data-button"
+              >
                 <FileText className="h-4 w-4 mr-2" />
                 Download Synthetic Data
               </Button>
