@@ -23,8 +23,20 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+# LLM Provider Configuration
+# OpenRouter (preferred if key is available - better performance)
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+OPENROUTER_BASE = os.getenv("OPENROUTER_BASE", "https://openrouter.ai/api/v1")
+OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL") or os.getenv("AGENT_MODEL") or "mistralai/mistral-small-24b-instruct:free"  # Free model - best for cost optimization
+
+# Ollama (fallback if OpenRouter not available)
 OLLAMA_BASE = os.getenv("OLLAMA_BASE", "http://ollama:11434")
-AGENT_MODEL = os.getenv("AGENT_MODEL") or os.getenv("NEXT_PUBLIC_AGENT_MODEL") or "llama3.1:8b"
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL") or os.getenv("AGENT_MODEL") or "llama3.1:8b"
+
+# Determine which provider to use
+USE_OPENROUTER = bool(OPENROUTER_API_KEY)
+AGENT_PROVIDER = "openrouter" if USE_OPENROUTER else "ollama"
+AGENT_MODEL = OPENROUTER_MODEL if USE_OPENROUTER else OLLAMA_MODEL
 
 
 class ClinicalModelSelector:
@@ -260,9 +272,78 @@ No prose. JSON only."""
         return "\n".join(prompt_parts)
     
     def _call_llm(self, system_prompt: str, user_prompt: str) -> Dict[str, Any]:
-        """Call LLM for model selection."""
+        """Call LLM for model selection using OpenRouter (preferred) or Ollama (fallback)."""
+        if USE_OPENROUTER:
+            return self._call_openrouter(system_prompt, user_prompt)
+        else:
+            return self._call_ollama(system_prompt, user_prompt)
+    
+    def _call_openrouter(self, system_prompt: str, user_prompt: str) -> Dict[str, Any]:
+        """Call OpenRouter API for model selection (better performance, structured JSON)."""
+        if not OPENROUTER_API_KEY:
+            raise ValueError("OPENROUTER_API_KEY not set")
+        
+        # OpenRouter uses OpenAI-compatible API format
         payload = {
-            "model": AGENT_MODEL,
+            "model": OPENROUTER_MODEL,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            "temperature": 0.3,  # Lower temperature for more consistent JSON
+            "max_tokens": 2000,
+            "response_format": {"type": "json_object"},  # Request JSON format
+        }
+        
+        headers = {
+            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": os.getenv("OPENROUTER_REFERER", "https://gesalp.ai"),  # Optional: for analytics
+            "X-Title": "Gesalp AI Synthetic Data Generator",  # Optional: for analytics
+        }
+        
+        try:
+            with httpx.Client(timeout=90) as client:  # Longer timeout for cloud API
+                response = client.post(
+                    f"{OPENROUTER_BASE}/chat/completions",
+                    json=payload,
+                    headers=headers
+                )
+                response.raise_for_status()
+                output = response.json()
+        except httpx.HTTPStatusError as e:
+            logger.error(f"OpenRouter API HTTP error: {e.response.status_code} - {e.response.text}")
+            raise
+        except Exception as e:
+            logger.error(f"OpenRouter API call failed: {e}")
+            raise
+        
+        # Extract response from OpenRouter format
+        try:
+            text = output["choices"][0]["message"]["content"]
+        except (KeyError, IndexError) as e:
+            logger.error(f"Unexpected OpenRouter response format: {output}")
+            raise ValueError(f"Invalid OpenRouter response: {e}")
+        
+        # Parse JSON from response
+        try:
+            plan = json.loads(text)
+        except json.JSONDecodeError:
+            # Try to extract JSON from text if not pure JSON
+            import re
+            match = re.search(r"\{.*\}", text, re.DOTALL)
+            if not match:
+                logger.error(f"OpenRouter returned non-JSON response: {text[:200]}")
+                raise ValueError("LLM returned non-JSON response")
+            plan = json.loads(match.group(0))
+        
+        # Validate and normalize plan
+        return self._normalize_plan(plan)
+    
+    def _call_ollama(self, system_prompt: str, user_prompt: str) -> Dict[str, Any]:
+        """Call Ollama API for model selection (fallback)."""
+        payload = {
+            "model": OLLAMA_MODEL,
             "prompt": f"System:\n{system_prompt}\n\nUser:\n{user_prompt}\n",
             "stream": False,
         }
@@ -273,7 +354,7 @@ No prose. JSON only."""
                 response.raise_for_status()
                 output = response.json()
         except Exception as e:
-            logger.error(f"LLM API call failed: {e}")
+            logger.error(f"Ollama API call failed: {e}")
             raise
         
         text = (output or {}).get("response") or "{}"

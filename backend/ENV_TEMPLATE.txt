@@ -24,6 +24,25 @@ SMTP_FROM=noreply@yourdomain.com
 REPORT_SERVICE_BASE=http://report-service:8010
 OLLAMA_BASE=http://ollama:11434
 
+# LLM Provider Configuration
+# OpenRouter (recommended - better performance for synthetic data generation)
+# Get your API key from https://openrouter.ai/keys
+OPENROUTER_API_KEY=your-openrouter-api-key-here
+OPENROUTER_BASE=https://openrouter.ai/api/v1
+# Model options:
+#   mistralai/mistral-small-24b-instruct:free (FREE - best free option, optimized for low-latency)
+#   xai/grok-4.1-fast (BEST VALUE - excellent quality at ~$0.10 per 1K selections, very fast)
+#   xai/grok-beta (FREE or very low cost alternative)
+#   anthropic/claude-3.5-sonnet (best balance of quality and cost, but paid)
+#   openai/gpt-4o (fast, good quality, paid)
+#   openai/gpt-4o-mini (cheapest paid option)
+OPENROUTER_MODEL=mistralai/mistral-small-24b-instruct:free
+OPENROUTER_REFERER=https://gesalp.ai
+
+# Ollama (fallback if OpenRouter not configured)
+OLLAMA_MODEL=llama3.1:8b
+AGENT_MODEL=anthropic/claude-3.5-sonnet
+
 # Worker Configuration
 WORKER_ENABLED=true
 DP_BACKEND=custom

@@ -8,7 +8,7 @@ import smtplib
 import requests
 import logging
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -44,7 +44,20 @@ load_dotenv(dotenv_path="../.env")  # Docker looks in parent dir
 SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL")
 SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY") or os.getenv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+# LLM Provider Configuration
+# OpenRouter (preferred if key is available - better performance)
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+OPENROUTER_BASE = os.getenv("OPENROUTER_BASE", "https://openrouter.ai/api/v1")
+OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL") or os.getenv("AGENT_MODEL") or "mistralai/mistral-small-24b-instruct:free"  # Free model - best for cost optimization
+
+# Ollama (fallback if OpenRouter not available)
 OLLAMA_BASE = os.getenv("OLLAMA_BASE", "http://ollama:11434")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL") or os.getenv("AGENT_MODEL") or "llama3.1:8b"
+
+# Determine which provider to use
+USE_OPENROUTER = bool(OPENROUTER_API_KEY)
+AGENT_PROVIDER = "openrouter" if USE_OPENROUTER else "ollama"
+
 if not SUPABASE_URL or not (SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY):
     raise RuntimeError("Missing SUPABASE_URL and/or SUPABASE_SERVICE_ROLE_KEY/NEXT_PUBLIC_SUPABASE_ANON_KEY")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY)
@@ -663,21 +676,21 @@ def list_runs(user: Dict[str, Any] = Depends(require_user)):
                 if payload.get("utility"):
                     metrics["utility"] = payload["utility"]
                     logger.info(f"[list_runs] Run {run['id'][:8]}...: Set utility metrics: {metrics['utility']}")
-            else:
-                logger.info(f"[list_runs] Run {run['id'][:8]}...: No metrics record found (m.data={m.data is not None})")
-        except Exception as e:
-            logger.error(f"[list_runs] Run {run['id'][:8]}...: Exception fetching metrics: {type(e).__name__}: {e}", exc_info=True)
+                
                 # Extract meta info for rows/columns
                 meta = payload.get("meta", {})
                 metrics["rows_generated"] = meta.get("n_synth", 0)
                 metrics["columns_generated"] = 0  # Could be derived from data if needed
-                # Calculate audit passes based on thresholds
+                
+                # Calculate audit passes based on thresholds (PRIVACY GATES)
                 mia_auc = metrics["privacy"] and metrics["privacy"].get("mia_auc", 1.0) or 1.0
                 dup_rate = metrics["privacy"] and metrics["privacy"].get("dup_rate", 1.0) or 1.0
                 ks_mean = metrics["utility"] and metrics["utility"].get("ks_mean", 1.0) or 1.0
                 corr_delta = metrics["utility"] and metrics["utility"].get("corr_delta", 1.0) or 1.0
                 metrics["privacy_audit_passed"] = mia_auc <= 0.60 and dup_rate <= 0.05
                 metrics["utility_audit_passed"] = ks_mean <= 0.10 and corr_delta <= 0.15
+            else:
+                logger.info(f"[list_runs] Run {run['id'][:8]}...: No metrics record found (m.data={m.data is not None})")
         except Exception as e:
             # If metrics don't exist or error, use defaults
             logger.warning(f"Could not fetch metrics for run {run['id']}: {e}")
@@ -1699,21 +1712,54 @@ Goal:
 {body.prompt}
 """
 
-    payload = {
-        "model": "gpt-oss:20b",
-        "prompt": f"System:\n{system}\n\nUser:\n{user_text}\n",
-        "stream": False
-    }
-
-    try:
-        with httpx.Client(timeout=60) as cl:
-            rr = cl.post(f"{OLLAMA_BASE}/api/generate", json=payload)
-            rr.raise_for_status()
-            out = rr.json()
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Ollama error: {e}")
-
-    text = (out or {}).get("response") or "{}"
+    # Use OpenRouter if available, otherwise fallback to Ollama
+    if USE_OPENROUTER:
+        payload = {
+            "model": OPENROUTER_MODEL,
+            "messages": [
+                {"role": "system", "content": system},
+                {"role": "user", "content": user_text}
+            ],
+            "temperature": 0.3,
+            "max_tokens": 2000,
+            "response_format": {"type": "json_object"},
+        }
+        
+        headers = {
+            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": os.getenv("OPENROUTER_REFERER", "https://gesalp.ai"),
+            "X-Title": "Gesalp AI Synthetic Data Generator",
+        }
+        
+        try:
+            with httpx.Client(timeout=90) as cl:
+                rr = cl.post(f"{OPENROUTER_BASE}/chat/completions", json=payload, headers=headers)
+                rr.raise_for_status()
+                out = rr.json()
+            text = out["choices"][0]["message"]["content"]
+        except Exception as e:
+            logger.warning(f"OpenRouter API call failed, falling back to Ollama: {e}")
+            # Fall through to Ollama fallback
+            USE_OPENROUTER = False  # Force Ollama fallback
+    
+    if not USE_OPENROUTER:
+        # Ollama fallback
+        payload = {
+            "model": OLLAMA_MODEL,
+            "prompt": f"System:\n{system}\n\nUser:\n{user_text}\n",
+            "stream": False
+        }
+        
+        try:
+            with httpx.Client(timeout=60) as cl:
+                rr = cl.post(f"{OLLAMA_BASE}/api/generate", json=payload)
+                rr.raise_for_status()
+                out = rr.json()
+        except Exception as e:
+            raise HTTPException(status_code=502, detail=f"LLM error: {e}")
+        
+        text = (out or {}).get("response") or "{}"
     # robust JSON extraction
     try:
         plan = json.loads(text)

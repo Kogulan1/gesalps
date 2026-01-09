@@ -43,6 +43,20 @@ except ImportError:
     get_optimizer = None
     FailureType = None
 
+# Clinical model selector (enhanced model selection)
+try:
+    import sys
+    from pathlib import Path
+    libs_path = Path(__file__).parent.parent / "libs"
+    if libs_path.exists():
+        sys.path.insert(0, str(libs_path.parent))
+    from libs.model_selector import ClinicalModelSelector, select_model_for_dataset
+    CLINICAL_SELECTOR_AVAILABLE = True
+except ImportError:
+    CLINICAL_SELECTOR_AVAILABLE = False
+    ClinicalModelSelector = None
+    select_model_for_dataset = None
+
 # Compliance evaluation module
 try:
     import sys
@@ -1125,14 +1139,54 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
     user_explicit_method = run.get("method") or _cfg_get(run, "method", "")
     method = user_explicit_method.lower() if user_explicit_method else ""
     
-    # If no explicit method, choose by schema heuristics
+    # IMPROVED: Use ClinicalModelSelector for enhanced model selection if available
+    # Falls back to schema heuristics if selector unavailable
     if not method:
-        picked = choose_model_by_schema(real_clean)
-        method = picked
-        try:
-            print(f"[worker][schema] picked='{picked}' via schema heuristics")
-        except Exception:
-            pass
+        # Try ClinicalModelSelector first (state-of-the-art selection)
+        if CLINICAL_SELECTOR_AVAILABLE and select_model_for_dataset:
+            try:
+                cfg = run.get("config_json") or {}
+                preference = cfg.get("preference") if isinstance(cfg, dict) else None
+                goal = cfg.get("goal") if isinstance(cfg, dict) else None
+                user_prompt = cfg.get("prompt") if isinstance(cfg, dict) else None
+                compliance_level = (cfg.get("compliance_level") or COMPLIANCE_LEVEL).strip().lower() if COMPLIANCE_AVAILABLE else None
+                
+                # Use ClinicalModelSelector for intelligent model selection
+                plan = select_model_for_dataset(
+                    df=real_clean,
+                    schema=(ds.data or {}).get("schema_json") if ds else None,
+                    preference=preference,
+                    goal=goal,
+                    user_prompt=user_prompt,
+                    compliance_level=compliance_level,
+                )
+                
+                if plan and isinstance(plan, dict):
+                    choice = plan.get("choice") or {}
+                    picked = choice.get("method") or plan.get("method")
+                    if picked:
+                        method = str(picked).lower()
+                        try:
+                            print(f"[worker][clinical-selector] selected method='{method}' via ClinicalModelSelector")
+                            rationale = plan.get("rationale")
+                            if rationale:
+                                print(f"[worker][clinical-selector] rationale: {rationale}")
+                        except Exception:
+                            pass
+            except Exception as e:
+                try:
+                    print(f"[worker][clinical-selector] failed, falling back to schema heuristics: {type(e).__name__}")
+                except Exception:
+                    pass
+        
+        # Fallback to schema heuristics if ClinicalModelSelector unavailable or failed
+        if not method:
+            picked = choose_model_by_schema(real_clean)
+            method = picked
+            try:
+                print(f"[worker][schema] picked='{picked}' via schema heuristics")
+            except Exception:
+                pass
     else:
         # User explicitly selected a method - log it
         try:
@@ -1354,22 +1408,39 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
                 "discriminator_lr": 2e-4,
             }
         if m == "ddpm" or m == "tabddpm":
-            # TabDDPM (diffusion model) - optimize n_iter for speed vs quality
-            # Smaller datasets: faster training (200-300 iterations)
-            # Medium datasets: balanced (300-400 iterations)
-            # Large datasets: higher quality (400-500 iterations)
+            # TabDDPM (diffusion model) - IMPROVED defaults for better quality
+            # Previous defaults (200-300) were too low and led to KS Mean = 0.73 failures
+            # New defaults prioritize quality to achieve "all green" metrics
+            # Smaller datasets: quality-focused (300-400 iterations)
+            # Medium datasets: balanced quality (400-500 iterations)
+            # Large datasets: high quality (500-600 iterations)
             if n_rows < 1000:
-                n_iter = 200  # Fast training for small datasets
+                n_iter = 300  # Increased from 200 - better quality for small datasets
             elif n_rows < 5000:
-                n_iter = 300  # Balanced for medium datasets
+                n_iter = 400  # Increased from 300 - balanced quality/speed
             elif n_rows < 20000:
-                n_iter = 400  # Higher quality for larger datasets
+                n_iter = 500  # Increased from 400 - high quality
             else:
-                n_iter = 500  # Maximum quality for very large datasets
+                n_iter = 600  # Increased from 500 - maximum quality
+            
+            # IMPROVED: Batch size considers column count for better convergence
+            # High-dimensional data (many columns) benefits from larger batches
+            if n_rows < 500:
+                batch_size = max(32, min(64, n_rows // 10))
+            elif n_rows < 5000:
+                if n_cols > 20:
+                    batch_size = 256  # Larger batch for high-dimensional data
+                else:
+                    batch_size = 128
+            else:
+                if n_cols > 30:
+                    batch_size = min(512, max(256, n_rows // 15))
+                else:
+                    batch_size = min(256, max(128, n_rows // 20))
             
             return {
                 "n_iter": n_iter,
-                "batch_size": min(256, max(64, n_rows // 20)),  # Adaptive batch size
+                "batch_size": batch_size,
             }
         if m == "tvae":
             # Adaptive epochs for TVAE
@@ -1779,7 +1850,22 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
                     synth_model.fit(synthcity_loader)
                 else:
                     synth_model.fit(real_clean)
+                
+                # Validate n before sampling
+                if n <= 0:
+                    raise ValueError(
+                        f"Invalid num_rows: {n}. Check sample_multiplier={sample_multiplier}, "
+                        f"max_synth_rows={max_synth_rows}, dataset_size={len(real_clean)}"
+                    )
+                
                 synth = synth_model.sample(num_rows=n)
+                
+                # Validate synthetic data was generated
+                if synth is None or (isinstance(synth, pd.DataFrame) and len(synth) == 0):
+                    raise RuntimeError(
+                        f"Model generated 0 rows. Training may have failed. "
+                        f"Method: {current_method}, n_iter/epochs: {current_hparams.get('n_iter') or current_hparams.get('epochs', 'unknown')}"
+                    )
 
             # (generation handled above)
         except Exception as e:
@@ -1995,12 +2081,22 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
                 dp_backend, _, _ = resolve_dp_backend(dp_raw if (dp_raw is True or isinstance(dp_raw, dict)) else None)
                 dp_requested = dp_backend != "none"
                 
+                # IMPROVED: Get dataset complexity for better parameter suggestions
+                dataset_complexity = None
+                if CLINICAL_SELECTOR_AVAILABLE and ClinicalModelSelector:
+                    try:
+                        selector = ClinicalModelSelector(compliance_level=COMPLIANCE_LEVEL if COMPLIANCE_AVAILABLE else None)
+                        dataset_complexity = selector.analyze_dataset(real_clean, (ds.data or {}).get("schema_json") if ds else None)
+                    except Exception:
+                        pass
+                
                 # Get optimized hyperparameters based on failure
                 optimized_hparams = optimizer.suggest_hyperparameters(
                     method=current_method,
                     dataset_size=dataset_size,
                     previous_metrics=metrics,
                     dp_requested=dp_requested,
+                    dataset_complexity=dataset_complexity,
                 )
                 
                 if optimized_hparams:
