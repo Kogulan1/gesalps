@@ -26,7 +26,7 @@ declare -A CRITICAL_ENDPOINTS=(
     ["GET /v1/runs/{run_id}/metrics"]="Run metrics endpoint"
     ["GET /v1/runs/{run_id}/steps"]="Run steps endpoint"
     ["GET /v1/datasets"]="Dataset list endpoint"
-    ["GET /v1/health"]="Health check endpoint"
+    ["GET /health"]="Health check endpoint"
 )
 
 MISSING_ENDPOINTS=0
@@ -36,9 +36,6 @@ for endpoint in "${!CRITICAL_ENDPOINTS[@]}"; do
     method=$(echo "$endpoint" | cut -d' ' -f1)
     path=$(echo "$endpoint" | cut -d' ' -f2-)
     description="${CRITICAL_ENDPOINTS[$endpoint]}"
-    
-    # Convert path pattern to regex for matching
-    path_pattern=$(echo "$path" | sed 's/{[^}]*}/[^/]*/g')
     
     # Check if endpoint exists
     if docker compose -f "$COMPOSE_FILE" exec -T api python3 -c "
