@@ -184,6 +184,7 @@ export default function SignInPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder={t('signIn.emailPlaceholder')}
                     required
+                    autoComplete="email"
                     className="border-gray-300 focus:border-[#E0342C] focus:ring-[#E0342C]"
                   />
                 </div>
@@ -198,6 +199,7 @@ export default function SignInPage() {
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder={t('signIn.passwordPlaceholder')}
                       required
+                      autoComplete="current-password"
                       className="border-gray-300 focus:border-[#E0342C] focus:ring-[#E0342C] pr-10"
                     />
                     <button

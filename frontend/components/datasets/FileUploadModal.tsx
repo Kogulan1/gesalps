@@ -50,7 +50,6 @@ export function FileUploadModal({ isOpen, onClose, onSuccess, projects }: FileUp
       formData.append('project_id', selectedProject);
       formData.append('file', file);
 
-      console.log('Uploading dataset:', { selectedProject, datasetName, description, file: file.name });
       
       const response = await fetch(`${base}/v1/datasets/upload`, {
         method: 'POST',
@@ -66,7 +65,6 @@ export function FileUploadModal({ isOpen, onClose, onSuccess, projects }: FileUp
       }
 
       const result = await response.json();
-      console.log('Upload successful:', result);
       
       onSuccess();
       handleClose();

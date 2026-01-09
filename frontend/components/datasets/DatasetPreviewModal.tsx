@@ -42,12 +42,8 @@ export function DatasetPreviewModal({ isOpen, onClose, dataset }: DatasetPreview
       const isInvestorMode = localStorage.getItem('isInvestorMode') === 'true' || 
                             document.cookie.includes('isInvestorMode=true');
       
-      console.log('Dataset preview - Investor mode:', isInvestorMode);
-      console.log('Dataset preview - Dataset:', dataset);
-      
       if (isInvestorMode) {
         // Load demo CSV data
-        console.log('Loading demo CSV from:', dataset.file_path);
         const response = await fetch(dataset.file_path);
         if (!response.ok) {
           throw new Error(`Failed to fetch CSV: ${response.status} ${response.statusText}`);
@@ -63,7 +59,6 @@ export function DatasetPreviewModal({ isOpen, onClose, dataset }: DatasetPreview
           });
           return row;
         });
-        console.log('Parsed CSV data:', data);
         setPreviewData(data);
       } else {
         // Load from backend API
