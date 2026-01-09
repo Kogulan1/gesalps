@@ -1,4 +1,5 @@
 #!/bin/bash
+# Deployment script with endpoint verification
 # Zero-downtime deployment script for Gesalp AI backend
 # This script uses Docker Compose's rolling update strategy
 # Usage: ./deploy.sh [service_name]
@@ -226,8 +227,82 @@ main() {
     log_success "Deployment complete!"
     echo ""
     
+    # Verify critical endpoints (if API was deployed)
+    if [ "$SERVICE" = "api" ] || [ "$SERVICE" = "all" ]; then
+        verify_endpoints "$COMPOSE_CMD"
+    fi
+    
     # Show status
     show_status "$COMPOSE_CMD"
+}
+
+# Verify critical API endpoints exist after deployment
+verify_endpoints() {
+    local compose_cmd=$1
+    
+    log_info "========================================="
+    log_info "Verifying Critical API Endpoints"
+    log_info "========================================="
+    echo ""
+    
+    # Check if API container is running
+    if ! $compose_cmd -f "$COMPOSE_FILE" ps api 2>/dev/null | grep -q "Up"; then
+        log_warning "API container is not running. Skipping endpoint verification."
+        return 0
+    fi
+    
+    # List of critical endpoints that must exist
+    declare -A CRITICAL_ENDPOINTS=(
+        ["GET /v1/projects"]="Project list endpoint"
+        ["GET /v1/projects/{project_id}"]="Project detail endpoint"
+        ["GET /v1/runs"]="Run list endpoint"
+        ["GET /v1/runs/{run_id}"]="Run detail endpoint - CRITICAL"
+        ["GET /v1/runs/{run_id}/status"]="Run status endpoint"
+        ["GET /v1/runs/{run_id}/metrics"]="Run metrics endpoint"
+        ["GET /v1/runs/{run_id}/steps"]="Run steps endpoint"
+        ["GET /v1/datasets"]="Dataset list endpoint"
+        ["GET /health"]="Health check endpoint"
+    )
+    
+    MISSING_ENDPOINTS=0
+    FAILED_CHECKS=0
+    
+    # Check each critical endpoint
+    for endpoint in "${!CRITICAL_ENDPOINTS[@]}"; do
+        method=$(echo "$endpoint" | cut -d' ' -f1)
+        path=$(echo "$endpoint" | cut -d' ' -f2-)
+        description="${CRITICAL_ENDPOINTS[$endpoint]}"
+        
+        # Check if endpoint exists using Python
+        if $compose_cmd -f "$COMPOSE_FILE" exec -T api python3 -c "
+from main import app
+from fastapi.routing import APIRoute
+routes = [r for r in app.routes if isinstance(r, APIRoute)]
+found = False
+for r in routes:
+    if '$method' in r.methods and r.path == '$path':
+        found = True
+        break
+exit(0 if found else 1)
+" 2>/dev/null; then
+            log_success "$method $path - $description"
+        else
+            log_error "MISSING: $method $path - $description"
+            MISSING_ENDPOINTS=$((MISSING_ENDPOINTS + 1))
+            FAILED_CHECKS=$((FAILED_CHECKS + 1))
+        fi
+    done
+    
+    echo ""
+    if [ $MISSING_ENDPOINTS -eq 0 ]; then
+        log_success "✅ All critical endpoints verified!"
+        return 0
+    else
+        log_error "❌ ERROR: $MISSING_ENDPOINTS critical endpoint(s) missing!"
+        log_error "⚠️  Deployment verification FAILED. Review deployment immediately."
+        log_error "⚠️  This may indicate a code merge conflict or accidental deletion."
+        return 1
+    fi
 }
 
 # Run main function
