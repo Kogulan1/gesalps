@@ -1,0 +1,28 @@
+# Optimized Dockerfile using base image with all dependencies
+# This file only copies code - dependencies come from base image
+# Build time: 2-5 minutes (instead of 1+ hour)
+
+# Option 1: Use local base image (if built locally)
+FROM gesalps-worker-base:latest
+
+# Option 2: Use base image from registry (uncomment and configure)
+# FROM your-registry/gesalps-worker-base:latest
+# Example registries:
+# - Docker Hub: docker.io/yourusername/gesalps-worker-base:latest
+# - GitHub Container Registry: ghcr.io/yourusername/gesalps-worker-base:latest
+# - Private registry: registry.yourdomain.com/gesalps-worker-base:latest
+
+WORKDIR /app
+
+# Only copy application code (dependencies already in base image)
+# This is fast - just copying files, no downloads!
+COPY synth_worker/ /app/
+COPY libs/ /app/libs/
+
+# Verify optimizer.py exists
+RUN test -f /app/optimizer.py || echo "Warning: optimizer.py not found"
+
+# Ensure unbuffered stdout/stderr so logs appear in `docker logs`
+ENV PYTHONUNBUFFERED=1
+
+CMD ["python", "-u", "worker.py"]
