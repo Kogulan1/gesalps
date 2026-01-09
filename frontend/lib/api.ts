@@ -28,11 +28,21 @@ export async function authedFetch(path: string, init: RequestInit = {}) {
   if (token) headers.set("Authorization", `Bearer ${token}`);
   // Disable caching to avoid stale metrics/artifacts during polling
   if (!headers.has("Cache-Control")) headers.set("Cache-Control", "no-store");
+  // Ensure Content-Type is set for JSON requests (but don't override if already set)
+  if (!headers.has("Content-Type") && (init.method === 'POST' || init.method === 'PUT' || init.method === 'PATCH')) {
+    headers.set("Content-Type", "application/json");
+  }
   
   const url = `${base}${path}`;
-  console.log(`[API] ${init.method || 'GET'} ${url}`);
+  const method = init.method || 'GET';
+  console.log(`[API] ${method} ${url}`);
   
-  return fetch(url, { cache: "no-store", ...init, headers });
+  return fetch(url, { 
+    method,
+    cache: "no-store", 
+    ...init, 
+    headers 
+  });
 }
 
 export async function previewDatasetCSV(datasetId: string) {
@@ -73,10 +83,34 @@ export async function deleteRun(runId: string) {
 }
 
 export async function getRunDetails(runId: string) {
-  const res = await authedFetch(`/v1/runs/${runId}`);
+  // Explicitly set GET method and ensure proper headers
+  const res = await authedFetch(`/v1/runs/${runId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    }
+  });
   if (!res.ok) {
     let msg = `HTTP ${res.status}`;
-    try { const j = await res.json(); msg = j?.detail || j?.message || msg; } catch {}
+    try { 
+      const j = await res.json(); 
+      msg = j?.detail || j?.message || msg; 
+    } catch {
+      // If response isn't JSON, use status text
+      msg = res.statusText || `HTTP ${res.status}`;
+    }
+    
+    // Provide more specific error messages
+    if (res.status === 405) {
+      throw new Error(`Method Not Allowed: The server rejected the request. This may be a backend configuration issue.`);
+    }
+    if (res.status === 404) {
+      throw new Error(`Run not found: The run with ID ${runId} does not exist or has been deleted.`);
+    }
+    if (res.status === 403) {
+      throw new Error(`Access denied: You don't have permission to view this run.`);
+    }
+    
     throw new Error(msg);
   }
   return await res.json();
