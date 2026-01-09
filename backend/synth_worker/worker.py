@@ -83,7 +83,14 @@ if not SUPABASE_URL or not SERVICE_ROLE:
 
 supabase: Client = create_client(SUPABASE_URL, SERVICE_ROLE)
 
+# LLM Provider Configuration (for agent re-planning)
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+OPENROUTER_BASE = os.getenv("OPENROUTER_BASE", "https://openrouter.ai/api/v1")
+OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL") or os.getenv("AGENT_MODEL") or "mistralai/mistral-small-24b-instruct:free"
 OLLAMA_BASE = os.getenv("OLLAMA_BASE", "http://ollama:11434")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL") or os.getenv("AGENT_MODEL") or "llama3.1:8b"
+USE_OPENROUTER = bool(OPENROUTER_API_KEY)
+
 DP_BACKEND_DEFAULT = (os.getenv("DP_BACKEND", "none").strip().lower() or "none")  # none|custom|synthcity
 DP_STRICT_DEFAULT = (os.getenv("DP_STRICT_DEFAULT", "false").strip().lower() in ("1","true","yes","on"))
 
@@ -684,6 +691,10 @@ def choose_model_by_schema(df: pd.DataFrame) -> str:
         return "gc"
 
 def _score_metrics(met: Dict[str, Any]) -> float:
+    """
+    Score metrics (lower is better).
+    IMPROVED: Penalize failures more heavily, reward "all green" results.
+    """
     try:
         u = (met or {}).get("utility", {})
         p = (met or {}).get("privacy", {})
@@ -1063,13 +1074,14 @@ def _ollama_generate(
     return ""
 
 def _agent_plan_ollama(dataset_name: str, schema_json: Dict[str, Any], last_metrics: Dict[str, Any], user_prompt: Optional[str], provider: Optional[str], model: Optional[str]) -> Dict[str, Any]:
-    # Respect provider hint; only proceed for Ollama
-    if provider and str(provider).lower() not in {"ollama", "local-ollama"}:
-        return {}
+    """
+    Agent re-planning function - uses OpenRouter (preferred) or Ollama (fallback).
+    IMPROVED: Now supports OpenRouter for better performance.
+    """
     system = (
         "You are a senior data scientist planning synthetic data generation. "
         "Given a dataset summary and previous run metrics, return STRICT JSON only with keys: "
-        "method in ['gc','ctgan','tvae'], hparams (object with epochs,batch_size,embedding_dim optional), "
+        "method in ['gc','ctgan','tvae','ddpm'], hparams (object with epochs,batch_size,embedding_dim optional for ctgan/tvae, n_iter for ddpm), "
         "sample_multiplier (number 0.1..3.0), max_synth_rows (int 1..200000), notes (string)."
     )
     schema_text = _schema_summary_from_json(schema_json)
@@ -1079,10 +1091,61 @@ def _agent_plan_ollama(dataset_name: str, schema_json: Dict[str, Any], last_metr
     }, ensure_ascii=False)
     up = (user_prompt or "").strip()
     user = f"""Dataset: {dataset_name}\nSchema:\n{schema_text}\n\nLast metrics (JSON):\n{met_text}\n\nGoal: {up or 'meet privacy and utility thresholds'}\nReturn JSON only."""
-    prompt = f"System:\n{system}\n\nUser:\n{user}\n"
-    text = _ollama_generate(prompt, model or "llama3.1:8b")
+    
+    # IMPROVED: Use OpenRouter if available, otherwise fallback to Ollama
+    text = None
+    if USE_OPENROUTER:
+        # Use OpenRouter API
+        try:
+            payload = {
+                "model": OPENROUTER_MODEL,
+                "messages": [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user}
+                ],
+                "temperature": 0.3,
+                "max_tokens": 2000,
+                "response_format": {"type": "json_object"},
+            }
+            
+            headers = {
+                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                "Content-Type": "application/json",
+                "HTTP-Referer": os.getenv("OPENROUTER_REFERER", "https://gesalp.ai"),
+                "X-Title": "Gesalp AI Synthetic Data Generator",
+            }
+            
+            with httpx.Client(timeout=90) as client:
+                response = client.post(
+                    f"{OPENROUTER_BASE}/chat/completions",
+                    json=payload,
+                    headers=headers
+                )
+                response.raise_for_status()
+                output = response.json()
+                text = output["choices"][0]["message"]["content"]
+                try:
+                    print(f"[worker][agent][openrouter] Re-planning with OpenRouter model: {OPENROUTER_MODEL}")
+                except Exception:
+                    pass
+        except Exception as e:
+            try:
+                print(f"[worker][agent][openrouter] OpenRouter failed, falling back to Ollama: {type(e).__name__}")
+            except Exception:
+                pass
+            # Fall through to Ollama
+    
+    # Ollama fallback (if OpenRouter not available or failed)
+    if not text:
+        # Respect provider hint for Ollama
+        if provider and str(provider).lower() not in {"ollama", "local-ollama", None, ""}:
+            return {}
+        prompt = f"System:\n{system}\n\nUser:\n{user}\n"
+        text = _ollama_generate(prompt, model or OLLAMA_MODEL)
+    
     if not text:
         return {}
+    
     try:
         return json.loads(text)
     except Exception:
@@ -1193,6 +1256,51 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
             print(f"[worker][method] User explicitly selected method: '{method}'")
         except Exception:
             pass
+    
+    # IMPROVED: Even if method is set, use ClinicalModelSelector to get optimized hyperparameters
+    # This ensures OpenRouter is called and we get the best hyperparameters
+    enhanced_hparams = {}
+    if CLINICAL_SELECTOR_AVAILABLE and select_model_for_dataset and method:
+        try:
+            cfg = run.get("config_json") or {}
+            preference = cfg.get("preference") if isinstance(cfg, dict) else None
+            goal = cfg.get("goal") if isinstance(cfg, dict) else None
+            user_prompt = cfg.get("prompt") if isinstance(cfg, dict) else None
+            compliance_level = (cfg.get("compliance_level") or COMPLIANCE_LEVEL).strip().lower() if COMPLIANCE_AVAILABLE else None
+            
+            # Get optimized plan from ClinicalModelSelector (uses OpenRouter)
+            plan = select_model_for_dataset(
+                df=real_clean,
+                schema=(ds.data or {}).get("schema_json") if ds else None,
+                preference=preference,
+                goal=goal,
+                user_prompt=user_prompt,
+                compliance_level=compliance_level,
+            )
+            
+            if plan and isinstance(plan, dict):
+                # Extract hyperparameters from plan
+                plan_hparams = plan.get("hyperparams", {})
+                if plan_hparams:
+                    # Get method-specific hyperparameters
+                    method_hparams = (
+                        plan_hparams.get(method) or 
+                        plan_hparams.get("ddpm") if method in ("ddpm", "tabddpm") else None or
+                        plan_hparams.get("ctgan") if method == "ctgan" else None or
+                        plan_hparams.get("tvae") if method == "tvae" else None or
+                        {}
+                    )
+                    if method_hparams:
+                        enhanced_hparams = method_hparams
+                        try:
+                            print(f"[worker][clinical-selector] Enhanced hyperparameters for {method} via OpenRouter: {json.dumps(method_hparams)}")
+                        except Exception:
+                            pass
+        except Exception as e:
+            try:
+                print(f"[worker][clinical-selector] Hyperparameter enhancement failed: {type(e).__name__}: {e}")
+            except Exception:
+                pass
 
     # (meta suggestion moved below after current_hparams is initialized)
 
@@ -1715,7 +1823,9 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
 
     # Agent retry loop (up to 3 attempts)
     attempts = 1
-    max_attempts = 6
+    # IMPROVED: Increase max attempts for better "all green" success rate
+    # Allow more retries for critical failures, but stop early if we get "all green"
+    max_attempts = 8  # Increased from 6 to allow more optimization attempts
     final_metrics: Dict[str, Any] = {}
     final_synth: pd.DataFrame
     m0 = (method or "gc").lower()
@@ -1723,7 +1833,12 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
     if m0 in ("agent",):
         m0 = "gc"
     current_method = m0
-    current_hparams = dict(hparams)
+    # IMPROVED: Merge enhanced hyperparameters from ClinicalModelSelector (OpenRouter) with config hyperparameters
+    # Priority: enhanced_hparams (from OpenRouter) -> hparams (from config) -> defaults
+    if 'enhanced_hparams' in locals() and enhanced_hparams:
+        current_hparams = {**enhanced_hparams, **dict(hparams)}
+    else:
+        current_hparams = dict(hparams)
     # Try meta-learner suggestion (best-effort) now that we have current_hparams
     try:
         suggested, proba, agg_hp = meta.suggest_method_and_hparams(supabase, real_clean)
@@ -2059,11 +2174,27 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
                 except Exception:
                     pass
 
-        if mode != "agent" or overall_ok or attempts >= max_attempts:
+        # IMPROVED: Stop immediately if we achieve "all green" (don't waste time on more attempts)
+        if overall_ok:
+            # We got "all green" - use this result immediately
+            final_metrics = metrics
+            final_synth = synth
+            if mode == "agent":
+                status_msg = "Success: All thresholds passed (all green)"
+                sel = f"attempt={attempts} method={current_method} score={score:.3f}"
+                _log_step(attempts, status_msg, sel, final_metrics)
+            try:
+                print(f"[worker] SUCCESS: All green achieved on attempt {attempts} with {current_method}")
+            except Exception:
+                pass
+            break
+        
+        # Stop if we've exhausted attempts
+        if mode != "agent" or attempts >= max_attempts:
             final_metrics = best_bundle.get("metrics", metrics)
             final_synth = best_bundle.get("synth", synth)
             if mode == "agent":
-                status_msg = "Success: targets met" if overall_ok else "Stopped: best attempt selected"
+                status_msg = "Stopped: best attempt selected (not all green)"
                 sel = f"best_attempt={best_bundle.get('attempt')} method={best_bundle.get('method')} score={best_score:.3f}"
                 _log_step(attempts, status_msg, sel, final_metrics)
             break

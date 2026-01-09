@@ -310,6 +310,9 @@ class SyntheticDataOptimizer:
                 elif ks > 0.08:  # Near threshold - slight increase
                     # Preventive increase when close to threshold
                     n_iter = min(600, n_iter + 50)
+                elif ks > 0.06:  # Very close to threshold - small preventive increase
+                    # Very small increase to push over the edge
+                    n_iter = min(600, n_iter + 25)
         
         # IMPROVED: Batch size considers both rows and columns for better convergence
         # More columns = more complex data = may need larger batch for stability
