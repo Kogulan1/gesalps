@@ -9,13 +9,14 @@ import { RenameModal } from "@/components/ui/rename-modal";
 import { ViewModeToggle } from "@/components/common/ViewModeToggle";
 import { LoadingState, EmptyState, ErrorState } from "@/components/common/StateComponents";
 import { MoreHorizontal, ExternalLink, Github, Activity } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
 import { useRouter } from "next/navigation";
 import { DEMO_PROJECTS } from "@/lib/constants/demoData";
 
 export function DashboardContent() {
   const t = useTranslations('dashboard');
+  const locale = useLocale();
   const router = useRouter();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   const [projects, setProjects] = useState<any[]>([]);
@@ -37,26 +38,23 @@ export function DashboardContent() {
   };
 
   const handleViewProject = (projectId: string) => {
-    router.push(`/en/projects/${projectId}`);
+    router.push(`/${locale}/projects/${projectId}`);
   };
 
   const handleProjectEdit = (projectId: string) => {
-    console.log('Edit project clicked:', projectId);
     const project = projects.find(p => p.id === projectId);
-    console.log('Found project:', project);
     if (project) {
       setRenameModal({
         isOpen: true,
         projectId: projectId,
         currentName: project.name
       });
-      console.log('Rename modal state set');
     }
   };
 
   const handleStartRun = (projectId: string) => {
     // Navigate to datasets page with project filter
-    router.push(`/en/datasets?project=${projectId}`);
+    router.push(`/${locale}/datasets?project=${projectId}`);
   };
 
   const handleProjectDelete = async (projectId: string) => {
@@ -100,13 +98,10 @@ export function DashboardContent() {
   };
 
   const handleRenameConfirm = async (newName: string) => {
-    console.log('Rename confirm called with:', newName);
-    console.log('Rename modal state:', renameModal);
     if (!renameModal.projectId) return;
 
     try {
-      const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE || 'http://localhost:8000';
-      console.log('API base URL:', base);
+      const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
       if (!base) {
         throw new Error('API base URL not configured');
       }
@@ -118,11 +113,7 @@ export function DashboardContent() {
         throw new Error('No authentication token available');
       }
 
-      const url = `${base}/v1/projects/${renameModal.projectId}/rename`;
-      console.log('Making API call to:', url);
-      console.log('Request body:', { name: newName });
-      
-      const response = await fetch(url, {
+      const response = await fetch(`${base}/v1/projects/${renameModal.projectId}/rename`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
@@ -130,9 +121,6 @@ export function DashboardContent() {
         },
         body: JSON.stringify({ name: newName })
       });
-      
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -152,60 +140,68 @@ export function DashboardContent() {
     }
   };
 
-  // Test environment variable
-  useEffect(() => {
-    console.log('Environment variables test:');
-    console.log('NEXT_PUBLIC_BACKEND_API_BASE:', process.env.NEXT_PUBLIC_BACKEND_API_BASE);
-    console.log('BACKEND_API_BASE:', process.env.BACKEND_API_BASE);
-  }, []);
 
   // Fetch projects from API
-  useEffect(() => {
-    const fetchProjects = async () => {
-      setLoading(true);
+  const fetchProjects = async () => {
+    setLoading(true);
+    setError(null);
+
+    const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
+
+    try {
+      if (!base) {
+        throw new Error('Backend API base URL not configured');
+      }
+
+      const supabase = createSupabaseBrowserClient();
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        throw new Error('No authentication token available');
+      }
+
+      const response = await fetch(`${base}/v1/projects`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (!Array.isArray(data)) {
+        throw new Error('Unexpected API response shape');
+      }
+
+      setProjects(data);
+      setUsingDemoData(false);
       setError(null);
-
-      const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
-
-      try {
-        if (!base) {
-          throw new Error('Backend API base URL not configured');
-        }
-
-        const supabase = createSupabaseBrowserClient();
-        const { data: { session } } = await supabase.auth.getSession();
-
-        if (!session?.access_token) {
-          throw new Error('No authentication token available');
-        }
-
-        const response = await fetch(`${base}/v1/projects`, {
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status}`);
-        }
-
-        const data = await response.json();
-        if (!Array.isArray(data)) {
-          throw new Error('Unexpected API response shape');
-        }
-
-        setProjects(data);
-        setUsingDemoData(false);
-      } catch (err) {
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch projects';
+      const isNetworkError = errorMessage.includes('Failed to fetch') || 
+                            errorMessage.includes('Network error') ||
+                            errorMessage.includes('Cannot connect');
+      
+      // Only use demo data for actual network failures, not for API errors
+      if (isNetworkError && !errorMessage.includes('401') && !errorMessage.includes('403')) {
         console.warn('Dashboard projects API unavailable, falling back to demo data:', err);
         setProjects(DEMO_PROJECTS);
         setUsingDemoData(true);
-      } finally {
-        setLoading(false);
+      } else {
+        // API errors (401, 403) or other errors - show error state
+        setError(errorMessage);
+        setUsingDemoData(false);
+        setProjects([]);
       }
-    };
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchProjects();
   }, []);
 
@@ -234,20 +230,13 @@ export function DashboardContent() {
     }
   ];
 
-  // Debug logging
-  console.log('Usage data:', {
-    projects: { used: projects.length, total: 10, percentage: (projects.length / 10) * 100 },
-    datasets: { used: totalDatasets, total: 50, percentage: (totalDatasets / 50) * 100 },
-    runs: { used: totalRuns, total: 100, percentage: (totalRuns / 100) * 100 },
-    projectsArray: projects
-  });
 
   if (loading) {
     return <LoadingState message="Loading dashboard..." />;
   }
 
-  if (error && projects.length === 0) {
-    return <ErrorState message={error} onRetry={() => window.location.reload()} />;
+  if (error && projects.length === 0 && !usingDemoData) {
+    return <ErrorState message={error} onRetry={fetchProjects} />;
   }
 
   return (
@@ -309,8 +298,7 @@ export function DashboardContent() {
                 <Button 
                   className="w-full bg-black hover:bg-gray-800 text-white"
                   onClick={() => {
-                    // For now, show an alert. In a real app, this would open a pricing modal or redirect to billing
-                    alert('Upgrade Plan feature coming soon! This would redirect to billing/pricing page.');
+                    router.push('/en#pricing');
                   }}
                 >
                   Upgrade Plan
@@ -326,20 +314,30 @@ export function DashboardContent() {
               <CardContent>
                 <div className="space-y-4">
                   {projects.length > 0 ? (
-                    projects.slice(0, 3).map((project, index) => (
-                      <div key={project.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                    projects.slice(0, 5).map((project) => (
+                      <div 
+                        key={project.id} 
+                        className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
+                        onClick={() => handleViewProject(project.id)}
+                      >
                         <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                           <Activity className="h-4 w-4 text-blue-600" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-900">
-                            {project.status === 'Active' ? 'Project active' : 'Project created'}
+                            {project.runs_count > 0 ? (
+                              project.runs_count === 1 ? '1 run completed' : `${project.runs_count} runs completed`
+                            ) : project.datasets_count > 0 ? (
+                              project.datasets_count === 1 ? '1 dataset uploaded' : `${project.datasets_count} datasets uploaded`
+                            ) : (
+                              'Project created'
+                            )}
                           </p>
                           <p className="text-xs text-gray-500 truncate">
                             {project.name}
                           </p>
                           <p className="text-xs text-gray-400">
-                            {project.last_activity}
+                            {project.last_activity || 'No activity yet'}
                           </p>
                         </div>
                       </div>
@@ -412,7 +410,6 @@ export function DashboardContent() {
       <RenameModal
         isOpen={renameModal.isOpen}
         onClose={() => {
-          console.log('Closing rename modal');
           setRenameModal({ isOpen: false, projectId: null, currentName: "" });
         }}
         onConfirm={handleRenameConfirm}

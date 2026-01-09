@@ -31,6 +31,7 @@ import { ExecutionLogTab } from "./ExecutionLogTab";
 import { AgentTimeline } from "./AgentTimeline";
 import { useRouter } from "next/navigation";
 import { startRun } from "@/lib/api";
+import { useToast } from "@/components/toast/Toaster";
 
 interface ResultsModalProps {
   isOpen: boolean;
@@ -82,6 +83,7 @@ export function ResultsModal({ isOpen, onClose, runId, runName }: ResultsModalPr
   const [activeTab, setActiveTab] = useState("overview");
   const [optimizing, setOptimizing] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (isOpen && runId) {
@@ -284,7 +286,11 @@ export function ResultsModal({ isOpen, onClose, runId, runName }: ResultsModalPr
     } catch (error) {
       console.error('Error downloading report:', error);
       const friendlyMessage = getUserFriendlyErrorMessage(error);
-      alert(friendlyMessage);
+      toast({
+        title: "Download Failed",
+        description: friendlyMessage,
+        variant: "error"
+      });
     }
   };
 
@@ -326,7 +332,44 @@ export function ResultsModal({ isOpen, onClose, runId, runName }: ResultsModalPr
     } catch (error) {
       console.error('Error downloading synthetic data:', error);
       const friendlyMessage = getUserFriendlyErrorMessage(error);
-      alert(friendlyMessage);
+      toast({
+        title: "Download Failed",
+        description: friendlyMessage,
+        variant: "error"
+      });
+    }
+  };
+
+  const handleAutoOptimize = async () => {
+    if (!runData?.dataset_id || !results) return;
+
+    setOptimizing(true);
+    try {
+      const result = await startRun(runData.dataset_id, {
+        method: 'auto',
+        mode: 'agent',
+        prompt: `Auto-optimize failed run: ${runName}. Previous run had ${results.metrics.rows_generated} rows generated. Please optimize hyperparameters to improve results.`
+      });
+
+      if (result.run_id) {
+        toast({
+          title: "Auto-Optimize Started",
+          description: "A new run has been created with optimized parameters.",
+          variant: "success"
+        });
+        onClose();
+        router.push(`/runs/${result.run_id}`);
+      }
+    } catch (error) {
+      console.error('Error starting auto-optimize run:', error);
+      const friendlyMessage = getUserFriendlyErrorMessage(error);
+      toast({
+        title: "Auto-Optimize Failed",
+        description: friendlyMessage,
+        variant: "error"
+      });
+    } finally {
+      setOptimizing(false);
     }
   };
 
