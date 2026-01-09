@@ -180,9 +180,13 @@ class RenameBody(BaseModel):
     name: str
 
 @app.options("/v1/projects")
+async def options_projects_list():
+    """Handle CORS preflight requests for projects list endpoint."""
+    return Response(status_code=200)
+
 @app.options("/v1/projects/{project_id}")
-def options_projects():
-    """Handle CORS preflight requests for projects endpoints."""
+async def options_projects_detail(project_id: str):
+    """Handle CORS preflight requests for project detail endpoint."""
     return Response(status_code=200)
 
 @app.get("/v1/projects")
