@@ -9,12 +9,18 @@ export function getUserFriendlyErrorMessage(error: string | Error | null | undef
 
   const errorMessage = typeof error === 'string' ? error : error.message || 'Unknown error';
 
-  // Network/Connection errors
-  if (errorMessage.includes('Failed to fetch') || 
-      errorMessage.includes('NetworkError') ||
-      errorMessage.includes('Network request failed')) {
-    return "Unable to connect to the server. Please check your internet connection and try again.";
-  }
+        // Network/Connection errors
+        if (errorMessage.includes('Failed to fetch') ||
+            errorMessage.includes('NetworkError') ||
+            errorMessage.includes('Network request failed')) {
+          return "Unable to connect to the server. Please check your internet connection and try again.";
+        }
+        
+        // HTTP Method errors
+        if (errorMessage.includes('Method Not Allowed') ||
+            errorMessage.includes('405')) {
+          return "The server rejected the request method. This may be a backend configuration issue. Please contact support if this persists.";
+        }
 
   if (errorMessage.includes('Cannot connect to backend') ||
       errorMessage.includes('Network error')) {
