@@ -298,6 +298,8 @@ def get_project(project_id: str, user: Dict[str, Any] = Depends(require_user)):
     
     return {
         **project,
+        "updated_at": project.get("created_at"),  # Use created_at as fallback if updated_at doesn't exist
+        "description": None,  # Description field not in database schema
         "datasets_count": datasets_count,
         "runs_count": runs_count,
         "last_activity": last_activity,
