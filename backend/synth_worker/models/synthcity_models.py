@@ -122,8 +122,20 @@ class SynthcitySynthesizer(BaseSynthesizer):
         # Log TabDDPM training start with expected time
         if self.method == "ddpm" or self._plugin_name == "ddpm":
             n_iter = getattr(self._plugin, 'n_iter', None) or (self.hyperparams or {}).get('n_iter', 300)
+            batch_size = getattr(self._plugin, 'batch_size', None) or (self.hyperparams or {}).get('batch_size', 128)
+            
+            # IMPROVED: Validate n_iter is sufficient for quality results
+            if n_iter < 300:
+                try:
+                    print(f"[worker][TabDDPM] WARNING: n_iter={n_iter} is below recommended minimum (300). This may result in poor utility metrics (high KS Mean).")
+                except Exception:
+                    pass
+            
             try:
-                print(f"[worker][TabDDPM] Starting training with n_iter={n_iter} (this may take 5-15 minutes depending on dataset size)")
+                # Estimate training time based on n_iter
+                estimated_minutes = max(2, int(n_iter / 100))  # Rough estimate: ~1 min per 100 iterations
+                print(f"[worker][TabDDPM] Starting training with n_iter={n_iter}, batch_size={batch_size}")
+                print(f"[worker][TabDDPM] Estimated training time: {estimated_minutes}-{estimated_minutes + 5} minutes")
             except Exception:
                 pass
         
@@ -151,10 +163,16 @@ class SynthcitySynthesizer(BaseSynthesizer):
             except Exception as e:
                 raise RuntimeError(f"SynthCity plugin fit failed: {e}")
         
-        # Log TabDDPM training completion
+        # Log TabDDPM training completion with validation
         if self.method == "ddpm" or self._plugin_name == "ddpm":
             try:
-                print(f"[worker][TabDDPM] Training completed successfully")
+                # IMPROVED: Verify training actually completed
+                n_iter = getattr(self._plugin, 'n_iter', None) or (self.hyperparams or {}).get('n_iter', 300)
+                # Check if plugin has training state (some plugins track this)
+                if hasattr(self._plugin, 'is_fitted') and not self._plugin.is_fitted:
+                    print(f"[worker][TabDDPM] WARNING: Training may not have completed. Plugin reports is_fitted=False")
+                else:
+                    print(f"[worker][TabDDPM] Training completed successfully (n_iter={n_iter})")
             except Exception:
                 pass
     

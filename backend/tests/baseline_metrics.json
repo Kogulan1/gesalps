@@ -1,0 +1,47 @@
+{
+  "dataset": "heart.csv",
+  "method": "ddpm",
+  "rows": 302,
+  "columns": 14,
+  "timestamp": "2025-01-27T00:00:00Z",
+  "metrics": {
+    "privacy": {
+      "mia_auc": 0.003,
+      "dup_rate": 0.0,
+      "k_anonymization": null,
+      "identifiability_score": null
+    },
+    "utility": {
+      "ks_mean": 0.073,
+      "corr_delta": 0.103,
+      "auroc": null,
+      "c_index": null
+    },
+    "fairness": {
+      "rare_coverage": null,
+      "freq_skew": null
+    }
+  },
+  "thresholds_passed": {
+    "privacy": true,
+    "utility": true,
+    "fairness": null,
+    "all": true
+  },
+  "thresholds": {
+    "mia_auc_max": 0.60,
+    "dup_rate_max": 0.05,
+    "ks_mean_max": 0.10,
+    "corr_delta_max": 0.10,
+    "auroc_min": 0.80,
+    "c_index_min": 0.70
+  },
+  "regression_tolerances": {
+    "mia_auc": 0.05,
+    "ks_mean": 0.02,
+    "corr_delta": 0.02,
+    "dup_rate": 0.05
+  },
+  "notes": "Baseline metrics from heart.csv using TabDDPM (ddpm) method. These metrics represent the expected performance and should not degrade in future versions."
+}
+

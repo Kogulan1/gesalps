@@ -64,17 +64,39 @@ class SyntheticDataOptimizer:
     - Adaptive parameter selection
     - Root cause analysis
     - Parameter suggestions based on dataset characteristics
+    - Compliance-aware optimization
     """
     
-    # Thresholds for "all green" metrics
+    # Thresholds for "all green" metrics (HIPAA-like defaults)
     KS_MAX = 0.10
     CORR_MAX = 0.10
     MIA_MAX = 0.60
     DUP_MAX = 0.05  # 5%
     
-    def __init__(self):
-        """Initialize optimizer."""
-        pass
+    def __init__(self, compliance_level: Optional[str] = None):
+        """Initialize optimizer with optional compliance level.
+        
+        Args:
+            compliance_level: Compliance level (hipaa_like, clinical_strict, research)
+                             If provided, uses compliance thresholds instead of defaults
+        """
+        self.compliance_level = compliance_level
+        self.compliance_evaluator = None
+        
+        # Try to load compliance evaluator for compliance-aware optimization
+        if compliance_level:
+            try:
+                from libs.compliance import get_compliance_evaluator
+                self.compliance_evaluator = get_compliance_evaluator(compliance_level)
+                # Update thresholds from compliance config
+                if self.compliance_evaluator:
+                    config = self.compliance_evaluator.config
+                    self.KS_MAX = config.utility.ks_mean_max
+                    self.CORR_MAX = config.utility.corr_delta_max
+                    self.MIA_MAX = config.privacy.mia_auc_max
+                    self.DUP_MAX = config.privacy.dup_rate_max
+            except ImportError:
+                pass
     
     def analyze_failure(
         self,
@@ -127,17 +149,49 @@ class SyntheticDataOptimizer:
         suggestions = []
         
         if primary_type == FailureType.HIGH_KS:
-            root_cause = f"Utility failure: KS statistic too high. Model not capturing distribution well."
-            if method == "ddpm":
-                n_iter = hyperparams.get("n_iter", 300)
-                if n_iter < 400:
-                    suggestions.append(f"Increase n_iter from {n_iter} to {min(500, n_iter + 100)}")
-                suggestions.append("Try increasing batch_size for better gradient estimates")
-            elif method in ("ctgan", "tvae"):
-                epochs = hyperparams.get("epochs", 300)
-                if epochs < 400:
-                    suggestions.append(f"Increase epochs from {epochs} to {min(500, epochs + 100)}")
-                suggestions.append("Consider using TabDDPM (ddpm) for better distribution matching")
+            # Check for extremely high KS (indicates severe training failure)
+            if ks is not None and ks > 0.5:
+                root_cause = f"CRITICAL: KS statistic extremely high ({ks:.3f}). Training likely incomplete or failed. Verify training completed successfully."
+                if method == "ddpm":
+                    n_iter = hyperparams.get("n_iter", 300)
+                    # IMPROVED: More aggressive suggestions for critical failures
+                    if n_iter < 400:
+                        suggestions.append(f"CRITICAL: TabDDPM n_iter={n_iter} is too low. Increase to 500-600 immediately")
+                    else:
+                        suggestions.append(f"CRITICAL: Even with n_iter={n_iter}, training may have failed. Verify training completed and increase to 600")
+                    suggestions.append("Check run logs for training completion messages and errors")
+                    suggestions.append("Verify dataset was loaded correctly and has sufficient rows")
+                    suggestions.append("Consider increasing batch_size to 256 for more stable training")
+                else:
+                    suggestions.append("CRITICAL: Training likely failed. Check run logs for errors")
+                    suggestions.append("Consider switching to TabDDPM (ddpm) with n_iter=400-500 for better results")
+            elif ks is not None and ks > 0.2:
+                # IMPROVED: Handle moderate-high KS (0.2-0.5) with specific guidance
+                root_cause = f"SEVERE: KS statistic very high ({ks:.3f}). Model significantly underfitted."
+                if method == "ddpm":
+                    n_iter = hyperparams.get("n_iter", 300)
+                    suggestions.append(f"SEVERE: Increase n_iter from {n_iter} to {min(600, n_iter + 200)}")
+                    suggestions.append("Increase batch_size to 256 for better gradient estimates")
+                    suggestions.append("Verify training completed - check logs for completion messages")
+                elif method in ("ctgan", "tvae"):
+                    epochs = hyperparams.get("epochs", 300)
+                    suggestions.append(f"SEVERE: Increase epochs from {epochs} to {min(600, epochs + 200)}")
+                    suggestions.append("Consider switching to TabDDPM (ddpm) for better results")
+            else:
+                root_cause = f"Utility failure: KS statistic too high ({ks:.3f}). Model not capturing distribution well."
+                if method == "ddpm":
+                    n_iter = hyperparams.get("n_iter", 300)
+                    # IMPROVED: More conservative increases for moderate failures
+                    if n_iter < 400:
+                        suggestions.append(f"Increase n_iter from {n_iter} to {min(500, n_iter + 100)}")
+                    elif n_iter < 500:
+                        suggestions.append(f"Increase n_iter from {n_iter} to 500")
+                    suggestions.append("Try increasing batch_size to 256 for better gradient estimates")
+                elif method in ("ctgan", "tvae"):
+                    epochs = hyperparams.get("epochs", 300)
+                    if epochs < 400:
+                        suggestions.append(f"Increase epochs from {epochs} to {min(500, epochs + 100)}")
+                    suggestions.append("Consider using TabDDPM (ddpm) for better distribution matching")
         
         elif primary_type == FailureType.HIGH_CORR_DELTA:
             root_cause = f"Utility failure: Correlation structure not preserved."
@@ -181,6 +235,7 @@ class SyntheticDataOptimizer:
         dataset_size: Tuple[int, int],
         previous_metrics: Optional[Dict[str, Any]] = None,
         dp_requested: bool = False,
+        dataset_complexity: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
         Suggest hyperparameters based on dataset characteristics and previous results.
@@ -190,18 +245,30 @@ class SyntheticDataOptimizer:
             dataset_size: (n_rows, n_cols)
             previous_metrics: Previous run metrics (for adaptive tuning)
             dp_requested: Whether DP is requested
+            dataset_complexity: Optional complexity analysis (from ClinicalModelSelector)
         
         Returns:
             Suggested hyperparameters
         """
         n_rows, n_cols = dataset_size
         
+        # IMPROVED: Use dataset complexity if available for better parameter selection
+        if dataset_complexity:
+            # Adjust for high-cardinality columns
+            high_card_cols = dataset_complexity.get("high_cardinality_cols", [])
+            if high_card_cols and method == "ctgan":
+                # CTGAN struggles with high-cardinality - suggest alternative
+                try:
+                    print(f"[optimizer] High-cardinality columns detected, CTGAN may struggle. Consider TabDDPM or TVAE.")
+                except Exception:
+                    pass
+        
         if method == "ddpm" or method == "tabddpm":
-            return self._suggest_tabddpm_params(n_rows, n_cols, previous_metrics)
+            return self._suggest_tabddpm_params(n_rows, n_cols, previous_metrics, dataset_complexity)
         elif method == "ctgan":
-            return self._suggest_ctgan_params(n_rows, n_cols, previous_metrics, dp_requested)
+            return self._suggest_ctgan_params(n_rows, n_cols, previous_metrics, dp_requested, dataset_complexity)
         elif method == "tvae":
-            return self._suggest_tvae_params(n_rows, n_cols, previous_metrics)
+            return self._suggest_tvae_params(n_rows, n_cols, previous_metrics, dataset_complexity)
         elif method == "gc":
             return {}  # GC has no hyperparameters
         else:
@@ -212,32 +279,64 @@ class SyntheticDataOptimizer:
         n_rows: int,
         n_cols: int,
         previous_metrics: Optional[Dict[str, Any]] = None,
+        dataset_complexity: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
-        """Suggest TabDDPM hyperparameters."""
-        # Base n_iter on dataset size
-        if n_rows < 1000:
-            n_iter = 200
-        elif n_rows < 5000:
-            n_iter = 300
-        elif n_rows < 20000:
-            n_iter = 400
-        else:
-            n_iter = 500
+        """Suggest TabDDPM hyperparameters with improved defaults for better quality."""
+        # IMPROVED: Higher base n_iter to prevent high KS Mean failures
+        # Previous defaults (200-300) were too low and led to KS Mean = 0.73
+        # New defaults prioritize quality over speed for better "all green" metrics
         
-        # Adaptive: increase if previous run had high KS
+        # Base n_iter on dataset size - INCREASED for better quality
+        if n_rows < 1000:
+            n_iter = 300  # Increased from 200 - better quality for small datasets
+        elif n_rows < 5000:
+            n_iter = 400  # Increased from 300 - balanced quality/speed
+        elif n_rows < 20000:
+            n_iter = 500  # Increased from 400 - high quality
+        else:
+            n_iter = 600  # Increased from 500 - maximum quality
+        
+        # IMPROVED: More aggressive adaptive adjustment for critical failures
         if previous_metrics:
             utility = previous_metrics.get("utility", {})
             ks = utility.get("ks_mean")
-            if ks and ks > self.KS_MAX:
-                n_iter = min(500, n_iter + 100)
+            if ks:
+                if ks > 0.5:  # Critical failure (like KS = 0.73)
+                    # Very aggressive increase for critical failures
+                    n_iter = min(600, n_iter + 200)
+                elif ks > self.KS_MAX:  # Standard failure (KS > 0.10)
+                    # Standard increase for failures
+                    n_iter = min(600, n_iter + 100)
+                elif ks > 0.08:  # Near threshold - slight increase
+                    # Preventive increase when close to threshold
+                    n_iter = min(600, n_iter + 50)
         
-        # Batch size: adaptive to dataset size
+        # IMPROVED: Batch size considers both rows and columns for better convergence
+        # More columns = more complex data = may need larger batch for stability
+        # Also consider dataset complexity if available
+        is_clinical = False
+        has_pii = False
+        if dataset_complexity:
+            is_clinical = dataset_complexity.get("is_clinical", False)
+            has_pii = dataset_complexity.get("has_pii", False)
+            # For clinical data with PII, use more conservative (higher quality) settings
+            if is_clinical and has_pii:
+                n_iter = min(600, n_iter + 100)  # Extra quality for sensitive clinical data
+        
         if n_rows < 500:
             batch_size = max(32, min(64, n_rows // 10))
         elif n_rows < 5000:
-            batch_size = 128
+            # For medium datasets, use larger batch if many columns or clinical data
+            if n_cols > 20 or is_clinical:
+                batch_size = 256  # Larger batch for high-dimensional or clinical data
+            else:
+                batch_size = 128
         else:
-            batch_size = min(256, max(128, n_rows // 20))
+            # For large datasets, scale batch with both rows and columns
+            if n_cols > 30 or is_clinical:
+                batch_size = min(512, max(256, n_rows // 15))  # Very large batch for complex/clinical data
+            else:
+                batch_size = min(256, max(128, n_rows // 20))
         
         return {
             "n_iter": n_iter,
@@ -250,6 +349,7 @@ class SyntheticDataOptimizer:
         n_cols: int,
         previous_metrics: Optional[Dict[str, Any]] = None,
         dp_requested: bool = False,
+        dataset_complexity: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Suggest CTGAN hyperparameters."""
         # Adaptive epochs
@@ -302,6 +402,7 @@ class SyntheticDataOptimizer:
         n_rows: int,
         n_cols: int,
         previous_metrics: Optional[Dict[str, Any]] = None,
+        dataset_complexity: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Suggest TVAE hyperparameters."""
         # Adaptive epochs
@@ -454,7 +555,16 @@ class SyntheticDataOptimizer:
 _optimizer = SyntheticDataOptimizer()
 
 
-def get_optimizer() -> SyntheticDataOptimizer:
-    """Get global optimizer instance."""
+def get_optimizer(compliance_level: Optional[str] = None) -> SyntheticDataOptimizer:
+    """Get optimizer instance, optionally with compliance level.
+    
+    Args:
+        compliance_level: Optional compliance level for compliance-aware optimization
+    
+    Returns:
+        SyntheticDataOptimizer instance
+    """
+    if compliance_level:
+        return SyntheticDataOptimizer(compliance_level=compliance_level)
     return _optimizer
 
