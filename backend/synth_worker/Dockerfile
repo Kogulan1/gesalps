@@ -39,8 +39,12 @@ RUN python /tmp/patch_opacus.py && rm /tmp/patch_opacus.py
 # Copy synth_worker files
 COPY synth_worker/ /app/
 
-# Copy libs directory (for compliance module)
+# Copy libs directory (for compliance module and model_selector)
 COPY libs/ /app/libs/
+
+# Ensure optimizer.py is available (it's in synth_worker directory)
+# The COPY synth_worker/ above should already include it, but verify
+RUN test -f /app/optimizer.py || echo "Warning: optimizer.py not found"
 
 # Ensure unbuffered stdout/stderr so logs appear in `docker logs`
 ENV PYTHONUNBUFFERED=1

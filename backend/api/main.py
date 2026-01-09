@@ -660,8 +660,13 @@ def list_runs(user: Dict[str, Any] = Depends(require_user)):
             "columns_generated": 0,
             "privacy_audit_passed": False,
             "utility_audit_passed": False,
+            "compliance_passed": False,
+            "compliance_score": None,
+            "compliance_level": None,
             "privacy": None,
-            "utility": None
+            "utility": None,
+            "fairness": None,
+            "compliance": None,
         }
         
         # Try to fetch metrics from database
@@ -676,6 +681,17 @@ def list_runs(user: Dict[str, Any] = Depends(require_user)):
                 if payload.get("utility"):
                     metrics["utility"] = payload["utility"]
                     logger.info(f"[list_runs] Run {run['id'][:8]}...: Set utility metrics: {metrics['utility']}")
+                if payload.get("fairness"):
+                    metrics["fairness"] = payload["fairness"]
+                
+                # Extract compliance results if available
+                if payload.get("compliance"):
+                    compliance = payload["compliance"]
+                    metrics["compliance"] = compliance
+                    metrics["compliance_passed"] = compliance.get("passed", False)
+                    metrics["compliance_score"] = compliance.get("score")
+                    metrics["compliance_level"] = compliance.get("level")
+                    logger.info(f"[list_runs] Run {run['id'][:8]}...: Compliance status: {metrics['compliance_passed']}, Score: {metrics['compliance_score']}")
                 
                 # Extract meta info for rows/columns
                 meta = payload.get("meta", {})
@@ -689,6 +705,12 @@ def list_runs(user: Dict[str, Any] = Depends(require_user)):
                 corr_delta = metrics["utility"] and metrics["utility"].get("corr_delta", 1.0) or 1.0
                 metrics["privacy_audit_passed"] = mia_auc <= 0.60 and dup_rate <= 0.05
                 metrics["utility_audit_passed"] = ks_mean <= 0.10 and corr_delta <= 0.15
+                
+                # Use compliance result if available, otherwise calculate from thresholds
+                if metrics.get("compliance_passed") is not None:
+                    metrics["compliance_passed"] = metrics["compliance_passed"]
+                else:
+                    metrics["compliance_passed"] = metrics["privacy_audit_passed"] and metrics["utility_audit_passed"]
             else:
                 logger.info(f"[list_runs] Run {run['id'][:8]}...: No metrics record found (m.data={m.data is not None})")
         except Exception as e:
@@ -700,7 +722,8 @@ def list_runs(user: Dict[str, Any] = Depends(require_user)):
                     "rows_generated": 1500,
                     "columns_generated": 25,
                     "privacy_audit_passed": scores["privacy_score"] > 0.7,
-                    "utility_audit_passed": scores["utility_score"] > 0.7
+                    "utility_audit_passed": scores["utility_score"] > 0.7,
+                    "compliance_passed": scores["privacy_score"] > 0.7 and scores["utility_score"] > 0.7,
                 })
         
         # Add top-level privacy and utility for frontend compatibility
