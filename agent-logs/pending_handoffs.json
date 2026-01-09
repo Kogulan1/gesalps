@@ -1,0 +1,1779 @@
+{
+  "pending": {
+    "CTO": [
+      {
+        "agent": "CTO",
+        "task": "Review architecture and approve integration into main worker pipeline. Consider API endpoint for manual optimization triggers (`/api/runs/{run_id}/optimize`)",
+        "source_log": "2026-01-08-Auto-Optimization-System-Implementation-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-08-Auto-Optimization-System-Implementation-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T11:03:27.867651",
+        "status": "pending"
+      },
+      {
+        "agent": "CTO",
+        "task": "Review compliance thresholds and approve for production use. Consider regulatory review for HIPAA-like compliance claims. Sign off on security architecture for database connections.",
+        "source_log": "2026-01-08-Clinical-Compliance-Implementation-ClinicalGradeDataScientist.md",
+        "source_path": "agent-logs/2026-01-08-Clinical-Compliance-Implementation-ClinicalGradeDataScientist.md",
+        "timestamp": "2026-01-09T11:03:27.867946",
+        "status": "pending"
+      },
+      {
+        "agent": "CTO",
+        "task": "Review and approve test plan for production use. Sign off on metric thresholds and regression tolerances. Consider test coverage requirements for clinical-grade certification.",
+        "source_log": "2026-01-08-Comprehensive-QA-Test-Plan-QATester.md",
+        "source_path": "agent-logs/2026-01-08-Comprehensive-QA-Test-Plan-QATester.md",
+        "timestamp": "2026-01-09T11:03:27.868312",
+        "status": "pending"
+      },
+      {
+        "agent": "CTO",
+        "task": "Review `ARCHITECTURE_FIX_PLAN.md` for architecture sign-off",
+        "source_log": "2026-01-08-Critical-Syntax-Errors-Fix-ArchitectureAgent.md",
+        "source_path": "agent-logs/2026-01-08-Critical-Syntax-Errors-Fix-ArchitectureAgent.md",
+        "timestamp": "2026-01-09T11:03:27.868508",
+        "status": "pending"
+      },
+      {
+        "agent": "CTO",
+        "task": "Review test results and decide on error handling strategy. The discrepancy suggests either the log file description was aspirational or components weren't fully updated.",
+        "source_log": "2026-01-08-Frontend-Test-Results-QATester.md",
+        "source_path": "agent-logs/2026-01-08-Frontend-Test-Results-QATester.md",
+        "timestamp": "2026-01-09T11:03:27.870002",
+        "status": "pending"
+      },
+      {
+        "agent": "CTO",
+        "task": "Review test coverage and approve test infrastructure setup. Consider adding E2E tests (Playwright/Cypress) for full user workflows.",
+        "source_log": "2026-01-08-Frontend-Testing-QATester.md",
+        "source_path": "agent-logs/2026-01-08-Frontend-Testing-QATester.md",
+        "timestamp": "2026-01-09T11:03:27.870135",
+        "status": "pending"
+      },
+      {
+        "agent": "CTO",
+        "task": "Review architecture decisions (Gunicorn workers, resource limits, health check strategy) for final approval",
+        "source_log": "2026-01-08-Zero-Downtime-Docker-Deployment-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-08-Zero-Downtime-Docker-Deployment-DevOpsAgent.md",
+        "timestamp": "2026-01-09T11:03:27.871645",
+        "status": "pending"
+      },
+      {
+        "agent": "CTO",
+        "task": "Review & Approval ACTION: Review architecture, compliance, and testing decisions - Check your tasks: `python3 scripts/agent_handoff_parser.py --agent CTO` - Prioritize production-blocking reviews - Create log file when complete",
+        "source_log": "2026-01-09-All-Agents-Coordination-MainAgent.md",
+        "source_path": "agent-logs/2026-01-09-All-Agents-Coordination-MainAgent.md",
+        "timestamp": "2026-01-09T11:37:02.632389",
+        "status": "pending"
+      },
+      {
+        "agent": "CTO",
+        "task": "Review threshold alignment and approve: - All thresholds are aligned and consistent - Compliance module is authoritative source - Additional compliance metrics (k-anonymity, DP, etc.) are appropriate for clinical use - Threshold consolidation strategy is acceptable",
+        "source_log": "2026-01-09-Metric-Thresholds-Clinical-Compliance-Review-ClinicalGradeDataScientist.md",
+        "source_path": "agent-logs/2026-01-09-Metric-Thresholds-Clinical-Compliance-Review-ClinicalGradeDataScientist.md",
+        "timestamp": "2026-01-09T11:43:49.774755",
+        "status": "pending"
+      },
+      {
+        "agent": "CTO",
+        "task": "PRIORITY: Medium",
+        "source_log": "2026-01-09-Task-Assignments-All-Agents-MainAgent.md",
+        "source_path": "agent-logs/2026-01-09-Task-Assignments-All-Agents-MainAgent.md",
+        "timestamp": "2026-01-09T11:46:10.113656",
+        "status": "pending"
+      },
+      {
+        "agent": "CTO",
+        "task": "- Review OpenRouter API costs - Approve OpenRouter integration - Consider rate limiting if needed - Monitor usage patterns",
+        "source_log": "2026-01-09-OpenRouter-Integration-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-09-OpenRouter-Integration-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T12:24:40.385624",
+        "status": "pending"
+      },
+      {
+        "agent": "CTO",
+        "task": "Review and prioritize recommendations, approve roadmap",
+        "source_log": "2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "source_path": "agent-logs/2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "timestamp": "2026-01-09T19:24:28.171066",
+        "status": "pending"
+      },
+      {
+        "agent": "CTO",
+        "task": "Evaluate federated learning architecture for multi-tenant scenarios",
+        "source_log": "2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "source_path": "agent-logs/2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "timestamp": "2026-01-09T19:24:28.171349",
+        "status": "pending"
+      }
+    ],
+    "DevOps Agent": [
+      {
+        "agent": "DevOps Agent",
+        "task": "Verify secure_query.py dependencies (psycopg2) are included in requirements.txt and Docker images",
+        "source_log": "2026-01-08-Auto-Optimization-System-Implementation-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-08-Auto-Optimization-System-Implementation-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T11:03:27.867686",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOps Agent",
+        "task": "Deploy to staging environment for integration testing",
+        "source_log": "2026-01-08-Critical-Syntax-Errors-Fix-ArchitectureAgent.md",
+        "source_path": "agent-logs/2026-01-08-Critical-Syntax-Errors-Fix-ArchitectureAgent.md",
+        "timestamp": "2026-01-09T11:03:27.868488",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOps Agent",
+        "task": "Verify CORS configuration on production backend includes `http://localhost:3000` for local development",
+        "source_log": "2026-01-08-Dashboard-Overview-Fixes-and-Error-Handling-FrontendDeveloper.md",
+        "source_path": "agent-logs/2026-01-08-Dashboard-Overview-Fixes-and-Error-Handling-FrontendDeveloper.md",
+        "timestamp": "2026-01-09T11:03:27.868592",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOps Agent",
+        "task": "Verify optimizer.py is included in worker Docker image and requirements",
+        "source_log": "2026-01-08-Optimizer-Integration-Main-Worker-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-08-Optimizer-Integration-Main-Worker-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T11:03:27.870660",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOps Agent",
+        "task": "Add logging for row generation to help diagnose zero rows issue",
+        "source_log": "2026-01-08-Run-Failure-Analysis-AutoOptimize-Status-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-08-Run-Failure-Analysis-AutoOptimize-Status-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T11:03:27.871069",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOps Agent",
+        "task": "Deploy updated code: - Changes are backward compatible - No breaking changes - Ready for deployment - May need to ensure ClinicalModelSelector dependencies (httpx, ollama) are available",
+        "source_log": "2026-01-09-State-of-Art-All-Green-Implementation-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-09-State-of-Art-All-Green-Implementation-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T11:52:16.312968",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOps Agent",
+        "task": "Deploy updated code to production: - Changes are backward compatible - No breaking changes - Ready for deployment",
+        "source_log": "2026-01-09-Synthetic-Data-Generation-Improvements-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-09-Synthetic-Data-Generation-Improvements-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T11:52:16.313286",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOps Agent",
+        "task": "- Add `OPENROUTER_API_KEY` to production environment - Update Docker Compose to include OpenRouter env vars - Test OpenRouter integration in production - Monitor API usage and costs",
+        "source_log": "2026-01-09-OpenRouter-Integration-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-09-OpenRouter-Integration-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T12:24:40.385546",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOps Agent",
+        "task": "Deploy updated code: - Changes are backward compatible - No breaking changes - Ready for deployment",
+        "source_log": "2026-01-09-All-Green-Improvements-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-09-All-Green-Improvements-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T14:56:38.920753",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOps Agent",
+        "task": "Deploy updated code: - Ensure `OPENROUTER_API_KEY` is set in production - Monitor OpenRouter API usage - Check logs for OpenRouter calls",
+        "source_log": "2026-01-09-OpenRouter-Agent-Mode-Fix-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-09-OpenRouter-Agent-Mode-Fix-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T15:07:35.091010",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOps Agent",
+        "task": "Design distributed training infrastructure (Ray/Horovod)",
+        "source_log": "2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "source_path": "agent-logs/2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "timestamp": "2026-01-09T19:24:28.171234",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOps Agent",
+        "task": "Deploy distributed training infrastructure",
+        "source_log": "2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "source_path": "agent-logs/2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "timestamp": "2026-01-09T19:24:28.171328",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOps Agent",
+        "task": "Implement streaming data generation for >1M rows",
+        "source_log": "2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "source_path": "agent-logs/2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "timestamp": "2026-01-09T19:24:28.171390",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOps Agent",
+        "task": "- Add `OPENROUTER_API_KEY` to production environment - Update Docker Compose with OpenRouter env vars - Deploy updated code - Restart services - Verify OpenRouter is being used (check logs and dashboard) - Monitor API usage and costs",
+        "source_log": "2026-01-09-OpenRouter-Integration-Production-Deployment-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-OpenRouter-Integration-Production-Deployment-DevOpsAgent.md",
+        "timestamp": "2026-01-09T19:30:41.362139",
+        "status": "pending"
+      }
+    ],
+    "QA Tester": [
+      {
+        "agent": "QA Tester",
+        "task": "Test auto-optimization system with various dataset sizes and failure scenarios. Verify retry loop behavior and parameter adjustment logic",
+        "source_log": "2026-01-08-Auto-Optimization-System-Implementation-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-08-Auto-Optimization-System-Implementation-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T11:03:27.867711",
+        "status": "pending"
+      },
+      {
+        "agent": "QA Tester",
+        "task": "Create test suite for compliance module using `backend/libs/experiments.py`. Test all compliance levels, threshold variations, and edge cases. Validate database connector with test databases.",
+        "source_log": "2026-01-08-Clinical-Compliance-Implementation-ClinicalGradeDataScientist.md",
+        "source_path": "agent-logs/2026-01-08-Clinical-Compliance-Implementation-ClinicalGradeDataScientist.md",
+        "timestamp": "2026-01-09T11:03:27.867923",
+        "status": "pending"
+      },
+      {
+        "agent": "QA Tester",
+        "task": "Test compliance integration with various scenarios: - Runs that pass compliance thresholds - Runs that fail compliance thresholds - Runs with missing compliance module (graceful degradation) - Different compliance levels (hipaa_like, clinical_strict, research)",
+        "source_log": "2026-01-08-Compliance-Evaluator-Integration-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-08-Compliance-Evaluator-Integration-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T11:03:27.868073",
+        "status": "pending"
+      },
+      {
+        "agent": "QA Tester",
+        "task": "Test `list_runs()` endpoint with various metrics scenarios (present, absent, malformed)",
+        "source_log": "2026-01-08-Critical-Syntax-Errors-Fix-ArchitectureAgent.md",
+        "source_path": "agent-logs/2026-01-08-Critical-Syntax-Errors-Fix-ArchitectureAgent.md",
+        "timestamp": "2026-01-09T11:03:27.868430",
+        "status": "pending"
+      },
+      {
+        "agent": "QA Tester",
+        "task": "Verify privacy audit flags (`privacy_audit_passed`, `utility_audit_passed`) are set correctly in API responses",
+        "source_log": "2026-01-08-Critical-Syntax-Errors-Fix-ArchitectureAgent.md",
+        "source_path": "agent-logs/2026-01-08-Critical-Syntax-Errors-Fix-ArchitectureAgent.md",
+        "timestamp": "2026-01-09T11:03:27.868451",
+        "status": "pending"
+      },
+      {
+        "agent": "QA Tester",
+        "task": "Test all dashboard overview features end-to-end: - Eye icon navigation to project details - Play icon navigation to datasets page - Edit/Delete project actions - Recent Activity click functionality - Upgrade Plan button redirect - Error handling for network failures",
+        "source_log": "2026-01-08-Dashboard-Overview-Fixes-and-Error-Handling-FrontendDeveloper.md",
+        "source_path": "agent-logs/2026-01-08-Dashboard-Overview-Fixes-and-Error-Handling-FrontendDeveloper.md",
+        "timestamp": "2026-01-09T11:03:27.868623",
+        "status": "pending"
+      },
+      {
+        "agent": "QA Tester",
+        "task": "Test all sections end-to-end: - Projects: Create, rename, delete, view, start run - Datasets: Upload, preview, rename, delete, start run, view results - Runs: View details, download reports/data, cancel runs - Activity: Verify mock data display (until API endpoint is available)",
+        "source_log": "2026-01-08-Frontend-Sections-Testing-and-Fixes-FrontendDeveloper.md",
+        "source_path": "agent-logs/2026-01-08-Frontend-Sections-Testing-and-Fixes-FrontendDeveloper.md",
+        "timestamp": "2026-01-09T11:03:27.869622",
+        "status": "pending"
+      },
+      {
+        "agent": "QA Tester",
+        "task": "Test optimizer integration with various dataset sizes. Verify: - Initial hyperparameter suggestions are applied - Failure analysis triggers on threshold failures - Retry loop uses optimized parameters - Backward compatibility (works if optimizer unavailable)",
+        "source_log": "2026-01-08-Optimizer-Integration-Main-Worker-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-08-Optimizer-Integration-Main-Worker-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T11:03:27.870640",
+        "status": "pending"
+      },
+      {
+        "agent": "QA Tester",
+        "task": "Re-run frontend tests to verify all 24 tests now pass. Expected improvements: - Network error handling: Should show mock data (as intended) - 404 error handling: Should show error UI (not mock data) - 401 error handling: Should show error UI without troubleshooting tips - Error UI components: Retry and Go Back buttons should be present - Dashboard error state: Should show \"Try Again\" button",
+        "source_log": "2026-01-08-QA-Test-Failures-Fix-FrontendDeveloper.md",
+        "source_path": "agent-logs/2026-01-08-QA-Test-Failures-Fix-FrontendDeveloper.md",
+        "timestamp": "2026-01-09T11:03:27.870754",
+        "status": "pending"
+      },
+      {
+        "agent": "QA Tester",
+        "task": "Re-run frontend tests to verify all 24 tests now pass. Expected improvements: - DashboardContent error handling: Should find ErrorState with data-testid attributes - ResultsModal download tests: Should find download buttons with data-testid attributes - ResultsModal error handling: Should show error UI for API errors, mock data only for network errors",
+        "source_log": "2026-01-08-Remaining-QA-Test-Failures-Fix-FrontendDeveloper.md",
+        "source_path": "agent-logs/2026-01-08-Remaining-QA-Test-Failures-Fix-FrontendDeveloper.md",
+        "timestamp": "2026-01-09T11:03:27.870847",
+        "status": "pending"
+      },
+      {
+        "agent": "QA Tester",
+        "task": "Re-run ResultsModal tests to verify all 5 tests now pass. The component should: 1. Load data from 3 API endpoints without crashing 2. Render download buttons correctly 3. Handle download functionality properly 4. Show proper error states when downloads fail",
+        "source_log": "2026-01-08-ResultsModal-Test-Failures-Fix-FrontendDeveloper.md",
+        "source_path": "agent-logs/2026-01-08-ResultsModal-Test-Failures-Fix-FrontendDeveloper.md",
+        "timestamp": "2026-01-09T11:03:27.870932",
+        "status": "pending"
+      },
+      {
+        "agent": "QA Tester",
+        "task": "Test with KS Mean = 0.73 scenario: - Verify optimizer suggestions are correct - Test retry with optimized parameters - Verify zero rows detection and status update",
+        "source_log": "2026-01-08-Run-Failure-Analysis-AutoOptimize-Status-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-08-Run-Failure-Analysis-AutoOptimize-Status-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T11:03:27.871050",
+        "status": "pending"
+      },
+      {
+        "agent": "QA Tester",
+        "task": "Test all improvements: 1. Error messages are user-friendly 2. Failed runs with 0 rows show \"Failed\" status 3. Auto-Optimize button appears for failed runs 4. Language switcher is visible in header 5. Loading states provide feedback",
+        "source_log": "2026-01-08-UX-Improvements-FrontendDeveloper.md",
+        "source_path": "agent-logs/2026-01-08-UX-Improvements-FrontendDeveloper.md",
+        "timestamp": "2026-01-09T11:03:27.871344",
+        "status": "pending"
+      },
+      {
+        "agent": "QA Tester",
+        "task": "Test zero-downtime deployment process, verify no service interruption during deployments, validate health checks",
+        "source_log": "2026-01-08-Zero-Downtime-Docker-Deployment-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-08-Zero-Downtime-Docker-Deployment-DevOpsAgent.md",
+        "timestamp": "2026-01-09T11:03:27.871684",
+        "status": "pending"
+      },
+      {
+        "agent": "QA Tester",
+        "task": "⚠️ High Priority ACTION: Test auto-optimization system and compliance module - Check your tasks: `python3 scripts/agent_handoff_parser.py --agent QATester` - Start with auto-optimization testing - Create log file when complete",
+        "source_log": "2026-01-09-All-Agents-Coordination-MainAgent.md",
+        "source_path": "agent-logs/2026-01-09-All-Agents-Coordination-MainAgent.md",
+        "timestamp": "2026-01-09T11:37:02.632359",
+        "status": "pending"
+      },
+      {
+        "agent": "QA Tester",
+        "task": "Action: Test error message improvements 1. Test network error scenarios 2. Verify user-friendly messages appear 3. Test retry functionality 4. Verify no technical error messages shown to users",
+        "source_log": "2026-01-09-Error-Message-Improvements-FrontendDeveloper.md",
+        "source_path": "agent-logs/2026-01-09-Error-Message-Improvements-FrontendDeveloper.md",
+        "timestamp": "2026-01-09T11:42:25.934350",
+        "status": "pending"
+      },
+      {
+        "agent": "QA Tester",
+        "task": "- Test error scenarios to verify user-friendly messages appear - Verify toast notifications display correctly - Test network error scenarios - Verify no technical error messages shown to users",
+        "source_log": "2026-01-09-Error-Message-Improvements-Complete-FrontendDeveloper.md",
+        "source_path": "agent-logs/2026-01-09-Error-Message-Improvements-Complete-FrontendDeveloper.md",
+        "timestamp": "2026-01-09T11:46:01.356249",
+        "status": "pending"
+      },
+      {
+        "agent": "QA Tester",
+        "task": "PRIORITY: High",
+        "source_log": "2026-01-09-Task-Assignments-All-Agents-MainAgent.md",
+        "source_path": "agent-logs/2026-01-09-Task-Assignments-All-Agents-MainAgent.md",
+        "timestamp": "2026-01-09T11:46:10.113620",
+        "status": "pending"
+      },
+      {
+        "agent": "QA Tester",
+        "task": "Test state-of-the-art improvements: - Test all dataset types (clinical, high-dimensional, high-cardinality, mixed-type) - Test all compliance levels (HIPAA_LIKE, CLINICAL_STRICT, RESEARCH) - Test failure recovery scenarios - Verify \"all green\" success rate improved to 85-95%",
+        "source_log": "2026-01-09-State-of-Art-All-Green-Implementation-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-09-State-of-Art-All-Green-Implementation-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T11:52:16.312939",
+        "status": "pending"
+      },
+      {
+        "agent": "QA Tester",
+        "task": "Test improved defaults with various dataset sizes: - Verify new n_iter values are applied correctly - Test failure recovery with critical failures (KS > 0.5) - Verify \"all green\" metrics achievement rate improved - Test high-dimensional datasets (> 20 columns)",
+        "source_log": "2026-01-09-Synthetic-Data-Generation-Improvements-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-09-Synthetic-Data-Generation-Improvements-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T11:52:16.313262",
+        "status": "pending"
+      },
+      {
+        "agent": "QA Tester",
+        "task": "- Test eye icon navigation on project overview page - Verify navigation works correctly for all locales (EN, DE, FR, IT) - Verify project detail page loads real data from production backend - Test error scenarios (invalid project ID, network failures)",
+        "source_log": "2026-01-09-Eye-Icon-Navigation-Fix-FrontendDeveloper.md",
+        "source_path": "agent-logs/2026-01-09-Eye-Icon-Navigation-Fix-FrontendDeveloper.md",
+        "timestamp": "2026-01-09T11:57:21.348034",
+        "status": "pending"
+      },
+      {
+        "agent": "QA Tester",
+        "task": "- Test OpenRouter integration with various datasets - Test fallback to Ollama when OpenRouter unavailable - Verify JSON response quality improved - Test response times",
+        "source_log": "2026-01-09-OpenRouter-Integration-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-09-OpenRouter-Integration-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T12:24:40.385590",
+        "status": "pending"
+      },
+      {
+        "agent": "QA Tester",
+        "task": "- Test state-of-the-art improvements with various dataset types - Test all compliance levels (HIPAA_LIKE, CLINICAL_STRICT, RESEARCH) - Test failure recovery scenarios - Verify \"all green\" success rate improved to 85-95%",
+        "source_log": "2026-01-09-SyntheticDataSpecialist-Deployment-Complete-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-SyntheticDataSpecialist-Deployment-Complete-DevOpsAgent.md",
+        "timestamp": "2026-01-09T12:44:49.873293",
+        "status": "pending"
+      },
+      {
+        "agent": "QA Tester",
+        "task": "- Test project detail endpoint with various scenarios - Test authentication and authorization - Test error cases (404, 401, 403) - Verify CORS headers are present",
+        "source_log": "2026-01-09-Project-Detail-Endpoint-Fix-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-Project-Detail-Endpoint-Fix-DevOpsAgent.md",
+        "timestamp": "2026-01-09T13:00:12.564758",
+        "status": "pending"
+      },
+      {
+        "agent": "QA Tester",
+        "task": "Test all improvements: - Verify early stopping works - Test method switching logic - Verify near-threshold optimization - Test improved scoring function - Measure \"all green\" success rate improvement",
+        "source_log": "2026-01-09-All-Green-Improvements-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-09-All-Green-Improvements-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T14:56:38.920712",
+        "status": "pending"
+      },
+      {
+        "agent": "QA Tester",
+        "task": "Test OpenRouter integration: - Verify OpenRouter API calls in agent mode - Check OpenRouter dashboard for usage - Test with and without API key - Verify performance improvements",
+        "source_log": "2026-01-09-OpenRouter-Agent-Mode-Fix-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-09-OpenRouter-Agent-Mode-Fix-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T15:07:35.090972",
+        "status": "pending"
+      },
+      {
+        "agent": "QA Tester",
+        "task": "- Test OpenRouter integration in production - Verify API calls appear in OpenRouter dashboard - Test fallback to Ollama - Verify performance improvements",
+        "source_log": "2026-01-09-OpenRouter-Integration-Production-Deployment-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-OpenRouter-Integration-Production-Deployment-DevOpsAgent.md",
+        "timestamp": "2026-01-09T19:30:41.362175",
+        "status": "pending"
+      }
+    ],
+    "Frontend Developer Agent": [
+      {
+        "agent": "Frontend Developer Agent",
+        "task": "Consider UI enhancements to display optimization suggestions and retry attempts in run details",
+        "source_log": "2026-01-08-Auto-Optimization-System-Implementation-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-08-Auto-Optimization-System-Implementation-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T11:03:27.867733",
+        "status": "pending"
+      }
+    ],
+    "Main Agent": [
+      {
+        "agent": "Main Agent",
+        "task": "System ready for integration testing. All files pass linting, documentation complete.",
+        "source_log": "2026-01-08-Auto-Optimization-System-Implementation-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-08-Auto-Optimization-System-Implementation-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T11:03:27.867753",
+        "status": "pending"
+      },
+      {
+        "agent": "Main Agent",
+        "task": "Integration complete, ready for testing. All linting passes.",
+        "source_log": "2026-01-08-Optimizer-Integration-Main-Worker-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-08-Optimizer-Integration-Main-Worker-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T11:03:27.870679",
+        "status": "pending"
+      },
+      {
+        "agent": "Main Agent",
+        "task": "- Consider setting `OPENROUTER_API_KEY` in production `.env` if OpenRouter is to be used - Monitor API usage and costs if OpenRouter is enabled - Review model selection quality improvements",
+        "source_log": "2026-01-09-SyntheticDataSpecialist-Updates-Deployed-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-SyntheticDataSpecialist-Updates-Deployed-DevOpsAgent.md",
+        "timestamp": "2026-01-09T13:58:03.752596",
+        "status": "pending"
+      },
+      {
+        "agent": "Main Agent",
+        "task": "- Coordinate with EndUserTester to test new features - Provide testing scenarios and priorities - Collect feedback on: - Model selection quality - Compliance-aware behavior - Failure recovery improvements - Overall system intelligence - Share feedback with SyntheticDataSpecialist for further improvements",
+        "source_log": "2026-01-09-Deployment-Complete-Request-User-Testing-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-Deployment-Complete-Request-User-Testing-DevOpsAgent.md",
+        "timestamp": "2026-01-09T14:07:03.853087",
+        "status": "pending"
+      }
+    ],
+    "DevOpsAgent": [
+      {
+        "agent": "DevOpsAgent",
+        "task": "Review database connector dependencies (SQLAlchemy, database drivers) and ensure they're added to Docker images if needed. Test SSL/TLS connections in production environment.",
+        "source_log": "2026-01-08-Clinical-Compliance-Implementation-ClinicalGradeDataScientist.md",
+        "source_path": "agent-logs/2026-01-08-Clinical-Compliance-Implementation-ClinicalGradeDataScientist.md",
+        "timestamp": "2026-01-09T11:03:27.867851",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "Ensure `backend/libs/compliance.py` is included in Docker image. Verify environment variable `COMPLIANCE_LEVEL` can be set in production.",
+        "source_log": "2026-01-08-Compliance-Evaluator-Integration-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-08-Compliance-Evaluator-Integration-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T11:03:27.868094",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "Ensure pytest and test dependencies are included in Docker images. Consider adding test stage to CI/CD pipeline. Verify test execution in containerized environment.",
+        "source_log": "2026-01-08-Comprehensive-QA-Test-Plan-QATester.md",
+        "source_path": "agent-logs/2026-01-08-Comprehensive-QA-Test-Plan-QATester.md",
+        "timestamp": "2026-01-09T11:03:27.868199",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "🔴 CRITICAL PRIORITY (P0) CORS Configuration Fix: - Problem: API at `https://api.gesalpai.ch` not allowing requests from `https://www.gesalpai.ch` - Action Required: 1. Verify CORS configuration on backend API 2. Ensure `Access-Control-Allow-Origin` header includes `https://www.gesalpai.ch` 3. Test project detail page endpoint: `/v1/projects/{id}` 4. Verify all API endpoints have proper CORS headers 5. Consider allowing both `www.gesalpai.ch` and `gesalpai.ch` origins - Impact: This blocks core functionality and will prevent hospital adoption - Priority: P0 - Fix immediately - Expected Response: Create log file with fix implementation and verification",
+        "source_log": "2026-01-08-EndUserTester-Feedback-Prioritized-MainAgent.md",
+        "source_path": "agent-logs/2026-01-08-EndUserTester-Feedback-Prioritized-MainAgent.md",
+        "timestamp": "2026-01-09T11:03:27.869333",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "Frontend tests ready for CI/CD integration. Current pass rate is acceptable, with ResultsModal tests to be fixed incrementally.",
+        "source_log": "2026-01-08-Frontend-Test-Final-Check-QATester.md",
+        "source_path": "agent-logs/2026-01-08-Frontend-Test-Final-Check-QATester.md",
+        "timestamp": "2026-01-09T11:03:27.869761",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "Frontend tests can be integrated into CI/CD. Current pass rate is acceptable for initial integration, with remaining failures to be addressed incrementally.",
+        "source_log": "2026-01-08-Frontend-Test-Final-Results-QATester.md",
+        "source_path": "agent-logs/2026-01-08-Frontend-Test-Final-Results-QATester.md",
+        "timestamp": "2026-01-09T11:03:27.869878",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "Add frontend tests to CI/CD pipeline. Run `npm test` in frontend directory as part of build process. Consider adding test coverage reporting.",
+        "source_log": "2026-01-08-Frontend-Testing-QATester.md",
+        "source_path": "agent-logs/2026-01-08-Frontend-Testing-QATester.md",
+        "timestamp": "2026-01-09T11:03:27.870094",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "Frontend test infrastructure is ready for CI/CD integration. Tests can be run with `npm test` in frontend directory.",
+        "source_log": "2026-01-08-Frontend-Tests-Updated-QATester.md",
+        "source_path": "agent-logs/2026-01-08-Frontend-Tests-Updated-QATester.md",
+        "timestamp": "2026-01-09T11:03:27.870244",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "CRITICAL PRIORITY CORS Configuration Issue: - Problem: API at `https://api.gesalpai.ch` not allowing requests from `https://www.gesalpai.ch` - Action Required: 1. Verify CORS configuration on backend API 2. Ensure `Access-Control-Allow-Origin` header includes `https://www.gesalpai.ch` 3. Test project detail page endpoint: `/v1/projects/{id}` 4. Verify all API endpoints have proper CORS headers - Impact: This blocks core functionality and will prevent hospital adoption - Priority: P0 - Fix immediately",
+        "source_log": "2026-01-08-User-Testing-Session-1-EndUserTester.md",
+        "source_path": "agent-logs/2026-01-08-User-Testing-Session-1-EndUserTester.md",
+        "timestamp": "2026-01-09T11:03:27.871476",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "Monitor first production deployment, gather metrics on deployment time and service availability",
+        "source_log": "2026-01-08-Zero-Downtime-Docker-Deployment-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-08-Zero-Downtime-Docker-Deployment-DevOpsAgent.md",
+        "timestamp": "2026-01-09T11:03:27.871704",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "Future Enhancement Options: - Option 2: GitHub Issues integration (if needed) - Option 3: Webhook API endpoint (for real-time notifications) - Option 4: Status tracking (pending → in_progress → completed)",
+        "source_log": "2026-01-09-Agent-Handoff-Automation-Implemented-EndUserTester.md",
+        "source_path": "agent-logs/2026-01-09-Agent-Handoff-Automation-Implemented-EndUserTester.md",
+        "timestamp": "2026-01-09T11:15:25.873352",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "Fix CORS configuration ```",
+        "source_log": "SETUP_GUIDE.md",
+        "source_path": "agent-logs/SETUP_GUIDE.md",
+        "timestamp": "2026-01-09T11:15:25.873822",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "Fix CORS configuration on API endpoint",
+        "source_log": "USAGE_GUIDE.md",
+        "source_path": "agent-logs/USAGE_GUIDE.md",
+        "timestamp": "2026-01-09T11:15:25.873910",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "Test the system",
+        "source_log": "test.md",
+        "source_path": "agent-logs/test.md",
+        "timestamp": "2026-01-09T11:18:40.964979",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "🔴 P0 CRITICAL IMMEDIATE ACTION: Fix CORS configuration blocking production - Check your tasks: `python3 scripts/agent_handoff_parser.py --agent DevOpsAgent` - Start with P0 CORS fix - Create log file when complete",
+        "source_log": "2026-01-09-All-Agents-Coordination-MainAgent.md",
+        "source_path": "agent-logs/2026-01-09-All-Agents-Coordination-MainAgent.md",
+        "timestamp": "2026-01-09T11:37:02.632255",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "🔴 P0 CRITICAL - URGENT CORS Fix Not Applied: - Status: CORS error still present after investigation - Issue: Configuration may be correct but not active in running container - Action Required: 1. Verify API container was restarted after config update 2. Check if environment variable is active in running container: ```bash docker compose exec api env | grep CORS_ALLOW_ORIGINS ``` 3. Restart API service to apply configuration: ```bash docker compose restart api ``` 4. Test CORS headers from browser (not just command line): ```bash curl -H \"Origin: https://www.gesalpai.ch\" \\ -H \"Access-Control-Request-Method: GET\" \\ -X OPTIONS \\ https://api.gesalpai.ch/v1/projects/7f5a4c07-054e-4cee-abd4-b9111c7e3ffa \\ -v ``` 5. Verify response includes: `access-control-allow-origin: https://www.gesalpai.ch` 6. After fix: Notify EndUserTester for retest",
+        "source_log": "2026-01-09-CORS-Fix-Retest-Failed-EndUserTester.md",
+        "source_path": "agent-logs/2026-01-09-CORS-Fix-Retest-Failed-EndUserTester.md",
+        "timestamp": "2026-01-09T11:44:14.645269",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "PRIORITY: P0 - CRITICAL",
+        "source_log": "2026-01-09-Task-Assignments-All-Agents-MainAgent.md",
+        "source_path": "agent-logs/2026-01-09-Task-Assignments-All-Agents-MainAgent.md",
+        "timestamp": "2026-01-09T11:46:10.113545",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "CRITICAL ACTION REQUIRED: Fix CORS configuration on backend API 1. Verify CORS configuration in backend `.env` file on VPS 2. Ensure `CORS_ALLOW_ORIGINS` includes `https://www.gesalpai.ch` 3. Verify the API is returning `Access-Control-Allow-Origin: https://www.gesalpai.ch` header 4. Test the project detail endpoint: `GET /v1/projects/{id}` from `https://www.gesalpai.ch` 5. Consider allowing both `www.gesalpai.ch` and `gesalpai.ch` (with/without www) 6. Restart API service if configuration was updated 7. Create log file documenting the fix and verification",
+        "source_log": "2026-01-09-CORS-Issue-Project-Detail-Page-FrontendDeveloper.md",
+        "source_path": "agent-logs/2026-01-09-CORS-Issue-Project-Detail-Page-FrontendDeveloper.md",
+        "timestamp": "2026-01-09T12:17:34.895890",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "🔴 P0 CRITICAL - CORS Issue Persists IMMEDIATE ACTION: Fix CORS configuration blocking project detail access - Problem: API at `https://api.gesalpai.ch` not allowing requests from `https://www.gesalpai.ch` - Specific Endpoint: `/v1/projects/{id}` endpoint blocked - Action Required: 1. Verify CORS configuration on backend API 2. Ensure `Access-Control-Allow-Origin` header includes `https://www.gesalpai.ch` 3. Test project detail page endpoint specifically 4. Verify all API endpoints have proper CORS headers 5. Check if there are any proxy/CDN layers stripping CORS headers - Impact: This blocks core functionality and will prevent hospital adoption - Priority: P0 - Fix immediately - Expected Response: Create log file with fix implementation and verification - Note: This issue was previously reported but persists. Needs deeper investigation.",
+        "source_log": "2026-01-09-General-Platform-Testing-EndUserTester.md",
+        "source_path": "agent-logs/2026-01-09-General-Platform-Testing-EndUserTester.md",
+        "timestamp": "2026-01-09T12:26:16.451568",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "PRIORITY: High - Unblock Other Tasks",
+        "source_log": "2026-01-09-Docker-Build-Optimization-Solutions-MainAgent.md",
+        "source_path": "agent-logs/2026-01-09-Docker-Build-Optimization-Solutions-MainAgent.md",
+        "timestamp": "2026-01-09T12:46:58.997176",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "- Always run endpoint verification after deployments - If endpoints missing, investigate immediately - Check git history for accidental deletions - Rebuild containers if needed",
+        "source_log": "2026-01-09-Endpoint-Verification-System-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-Endpoint-Verification-System-DevOpsAgent.md",
+        "timestamp": "2026-01-09T19:32:45.140771",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "Ensure report service has all dependencies: - Verify WeasyPrint is installed - Verify compliance module is available - Test PDF generation in containerized environment",
+        "source_log": "2026-01-09-Metrics-Improvements-Backend-Frontend-Reports-ClinicalGradeDataScientist.md",
+        "source_path": "agent-logs/2026-01-09-Metrics-Improvements-Backend-Frontend-Reports-ClinicalGradeDataScientist.md",
+        "timestamp": "2026-01-09T21:09:53.289258",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "PRIORITY: High - Performance Critical",
+        "source_log": "2026-01-09-Docker-Build-Performance-Analysis-MainAgent.md",
+        "source_path": "agent-logs/2026-01-09-Docker-Build-Performance-Analysis-MainAgent.md",
+        "timestamp": "2026-01-09T22:06:46.998030",
+        "status": "pending"
+      }
+    ],
+    "SyntheticDataSpecialist": [
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "Integrate compliance evaluator into `backend/synth_worker/worker.py` `execute_pipeline()` function. Add compliance results to metrics payload. Consider using ClinicalModelSelector for enhanced model selection.",
+        "source_log": "2026-01-08-Clinical-Compliance-Implementation-ClinicalGradeDataScientist.md",
+        "source_path": "agent-logs/2026-01-08-Clinical-Compliance-Implementation-ClinicalGradeDataScientist.md",
+        "timestamp": "2026-01-09T11:03:27.867877",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "Review metric regression baseline values. Ensure TabDDPM metrics match baseline expectations. Update baseline if production metrics differ significantly.",
+        "source_log": "2026-01-08-Comprehensive-QA-Test-Plan-QATester.md",
+        "source_path": "agent-logs/2026-01-08-Comprehensive-QA-Test-Plan-QATester.md",
+        "timestamp": "2026-01-09T11:03:27.868222",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "⚠️ High Priority Run Failure Analysis: - Both test runs failed with KS Mean = 0.73 (very high) - Privacy metrics excellent (MIA AUC: 0.003, Dup Rate: 0) - Utility metrics poor (KS Mean: 0.73) - Question: Is Auto-Optimize feature available in UI? If yes, where? - Suggestion: Add recommendations in run details for failed runs",
+        "source_log": "2026-01-08-EndUserTester-Feedback-Prioritized-MainAgent.md",
+        "source_path": "agent-logs/2026-01-08-EndUserTester-Feedback-Prioritized-MainAgent.md",
+        "timestamp": "2026-01-09T11:03:27.869411",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "Run Failure Analysis: - Both test runs failed with KS Mean = 0.73 (very high) - Privacy metrics excellent (MIA AUC: 0.003, Dup Rate: 0) - Utility metrics poor (KS Mean: 0.73) - Question: Is Auto-Optimize feature available in UI? If yes, where? - Suggestion: Add recommendations in run details for failed runs (e.g., \"Try Auto-Optimize\" or \"Adjust hyperparameters\")",
+        "source_log": "2026-01-08-User-Testing-Session-1-EndUserTester.md",
+        "source_path": "agent-logs/2026-01-08-User-Testing-Session-1-EndUserTester.md",
+        "timestamp": "2026-01-09T11:03:27.871535",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "Verify Auto-Optimize feature availability ```",
+        "source_log": "USAGE_GUIDE.md",
+        "source_path": "agent-logs/USAGE_GUIDE.md",
+        "timestamp": "2026-01-09T11:15:25.873949",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "⚠️ High Priority ACTION: Analyze run failures and verify Auto-Optimize implementation - Check your tasks: `python3 scripts/agent_handoff_parser.py --agent SyntheticDataSpecialist` - Start with run failure analysis - Create log file when complete",
+        "source_log": "2026-01-09-All-Agents-Coordination-MainAgent.md",
+        "source_path": "agent-logs/2026-01-09-All-Agents-Coordination-MainAgent.md",
+        "timestamp": "2026-01-09T11:37:02.632332",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "Consider consolidating threshold definitions: - Import thresholds from compliance module in worker.py - Import thresholds from compliance module in optimizer.py - Update threshold references to use compliance module as source of truth - This is a future enhancement, not urgent",
+        "source_log": "2026-01-09-Metric-Thresholds-Clinical-Compliance-Review-ClinicalGradeDataScientist.md",
+        "source_path": "agent-logs/2026-01-09-Metric-Thresholds-Clinical-Compliance-Review-ClinicalGradeDataScientist.md",
+        "timestamp": "2026-01-09T11:43:49.774723",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "PRIORITY: High",
+        "source_log": "2026-01-09-Task-Assignments-All-Agents-MainAgent.md",
+        "source_path": "agent-logs/2026-01-09-Task-Assignments-All-Agents-MainAgent.md",
+        "timestamp": "2026-01-09T11:46:10.113601",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "Auto-Optimize Feature Status: - Auto-Optimize button not visible in UI for failed runs - May need to verify if feature is available or needs UI implementation - Users cannot easily trigger optimization after failures",
+        "source_log": "2026-01-09-UX-Improvements-Retest-EndUserTester.md",
+        "source_path": "agent-logs/2026-01-09-UX-Improvements-Retest-EndUserTester.md",
+        "timestamp": "2026-01-09T12:00:33.664905",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "- Monitor production runs for optimizer usage - Verify \"all green\" metrics achievement rate improved - Test with various dataset types and compliance levels",
+        "source_log": "2026-01-09-SyntheticDataSpecialist-Deployment-Complete-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-SyntheticDataSpecialist-Deployment-Complete-DevOpsAgent.md",
+        "timestamp": "2026-01-09T12:44:49.873253",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "- Monitor production runs for ClinicalModelSelector usage - Verify OpenRouter integration works (if API key is set) - Test compliance-aware optimization - Verify \"all green\" metrics achievement rate improved",
+        "source_log": "2026-01-09-SyntheticDataSpecialist-Updates-Deployed-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-SyntheticDataSpecialist-Updates-Deployed-DevOpsAgent.md",
+        "timestamp": "2026-01-09T13:58:03.752555",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "- Monitor production logs for ClinicalModelSelector usage - Review feedback from EndUserTester - Make adjustments based on real-world usage - Consider additional improvements based on feedback",
+        "source_log": "2026-01-09-Deployment-Complete-Request-User-Testing-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-Deployment-Complete-Request-User-Testing-DevOpsAgent.md",
+        "timestamp": "2026-01-09T14:07:03.853156",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "⚠️ Medium Priority Method & Privacy Guidance: 1. Method Selection Guidance: - Add comparison table - Use case recommendations - Performance characteristics - Privacy vs Utility trade-offs - Priority: Medium",
+        "source_log": "2026-01-09-New-Run-Comprehensive-Feedback-EndUserTester.md",
+        "source_path": "agent-logs/2026-01-09-New-Run-Comprehensive-Feedback-EndUserTester.md",
+        "timestamp": "2026-01-09T15:01:22.406637",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "- Monitor production runs for improvements - Verify OpenRouter is being called - Check \"all green\" success rate - Review logs for any issues",
+        "source_log": "2026-01-09-SyntheticDataSpecialist-Latest-Updates-Deployed-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-SyntheticDataSpecialist-Latest-Updates-Deployed-DevOpsAgent.md",
+        "timestamp": "2026-01-09T19:55:47.383288",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "⚠️ Review Method Switching Logic ACTION: Review method switching implementation 1. Verify method switching logic is working as expected 2. Investigate why all methods (DDPM, CTGAN, TVAE) failed utility threshold in test run 3. Confirm early stopping logic is implemented and working 4. Verify OpenRouter integration is functional in agent mode",
+        "source_log": "2026-01-09-Performance-Updates-Testing-EndUserTester.md",
+        "source_path": "agent-logs/2026-01-09-Performance-Updates-Testing-EndUserTester.md",
+        "timestamp": "2026-01-09T20:09:54.610252",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "- Monitor OpenRouter integration in production - Review OpenRouter API usage and costs - Verify re-planning quality improvements - Check for any errors or fallbacks",
+        "source_log": "2026-01-09-OpenRouter-Integration-Test-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-OpenRouter-Integration-Test-DevOpsAgent.md",
+        "timestamp": "2026-01-09T21:09:53.289782",
+        "status": "pending"
+      }
+    ],
+    "FrontendDeveloperAgent": [
+      {
+        "agent": "FrontendDeveloperAgent",
+        "task": "Add compliance status visualization to run details page. Display compliance badges, violations, and scores. Consider adding compliance level selector in run configuration UI.",
+        "source_log": "2026-01-08-Clinical-Compliance-Implementation-ClinicalGradeDataScientist.md",
+        "source_path": "agent-logs/2026-01-08-Clinical-Compliance-Implementation-ClinicalGradeDataScientist.md",
+        "timestamp": "2026-01-09T11:03:27.867900",
+        "status": "pending"
+      },
+      {
+        "agent": "FrontendDeveloperAgent",
+        "task": "Update run details UI to display compliance status, score, and violations. Add compliance badge/indicator in run list view.",
+        "source_log": "2026-01-08-Compliance-Evaluator-Integration-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-08-Compliance-Evaluator-Integration-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T11:03:27.868044",
+        "status": "pending"
+      },
+      {
+        "agent": "FrontendDeveloperAgent",
+        "task": "Create E2E tests using Playwright/Cypress for user workflows. Test file upload, run execution, real-time updates, cancellation, and report viewing.",
+        "source_log": "2026-01-08-Comprehensive-QA-Test-Plan-QATester.md",
+        "source_path": "agent-logs/2026-01-08-Comprehensive-QA-Test-Plan-QATester.md",
+        "timestamp": "2026-01-09T11:03:27.868245",
+        "status": "pending"
+      }
+    ],
+    "MainAgent": [
+      {
+        "agent": "MainAgent",
+        "task": "Coordinate integration of compliance features into production pipeline. Prioritize compliance validation in run workflow.",
+        "source_log": "2026-01-08-Clinical-Compliance-Implementation-ClinicalGradeDataScientist.md",
+        "source_path": "agent-logs/2026-01-08-Clinical-Compliance-Implementation-ClinicalGradeDataScientist.md",
+        "timestamp": "2026-01-09T11:03:27.867968",
+        "status": "pending"
+      },
+      {
+        "agent": "MainAgent",
+        "task": "Monitor compliance evaluation in production runs. Track compliance pass rates and common violations.",
+        "source_log": "2026-01-08-Compliance-Evaluator-Integration-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-08-Compliance-Evaluator-Integration-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T11:03:27.868114",
+        "status": "pending"
+      },
+      {
+        "agent": "MainAgent",
+        "task": "Coordinate test execution in CI/CD pipeline. Prioritize critical path tests (unit + integration) for pre-deployment validation. Schedule regular regression test runs.",
+        "source_log": "2026-01-08-Comprehensive-QA-Test-Plan-QATester.md",
+        "source_path": "agent-logs/2026-01-08-Comprehensive-QA-Test-Plan-QATester.md",
+        "timestamp": "2026-01-09T11:03:27.868290",
+        "status": "pending"
+      },
+      {
+        "agent": "MainAgent",
+        "task": "79% pass rate achieved. Two components (ProjectDetailContent, DashboardContent) are 100% passing. ResultsModal needs component debugging.",
+        "source_log": "2026-01-08-Frontend-Test-Final-Check-QATester.md",
+        "source_path": "agent-logs/2026-01-08-Frontend-Test-Final-Check-QATester.md",
+        "timestamp": "2026-01-09T11:03:27.869739",
+        "status": "pending"
+      },
+      {
+        "agent": "MainAgent",
+        "task": "Test infrastructure is ready. 75% pass rate achieved. Remaining failures are minor and can be resolved with targeted debugging.",
+        "source_log": "2026-01-08-Frontend-Test-Final-Results-QATester.md",
+        "source_path": "agent-logs/2026-01-08-Frontend-Test-Final-Results-QATester.md",
+        "timestamp": "2026-01-09T11:03:27.869855",
+        "status": "pending"
+      },
+      {
+        "agent": "MainAgent",
+        "task": "Coordinate resolution of test failures. Tests are ready but need alignment between component behavior and test expectations.",
+        "source_log": "2026-01-08-Frontend-Test-Results-QATester.md",
+        "source_path": "agent-logs/2026-01-08-Frontend-Test-Results-QATester.md",
+        "timestamp": "2026-01-09T11:03:27.869980",
+        "status": "pending"
+      },
+      {
+        "agent": "MainAgent",
+        "task": "Coordinate integration of frontend tests into overall QA process. Ensure tests run before deployment.",
+        "source_log": "2026-01-08-Frontend-Testing-QATester.md",
+        "source_path": "agent-logs/2026-01-08-Frontend-Testing-QATester.md",
+        "timestamp": "2026-01-09T11:03:27.870114",
+        "status": "pending"
+      },
+      {
+        "agent": "MainAgent",
+        "task": "Tests are now aligned with component behavior. 75% pass rate achieved. Remaining failures likely need component-specific adjustments or test refinements.",
+        "source_log": "2026-01-08-Frontend-Tests-Updated-QATester.md",
+        "source_path": "agent-logs/2026-01-08-Frontend-Tests-Updated-QATester.md",
+        "timestamp": "2026-01-09T11:03:27.870223",
+        "status": "pending"
+      },
+      {
+        "agent": "MainAgent",
+        "task": "Testing Summary: - Platform shows good UX foundation - Critical CORS error blocking project detail access - Need to retest after CORS fix - Auto-Optimize feature not found in UI - verify implementation status",
+        "source_log": "2026-01-08-User-Testing-Session-1-EndUserTester.md",
+        "source_path": "agent-logs/2026-01-08-User-Testing-Session-1-EndUserTester.md",
+        "timestamp": "2026-01-09T11:03:27.871561",
+        "status": "pending"
+      },
+      {
+        "agent": "MainAgent",
+        "task": "Coordinate testing of deployment script in staging environment before production rollout",
+        "source_log": "2026-01-08-Zero-Downtime-Docker-Deployment-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-08-Zero-Downtime-Docker-Deployment-DevOpsAgent.md",
+        "timestamp": "2026-01-09T11:03:27.871664",
+        "status": "pending"
+      },
+      {
+        "agent": "MainAgent",
+        "task": "Consider Adding to Cursor Rules: - Add rule: \"Before starting work, check pending handoffs using `python3 scripts/agent_handoff_parser.py --agent YourAgentName`\" - This will make agents automatically aware of pending tasks",
+        "source_log": "2026-01-09-Agent-Handoff-Automation-Implemented-EndUserTester.md",
+        "source_path": "agent-logs/2026-01-09-Agent-Handoff-Automation-Implemented-EndUserTester.md",
+        "timestamp": "2026-01-09T11:15:25.873323",
+        "status": "pending"
+      },
+      {
+        "agent": "MainAgent",
+        "task": "Automation System Ready: - Agent handoff automation is fully set up and active - No action needed from you - it works automatically - Agents will automatically check for handoffs when they start work - New log files are automatically processed on commit",
+        "source_log": "2026-01-09-Agent-Handoff-Automation-Setup-Complete-EndUserTester.md",
+        "source_path": "agent-logs/2026-01-09-Agent-Handoff-Automation-Setup-Complete-EndUserTester.md",
+        "timestamp": "2026-01-09T11:20:58.017092",
+        "status": "pending"
+      },
+      {
+        "agent": "MainAgent",
+        "task": "Coordinate threshold consolidation (if approved): - Plan migration to single source of truth - Update all threshold references - Test threshold changes don't break existing functionality",
+        "source_log": "2026-01-09-Metric-Thresholds-Clinical-Compliance-Review-ClinicalGradeDataScientist.md",
+        "source_path": "agent-logs/2026-01-09-Metric-Thresholds-Clinical-Compliance-Review-ClinicalGradeDataScientist.md",
+        "timestamp": "2026-01-09T11:43:49.774782",
+        "status": "pending"
+      },
+      {
+        "agent": "MainAgent",
+        "task": "CORS Issue Status Update: - CORS fix investigation completed by DevOpsAgent - Configuration verified as correct - However: Error still present in browser - Likely cause: API service not restarted or config not active - Action: Coordinate with DevOpsAgent to ensure fix is deployed and active",
+        "source_log": "2026-01-09-CORS-Fix-Retest-Failed-EndUserTester.md",
+        "source_path": "agent-logs/2026-01-09-CORS-Fix-Retest-Failed-EndUserTester.md",
+        "timestamp": "2026-01-09T11:44:14.645312",
+        "status": "pending"
+      },
+      {
+        "agent": "MainAgent",
+        "task": "UX Improvements Status: - New agent UI enhancements (Agent Plan, Execution, Timeline) are excellent ✅ - Some expected improvements (Auto-Optimize button, status clarity) not visible - Overall UX improved significantly, but some features may need deployment or verification",
+        "source_log": "2026-01-09-UX-Improvements-Retest-EndUserTester.md",
+        "source_path": "agent-logs/2026-01-09-UX-Improvements-Retest-EndUserTester.md",
+        "timestamp": "2026-01-09T12:00:33.664939",
+        "status": "pending"
+      },
+      {
+        "agent": "MainAgent",
+        "task": "Platform Status Review: - Most features working correctly ✅ - Excellent new agent transparency features (Agent Plan, Execution, Timeline tabs) ✅ - Activity and Usage pages provide excellent visibility ✅ - Critical CORS issue persists - needs immediate attention 🔴 - Overall platform is functional but blocked by CORS issue",
+        "source_log": "2026-01-09-General-Platform-Testing-EndUserTester.md",
+        "source_path": "agent-logs/2026-01-09-General-Platform-Testing-EndUserTester.md",
+        "timestamp": "2026-01-09T12:26:16.451659",
+        "status": "pending"
+      },
+      {
+        "agent": "MainAgent",
+        "task": "Comprehensive Run Experience Review: - Run creation flow is excellent ✅ - Run monitoring has critical issues ❌ - Real-time updates missing ⚠️ - Overall UX good but needs improvements - Priority: Review and coordinate fixes",
+        "source_log": "2026-01-09-New-Run-Comprehensive-Feedback-EndUserTester.md",
+        "source_path": "agent-logs/2026-01-09-New-Run-Comprehensive-Feedback-EndUserTester.md",
+        "timestamp": "2026-01-09T15:01:22.406668",
+        "status": "pending"
+      },
+      {
+        "agent": "MainAgent",
+        "task": "ACTION: Review performance updates testing progress - Method switching logic verified working - Need to complete AI Agent enabled run testing - Performance updates appear to be deployed and functional",
+        "source_log": "2026-01-09-Performance-Updates-Testing-EndUserTester.md",
+        "source_path": "agent-logs/2026-01-09-Performance-Updates-Testing-EndUserTester.md",
+        "timestamp": "2026-01-09T20:09:54.610281",
+        "status": "pending"
+      },
+      {
+        "agent": "MainAgent",
+        "task": "Consider adding metrics comparison feature: - Compare metrics across multiple runs - Show trends over time - Highlight improvements/regressions",
+        "source_log": "2026-01-09-Metrics-Improvements-Backend-Frontend-Reports-ClinicalGradeDataScientist.md",
+        "source_path": "agent-logs/2026-01-09-Metrics-Improvements-Backend-Frontend-Reports-ClinicalGradeDataScientist.md",
+        "timestamp": "2026-01-09T21:09:53.289283",
+        "status": "pending"
+      }
+    ],
+    "ClinicalGradeDataScientist": [
+      {
+        "agent": "ClinicalGradeDataScientist",
+        "task": "Review metric thresholds for clinical compliance. Validate that QA thresholds align with compliance thresholds. Consider adding compliance-specific test cases.",
+        "source_log": "2026-01-08-Comprehensive-QA-Test-Plan-QATester.md",
+        "source_path": "agent-logs/2026-01-08-Comprehensive-QA-Test-Plan-QATester.md",
+        "timestamp": "2026-01-09T11:03:27.868267",
+        "status": "pending"
+      },
+      {
+        "agent": "ClinicalGradeDataScientist",
+        "task": "Review ACTION: Review metric thresholds for clinical compliance - Check your tasks: `python3 scripts/agent_handoff_parser.py --agent ClinicalGradeDataScientist` - Create log file when complete",
+        "source_log": "2026-01-09-All-Agents-Coordination-MainAgent.md",
+        "source_path": "agent-logs/2026-01-09-All-Agents-Coordination-MainAgent.md",
+        "timestamp": "2026-01-09T11:37:02.632414",
+        "status": "pending"
+      },
+      {
+        "agent": "ClinicalGradeDataScientist",
+        "task": "Review integration: - Verify ClinicalModelSelector integration is correct - Verify compliance evaluator integration is correct - Test with various dataset types - Provide feedback on any improvements needed",
+        "source_log": "2026-01-09-State-of-Art-All-Green-Implementation-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-09-State-of-Art-All-Green-Implementation-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T11:52:16.312895",
+        "status": "pending"
+      }
+    ],
+    "Frontend Developer": [
+      {
+        "agent": "Frontend Developer",
+        "task": "Verify `ReportView.tsx` correctly displays gate status from API response",
+        "source_log": "2026-01-08-Critical-Syntax-Errors-Fix-ArchitectureAgent.md",
+        "source_path": "agent-logs/2026-01-08-Critical-Syntax-Errors-Fix-ArchitectureAgent.md",
+        "timestamp": "2026-01-09T11:03:27.868470",
+        "status": "pending"
+      },
+      {
+        "agent": "Frontend Developer",
+        "task": "Continue testing other dashboard sections (Projects, Datasets, Runs pages)",
+        "source_log": "2026-01-08-Dashboard-Overview-Fixes-and-Error-Handling-FrontendDeveloper.md",
+        "source_path": "agent-logs/2026-01-08-Dashboard-Overview-Fixes-and-Error-Handling-FrontendDeveloper.md",
+        "timestamp": "2026-01-09T11:03:27.868642",
+        "status": "pending"
+      },
+      {
+        "agent": "Frontend Developer",
+        "task": "Continue monitoring for any runtime errors and user feedback",
+        "source_log": "2026-01-08-Frontend-Sections-Testing-and-Fixes-FrontendDeveloper.md",
+        "source_path": "agent-logs/2026-01-08-Frontend-Sections-Testing-and-Fixes-FrontendDeveloper.md",
+        "timestamp": "2026-01-09T11:03:27.869641",
+        "status": "pending"
+      },
+      {
+        "agent": "Frontend Developer",
+        "task": "Monitor for any runtime issues with the updated error handling logic",
+        "source_log": "2026-01-08-QA-Test-Failures-Fix-FrontendDeveloper.md",
+        "source_path": "agent-logs/2026-01-08-QA-Test-Failures-Fix-FrontendDeveloper.md",
+        "timestamp": "2026-01-09T11:03:27.870773",
+        "status": "pending"
+      },
+      {
+        "agent": "Frontend Developer",
+        "task": "Monitor for any runtime issues with status handling. Consider adding TypeScript strict null checks to prevent similar issues.",
+        "source_log": "2026-01-08-ResultsModal-Test-Failures-Fix-FrontendDeveloper.md",
+        "source_path": "agent-logs/2026-01-08-ResultsModal-Test-Failures-Fix-FrontendDeveloper.md",
+        "timestamp": "2026-01-09T11:03:27.870953",
+        "status": "pending"
+      },
+      {
+        "agent": "Frontend Developer",
+        "task": "- Add skeleton screens for loading states (especially datasets page) - Consider adding Auto-Optimize button to `RunDetailsExpansion.tsx` as well - Test Auto-Optimize flow end-to-end",
+        "source_log": "2026-01-08-UX-Improvements-FrontendDeveloper.md",
+        "source_path": "agent-logs/2026-01-08-UX-Improvements-FrontendDeveloper.md",
+        "timestamp": "2026-01-09T11:03:27.871317",
+        "status": "pending"
+      },
+      {
+        "agent": "Frontend Developer",
+        "task": "Consider displaying: - Model selection rationale (from ClinicalModelSelector) - Compliance level used - Dataset complexity analysis results - Optimizer suggestions and adjustments",
+        "source_log": "2026-01-09-State-of-Art-All-Green-Implementation-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-09-State-of-Art-All-Green-Implementation-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T11:52:16.312995",
+        "status": "pending"
+      },
+      {
+        "agent": "Frontend Developer",
+        "task": "Consider displaying n_iter and batch_size in run details: - Show hyperparameters used - Display optimizer suggestions if available - Show training time estimates",
+        "source_log": "2026-01-09-Synthetic-Data-Generation-Improvements-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-09-Synthetic-Data-Generation-Improvements-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T11:52:16.313310",
+        "status": "pending"
+      },
+      {
+        "agent": "Frontend Developer",
+        "task": "Design UI for new privacy metrics (k-anonymity, l-diversity)",
+        "source_log": "2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "source_path": "agent-logs/2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "timestamp": "2026-01-09T19:24:28.171148",
+        "status": "pending"
+      }
+    ],
+    "Synthetic Data Specialist": [
+      {
+        "agent": "Synthetic Data Specialist",
+        "task": "Verify privacy threshold values match documented standards in `SYNTHETIC_DATA_ANALYSIS.md`",
+        "source_log": "2026-01-08-Critical-Syntax-Errors-Fix-ArchitectureAgent.md",
+        "source_path": "agent-logs/2026-01-08-Critical-Syntax-Errors-Fix-ArchitectureAgent.md",
+        "timestamp": "2026-01-09T11:03:27.868528",
+        "status": "pending"
+      },
+      {
+        "agent": "Synthetic Data Specialist",
+        "task": "Evaluate TabCSDI integration feasibility",
+        "source_log": "2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "source_path": "agent-logs/2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "timestamp": "2026-01-09T19:24:28.171103",
+        "status": "pending"
+      },
+      {
+        "agent": "Synthetic Data Specialist",
+        "task": "Implement TabCSDI for time-series data",
+        "source_log": "2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "source_path": "agent-logs/2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "timestamp": "2026-01-09T19:24:28.171167",
+        "status": "pending"
+      },
+      {
+        "agent": "Synthetic Data Specialist",
+        "task": "Add PrivacyGAN variants (PATE-GAN v2, DP-SGD-GAN)",
+        "source_log": "2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "source_path": "agent-logs/2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "timestamp": "2026-01-09T19:24:28.171186",
+        "status": "pending"
+      },
+      {
+        "agent": "Synthetic Data Specialist",
+        "task": "Implement zero-knowledge proofs for privacy verification",
+        "source_log": "2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "source_path": "agent-logs/2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "timestamp": "2026-01-09T19:24:28.171272",
+        "status": "pending"
+      }
+    ],
+    "FrontendDeveloper": [
+      {
+        "agent": "FrontendDeveloper",
+        "task": "⚠️ High Priority Error Message Improvements: - Replace technical \"Failed to fetch\" with user-friendly messages - Example: \"Unable to connect to server. Please check your connection or try again later.\" - Add retry logic for network errors - Consider adding connection status indicator",
+        "source_log": "2026-01-08-EndUserTester-Feedback-Prioritized-MainAgent.md",
+        "source_path": "agent-logs/2026-01-08-EndUserTester-Feedback-Prioritized-MainAgent.md",
+        "timestamp": "2026-01-09T11:03:27.869376",
+        "status": "pending"
+      },
+      {
+        "agent": "FrontendDeveloper",
+        "task": "Review ResultsModal component: 1. Check if errors are being caught during data loading 2. Verify component state updates properly after API calls 3. Check if component is rendering error state instead of results 4. May need to add error boundaries or better error handling",
+        "source_log": "2026-01-08-Frontend-Test-Final-Check-QATester.md",
+        "source_path": "agent-logs/2026-01-08-Frontend-Test-Final-Check-QATester.md",
+        "timestamp": "2026-01-09T11:03:27.869717",
+        "status": "pending"
+      },
+      {
+        "agent": "FrontendDeveloper",
+        "task": "Review remaining 6 test failures: - DashboardContent: ErrorState rendering in tests (2 failures) - ResultsModal: Download functionality tests (4 failures) - May need to add data-testid attributes or adjust component rendering for better testability",
+        "source_log": "2026-01-08-Frontend-Test-Final-Results-QATester.md",
+        "source_path": "agent-logs/2026-01-08-Frontend-Test-Final-Results-QATester.md",
+        "timestamp": "2026-01-09T11:03:27.869834",
+        "status": "pending"
+      },
+      {
+        "agent": "FrontendDeveloper",
+        "task": "Review test failures and confirm intended behavior: 1. Should mock data be used for network errors, or should error UI be shown? 2. Should troubleshooting tips appear for 401/403 errors, or only for network errors? 3. Should error UI (Retry, Go Back buttons) display for all errors or only specific types?",
+        "source_log": "2026-01-08-Frontend-Test-Results-QATester.md",
+        "source_path": "agent-logs/2026-01-08-Frontend-Test-Results-QATester.md",
+        "timestamp": "2026-01-09T11:03:27.869958",
+        "status": "pending"
+      },
+      {
+        "agent": "FrontendDeveloper",
+        "task": "Review test implementations and ensure they match actual component behavior. Some tests may need adjustments based on actual component structure and props.",
+        "source_log": "2026-01-08-Frontend-Testing-QATester.md",
+        "source_path": "agent-logs/2026-01-08-Frontend-Testing-QATester.md",
+        "timestamp": "2026-01-09T11:03:27.870072",
+        "status": "pending"
+      },
+      {
+        "agent": "FrontendDeveloper",
+        "task": "Review remaining test failures (6 tests). Tests may need further adjustments based on actual component rendering or API response structure.",
+        "source_log": "2026-01-08-Frontend-Tests-Updated-QATester.md",
+        "source_path": "agent-logs/2026-01-08-Frontend-Tests-Updated-QATester.md",
+        "timestamp": "2026-01-09T11:03:27.870201",
+        "status": "pending"
+      },
+      {
+        "agent": "FrontendDeveloper",
+        "task": "Implement Auto-Optimize UI: - Add \"Auto-Optimize\" button in failed run details - Create FailureRecommendations component - Display optimization suggestions - Allow creating new run with optimized parameters",
+        "source_log": "2026-01-08-Run-Failure-Analysis-AutoOptimize-Status-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-08-Run-Failure-Analysis-AutoOptimize-Status-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-09T11:03:27.871026",
+        "status": "pending"
+      },
+      {
+        "agent": "FrontendDeveloper",
+        "task": "Error Message Improvements: - Replace technical \"Failed to fetch\" with user-friendly messages - Add retry logic for network errors - Consider adding connection status indicator - Improve loading states with skeleton screens",
+        "source_log": "2026-01-08-User-Testing-Session-1-EndUserTester.md",
+        "source_path": "agent-logs/2026-01-08-User-Testing-Session-1-EndUserTester.md",
+        "timestamp": "2026-01-09T11:03:27.871502",
+        "status": "pending"
+      },
+      {
+        "agent": "FrontendDeveloper",
+        "task": "Improve error message UX",
+        "source_log": "USAGE_GUIDE.md",
+        "source_path": "agent-logs/USAGE_GUIDE.md",
+        "timestamp": "2026-01-09T11:15:25.873930",
+        "status": "pending"
+      },
+      {
+        "agent": "FrontendDeveloper",
+        "task": "⚠️ High Priority ACTION: Improve error messages and implement Auto-Optimize UI - Check your tasks: `python3 scripts/agent_handoff_parser.py --agent FrontendDeveloper` - Start with error message improvements - Create log file when complete",
+        "source_log": "2026-01-09-All-Agents-Coordination-MainAgent.md",
+        "source_path": "agent-logs/2026-01-09-All-Agents-Coordination-MainAgent.md",
+        "timestamp": "2026-01-09T11:37:02.632301",
+        "status": "pending"
+      },
+      {
+        "agent": "FrontendDeveloper",
+        "task": "Action: Monitor for any CORS-related issues 1. Check browser console for CORS errors 2. Verify all API endpoints work correctly 3. Report any remaining issues",
+        "source_log": "2026-01-09-P0-CORS-Fix-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-P0-CORS-Fix-DevOpsAgent.md",
+        "timestamp": "2026-01-09T11:39:35.765548",
+        "status": "pending"
+      },
+      {
+        "agent": "FrontendDeveloper",
+        "task": "Error Handling Working: - Error UI displays correctly - \"Go Back\" button functional - Error message clear (though technical) - Note: Error handling is good, but underlying CORS issue needs backend fix",
+        "source_log": "2026-01-09-CORS-Fix-Retest-Failed-EndUserTester.md",
+        "source_path": "agent-logs/2026-01-09-CORS-Fix-Retest-Failed-EndUserTester.md",
+        "timestamp": "2026-01-09T11:44:14.645342",
+        "status": "pending"
+      },
+      {
+        "agent": "FrontendDeveloper",
+        "task": "- Replace remaining `alert()` calls in other components (9 files remaining) - Integrate retry logic into key API calls (optional enhancement) - Test error handling across all components",
+        "source_log": "2026-01-09-Error-Message-Improvements-Complete-FrontendDeveloper.md",
+        "source_path": "agent-logs/2026-01-09-Error-Message-Improvements-Complete-FrontendDeveloper.md",
+        "timestamp": "2026-01-09T11:46:01.356210",
+        "status": "pending"
+      },
+      {
+        "agent": "FrontendDeveloper",
+        "task": "PRIORITY: High",
+        "source_log": "2026-01-09-Task-Assignments-All-Agents-MainAgent.md",
+        "source_path": "agent-logs/2026-01-09-Task-Assignments-All-Agents-MainAgent.md",
+        "timestamp": "2026-01-09T11:46:10.113579",
+        "status": "pending"
+      },
+      {
+        "agent": "FrontendDeveloper",
+        "task": "⚠️ Medium Priority UX Improvements Not Fully Visible: 1. Auto-Optimize Button: - Expected in Overview tab for failed runs - Current run: 0 rows, \"Completed with Failures\" status - Button not visible - may need to check implementation - Action: Verify button appears for runs with `rows_generated === 0` or `status === 'Failed'`",
+        "source_log": "2026-01-09-UX-Improvements-Retest-EndUserTester.md",
+        "source_path": "agent-logs/2026-01-09-UX-Improvements-Retest-EndUserTester.md",
+        "timestamp": "2026-01-09T12:00:33.664861",
+        "status": "pending"
+      },
+      {
+        "agent": "FrontendDeveloper",
+        "task": "- Monitor for CORS fix completion - Retest eye icon navigation after CORS is fixed - Verify project detail page loads correctly - Update error message to use user-friendly message (currently shows \"Failed to fetch\")",
+        "source_log": "2026-01-09-CORS-Issue-Project-Detail-Page-FrontendDeveloper.md",
+        "source_path": "agent-logs/2026-01-09-CORS-Issue-Project-Detail-Page-FrontendDeveloper.md",
+        "timestamp": "2026-01-09T12:17:34.895929",
+        "status": "pending"
+      },
+      {
+        "agent": "FrontendDeveloper",
+        "task": "⚠️ Medium Priority UX Improvements: 1. Error Messages: Replace technical \"Failed to fetch\" with user-friendly messages 2. Settings Page: Verify settings page loads correctly (navigation timeout observed) 3. Loading States: Consider adding skeleton screens for better UX during 5-10 second load times",
+        "source_log": "2026-01-09-General-Platform-Testing-EndUserTester.md",
+        "source_path": "agent-logs/2026-01-09-General-Platform-Testing-EndUserTester.md",
+        "timestamp": "2026-01-09T12:26:16.451620",
+        "status": "pending"
+      },
+      {
+        "agent": "FrontendDeveloper",
+        "task": "- Frontend changes are on Vercel (auto-deploys) - CORS is verified working correctly - No backend action needed",
+        "source_log": "2026-01-09-SyntheticDataSpecialist-Deployment-Complete-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-SyntheticDataSpecialist-Deployment-Complete-DevOpsAgent.md",
+        "timestamp": "2026-01-09T12:44:49.873340",
+        "status": "pending"
+      },
+      {
+        "agent": "FrontendDeveloper",
+        "task": "- Verify project detail page works correctly - Test with various project IDs - Verify datasets and runs are displayed correctly - Test error handling (404, 401, 403)",
+        "source_log": "2026-01-09-Project-Detail-Endpoint-Fix-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-Project-Detail-Endpoint-Fix-DevOpsAgent.md",
+        "timestamp": "2026-01-09T13:00:12.564695",
+        "status": "pending"
+      },
+      {
+        "agent": "FrontendDeveloper",
+        "task": "- Verify project detail page works correctly - Check browser console for any remaining errors - Test with various project IDs - Verify datasets and runs display correctly",
+        "source_log": "2026-01-09-Project-Detail-API-Response-Fix-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-Project-Detail-API-Response-Fix-DevOpsAgent.md",
+        "timestamp": "2026-01-09T13:10:37.377664",
+        "status": "pending"
+      },
+      {
+        "agent": "FrontendDeveloper",
+        "task": "- Verify dashboard loads real data - Check browser console for any remaining errors - Test all API endpoints work correctly - Verify no demo data is shown",
+        "source_log": "2026-01-09-CORS-Origin-Fix-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-CORS-Origin-Fix-DevOpsAgent.md",
+        "timestamp": "2026-01-09T13:19:40.201119",
+        "status": "pending"
+      },
+      {
+        "agent": "FrontendDeveloper",
+        "task": "⚠️ High Priority Run Creation & Monitoring Issues: 1. AI Agent Checkbox Bug: - Checkbox not clickable (CSS/pointer-events issue) - Fix z-index or pointer-events - Test checkbox interaction - Priority: Medium",
+        "source_log": "2026-01-09-New-Run-Comprehensive-Feedback-EndUserTester.md",
+        "source_path": "agent-logs/2026-01-09-New-Run-Comprehensive-Feedback-EndUserTester.md",
+        "timestamp": "2026-01-09T15:01:22.406550",
+        "status": "pending"
+      },
+      {
+        "agent": "FrontendDeveloper",
+        "task": "- Verify run detail pages work correctly - Test with various run IDs - Verify agent plan is displayed correctly - Check that all components using this endpoint work",
+        "source_log": "2026-01-09-Missing-Run-Detail-Endpoint-Fix-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-Missing-Run-Detail-Endpoint-Fix-DevOpsAgent.md",
+        "timestamp": "2026-01-09T19:24:28.171900",
+        "status": "pending"
+      },
+      {
+        "agent": "FrontendDeveloper",
+        "task": "Consider adding interactive charts/graphs for metrics visualization: - Bar charts for privacy/utility metrics - Radar chart for overall compliance - Trend charts for historical runs - Use libraries like recharts or chart.js",
+        "source_log": "2026-01-09-Metrics-Improvements-Backend-Frontend-Reports-ClinicalGradeDataScientist.md",
+        "source_path": "agent-logs/2026-01-09-Metrics-Improvements-Backend-Frontend-Reports-ClinicalGradeDataScientist.md",
+        "timestamp": "2026-01-09T21:09:53.289185",
+        "status": "pending"
+      }
+    ],
+    "EndUserTester": [
+      {
+        "agent": "EndUserTester",
+        "task": "Ready to receive and act on your feedback. DevOpsAgent will prioritize any infrastructure-related issues you identify.",
+        "source_log": "2026-01-08-EndUserTester-Onboarding-Acknowledged-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-08-EndUserTester-Onboarding-Acknowledged-DevOpsAgent.md",
+        "timestamp": "2026-01-09T11:03:27.869495",
+        "status": "pending"
+      },
+      {
+        "agent": "EndUserTester",
+        "task": "Retest to verify improvements address feedback",
+        "source_log": "2026-01-08-UX-Improvements-FrontendDeveloper.md",
+        "source_path": "agent-logs/2026-01-08-UX-Improvements-FrontendDeveloper.md",
+        "timestamp": "2026-01-09T11:03:27.871361",
+        "status": "pending"
+      },
+      {
+        "agent": "EndUserTester",
+        "task": "Excellent Work! ✅ - Automation system is fully implemented and working - All components verified and operational - System is ready for production use - No changes needed - implementation is complete",
+        "source_log": "2026-01-09-Agent-Handoff-Automation-Review-MainAgent.md",
+        "source_path": "agent-logs/2026-01-09-Agent-Handoff-Automation-Review-MainAgent.md",
+        "timestamp": "2026-01-09T11:23:44.057856",
+        "status": "pending"
+      },
+      {
+        "agent": "EndUserTester",
+        "task": "Retest ACTION: Retest after fixes are deployed - Check your tasks: `python3 scripts/agent_handoff_parser.py --agent EndUserTester` - Wait for DevOpsAgent and FrontendDeveloper fixes - Create log file when complete",
+        "source_log": "2026-01-09-All-Agents-Coordination-MainAgent.md",
+        "source_path": "agent-logs/2026-01-09-All-Agents-Coordination-MainAgent.md",
+        "timestamp": "2026-01-09T11:37:02.632441",
+        "status": "pending"
+      },
+      {
+        "agent": "EndUserTester",
+        "task": "Action: Retest after CORS fix is deployed 1. Wait for DevOpsAgent to complete fix 2. Retest project detail page access 3. Verify no CORS errors 4. Create retest log file",
+        "source_log": "2026-01-09-P0-CORS-Fix-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-P0-CORS-Fix-DevOpsAgent.md",
+        "timestamp": "2026-01-09T11:39:35.765508",
+        "status": "pending"
+      },
+      {
+        "agent": "EndUserTester",
+        "task": "Action: Retest after improvements 1. Test error scenarios 2. Verify messages are user-friendly 3. Verify retry functionality works 4. Create retest log file",
+        "source_log": "2026-01-09-Error-Message-Improvements-FrontendDeveloper.md",
+        "source_path": "agent-logs/2026-01-09-Error-Message-Improvements-FrontendDeveloper.md",
+        "timestamp": "2026-01-09T11:42:25.934387",
+        "status": "pending"
+      },
+      {
+        "agent": "EndUserTester",
+        "task": "- Retest error scenarios after improvements - Verify messages are user-friendly and actionable - Test download functionality error handling - Test run cancellation/deletion error handling",
+        "source_log": "2026-01-09-Error-Message-Improvements-Complete-FrontendDeveloper.md",
+        "source_path": "agent-logs/2026-01-09-Error-Message-Improvements-Complete-FrontendDeveloper.md",
+        "timestamp": "2026-01-09T11:46:01.356278",
+        "status": "pending"
+      },
+      {
+        "agent": "EndUserTester",
+        "task": "PRIORITY: Medium",
+        "source_log": "2026-01-09-Task-Assignments-All-Agents-MainAgent.md",
+        "source_path": "agent-logs/2026-01-09-Task-Assignments-All-Agents-MainAgent.md",
+        "timestamp": "2026-01-09T11:46:10.113638",
+        "status": "pending"
+      },
+      {
+        "agent": "EndUserTester",
+        "task": "- Retest eye icon functionality on project overview page - Verify navigation works correctly - Verify project detail page shows real project data (not demo data)",
+        "source_log": "2026-01-09-Eye-Icon-Navigation-Fix-FrontendDeveloper.md",
+        "source_path": "agent-logs/2026-01-09-Eye-Icon-Navigation-Fix-FrontendDeveloper.md",
+        "timestamp": "2026-01-09T11:57:21.348072",
+        "status": "pending"
+      },
+      {
+        "agent": "EndUserTester",
+        "task": "- Retest after deployment - Verify run failures are reduced - Check if \"all green\" metrics are achieved more frequently",
+        "source_log": "2026-01-09-SyntheticDataSpecialist-Deployment-Complete-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-SyntheticDataSpecialist-Deployment-Complete-DevOpsAgent.md",
+        "timestamp": "2026-01-09T12:44:49.873318",
+        "status": "pending"
+      },
+      {
+        "agent": "EndUserTester",
+        "task": "- Retest project detail page access - Verify no \"Failed to fetch\" errors - Verify project data loads correctly - Test navigation from dashboard to project details",
+        "source_log": "2026-01-09-Project-Detail-Endpoint-Fix-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-Project-Detail-Endpoint-Fix-DevOpsAgent.md",
+        "timestamp": "2026-01-09T13:00:12.564732",
+        "status": "pending"
+      },
+      {
+        "agent": "EndUserTester",
+        "task": "- Retest project detail page - Verify no demo data is shown - Check that real project data loads correctly - Test navigation from dashboard to project details",
+        "source_log": "2026-01-09-Project-Detail-API-Response-Fix-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-Project-Detail-API-Response-Fix-DevOpsAgent.md",
+        "timestamp": "2026-01-09T13:10:37.377709",
+        "status": "pending"
+      },
+      {
+        "agent": "EndUserTester",
+        "task": "- Retest dashboard and project detail pages - Verify real data loads correctly - Check that demo data banner is gone - Test navigation and all features",
+        "source_log": "2026-01-09-CORS-Origin-Fix-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-CORS-Origin-Fix-DevOpsAgent.md",
+        "timestamp": "2026-01-09T13:19:40.201159",
+        "status": "pending"
+      },
+      {
+        "agent": "EndUserTester",
+        "task": "- Retest after deployment - Verify model selection quality improved - Check if runs achieve \"all green\" metrics more frequently",
+        "source_log": "2026-01-09-SyntheticDataSpecialist-Updates-Deployed-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-SyntheticDataSpecialist-Updates-Deployed-DevOpsAgent.md",
+        "timestamp": "2026-01-09T13:58:03.752625",
+        "status": "pending"
+      },
+      {
+        "agent": "EndUserTester",
+        "task": "- Test enhanced model selection with various datasets - Test compliance-aware optimization (if UI supports compliance levels) - Test failure recovery with problematic datasets - Compare success rates before/after deployment - Provide detailed feedback on: - What works well - What needs improvement - Any issues encountered - Suggestions for further enhancements",
+        "source_log": "2026-01-09-Deployment-Complete-Request-User-Testing-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-Deployment-Complete-Request-User-Testing-DevOpsAgent.md",
+        "timestamp": "2026-01-09T14:07:03.853130",
+        "status": "pending"
+      },
+      {
+        "agent": "EndUserTester",
+        "task": "PRIORITY: High - Comprehensive Testing Required",
+        "source_log": "2026-01-09-EndUserTester-Coordination-New-Features-MainAgent.md",
+        "source_path": "agent-logs/2026-01-09-EndUserTester-Coordination-New-Features-MainAgent.md",
+        "timestamp": "2026-01-09T14:11:10.873296",
+        "status": "pending"
+      },
+      {
+        "agent": "EndUserTester",
+        "task": "- Retest run detail pages - Verify no 405 errors - Check that run details load correctly - Verify agent plan is visible",
+        "source_log": "2026-01-09-Missing-Run-Detail-Endpoint-Fix-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-Missing-Run-Detail-Endpoint-Fix-DevOpsAgent.md",
+        "timestamp": "2026-01-09T19:24:28.171927",
+        "status": "pending"
+      },
+      {
+        "agent": "EndUserTester",
+        "task": "- Test OpenRouter integration in agent mode - Verify early stopping works - Test method switching logic - Verify near-threshold optimization - Measure \"all green\" success rate improvement - Check OpenRouter dashboard for API usage",
+        "source_log": "2026-01-09-SyntheticDataSpecialist-Latest-Updates-Deployed-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-SyntheticDataSpecialist-Latest-Updates-Deployed-DevOpsAgent.md",
+        "timestamp": "2026-01-09T19:55:47.383245",
+        "status": "pending"
+      },
+      {
+        "agent": "EndUserTester",
+        "task": "⏳ Continue Testing ACTION: Start new run with AI Agent enabled to test: 1. OpenRouter Integration: Verify AI Agent uses OpenRouter API for decision-making - Check Agent Plan tab for AI-generated rationale (not \"user customized\") - Verify agent makes intelligent method/parameter selections 2. Early Stopping: Monitor run to verify agent stops early when \"all green\" metrics achieved - Watch Execution timeline for early termination - Verify Timeline tab shows \"All Green\" status when metrics pass 3. \"All Green\" Success Rate: Compare success rate with previous runs - Track if new runs achieve \"all green\" more frequently - Measure improvement in utility metrics (KS Mean < 0.10)",
+        "source_log": "2026-01-09-Performance-Updates-Testing-EndUserTester.md",
+        "source_path": "agent-logs/2026-01-09-Performance-Updates-Testing-EndUserTester.md",
+        "timestamp": "2026-01-09T20:09:54.610209",
+        "status": "pending"
+      },
+      {
+        "agent": "EndUserTester",
+        "task": "- ACTION: Start a new run with AI Agent enabled - Monitor logs for OpenRouter usage - Check OpenRouter dashboard for API calls - Verify agent makes intelligent re-planning decisions - Compare quality with previous Ollama-only runs",
+        "source_log": "2026-01-09-OpenRouter-Integration-Test-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-OpenRouter-Integration-Test-DevOpsAgent.md",
+        "timestamp": "2026-01-09T21:09:53.289755",
+        "status": "pending"
+      }
+    ],
+    "All Agents": [
+      {
+        "agent": "All Agents",
+        "task": "DevOpsAgent acknowledges EndUserTester Agent and will support their testing needs from infrastructure perspective.",
+        "source_log": "2026-01-08-EndUserTester-Onboarding-Acknowledged-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-08-EndUserTester-Onboarding-Acknowledged-DevOpsAgent.md",
+        "timestamp": "2026-01-09T11:03:27.869522",
+        "status": "pending"
+      },
+      {
+        "agent": "All Agents",
+        "task": "Start Using the Handoff System: 1. Before starting work, check your pending handoffs: ```bash python3 scripts/agent_handoff_parser.py --agent YourAgentName ``` 2. After creating a log with handoffs, run the parser to update the system: ```bash python3 scripts/agent_handoff_parser.py ``` 3. Review `agent-logs/USAGE_GUIDE.md` for complete documentation",
+        "source_log": "2026-01-09-Agent-Handoff-Automation-Implemented-EndUserTester.md",
+        "source_path": "agent-logs/2026-01-09-Agent-Handoff-Automation-Implemented-EndUserTester.md",
+        "timestamp": "2026-01-09T11:15:25.873297",
+        "status": "pending"
+      },
+      {
+        "agent": "All Agents",
+        "task": "System is Active: - You will automatically check for handoffs when starting work (Cursor rule) - No manual checking needed - If you want to check manually: `python3 scripts/agent_handoff_parser.py --agent YourAgentName`",
+        "source_log": "2026-01-09-Agent-Handoff-Automation-Setup-Complete-EndUserTester.md",
+        "source_path": "agent-logs/2026-01-09-Agent-Handoff-Automation-Setup-Complete-EndUserTester.md",
+        "timestamp": "2026-01-09T11:20:58.017133",
+        "status": "pending"
+      },
+      {
+        "agent": "All Agents",
+        "task": "System is Active and Working: - ✅ Automation is fully operational - ✅ You will automatically check for handoffs when starting work (Cursor rule) - ✅ New log files are automatically processed on commit (git hook) - ✅ No manual checking needed - it's automatic",
+        "source_log": "2026-01-09-Agent-Handoff-Automation-Review-MainAgent.md",
+        "source_path": "agent-logs/2026-01-09-Agent-Handoff-Automation-Review-MainAgent.md",
+        "timestamp": "2026-01-09T11:23:44.057810",
+        "status": "pending"
+      },
+      {
+        "agent": "All Agents",
+        "task": "IMPORTANT: New Automated Handoff System Active",
+        "source_log": "2026-01-09-Agent-Automation-Awareness-Announcement-MainAgent.md",
+        "source_path": "agent-logs/2026-01-09-Agent-Automation-Awareness-Announcement-MainAgent.md",
+        "timestamp": "2026-01-09T11:25:56.058841",
+        "status": "pending"
+      },
+      {
+        "agent": "All Agents",
+        "task": "After Cursor Restart: - The handoff rule will be active - You'll see the prompt automatically when starting work - No additional action needed",
+        "source_log": "2026-01-09-Cursor-Restart-Guidance-MainAgent.md",
+        "source_path": "agent-logs/2026-01-09-Cursor-Restart-Guidance-MainAgent.md",
+        "timestamp": "2026-01-09T11:28:07.978330",
+        "status": "pending"
+      },
+      {
+        "agent": "All Agents",
+        "task": "Important Clarification: - The Cursor rule is a reminder/prompt, not an automatic executor - You must manually check for tasks: `python3 scripts/agent_handoff_parser.py --agent YourAgentName` - You must manually work on tasks - The system automates organization, not execution",
+        "source_log": "2026-01-09-Automatic-vs-Manual-Clarification-MainAgent.md",
+        "source_path": "agent-logs/2026-01-09-Automatic-vs-Manual-Clarification-MainAgent.md",
+        "timestamp": "2026-01-09T11:34:46.621538",
+        "status": "pending"
+      },
+      {
+        "agent": "All Agents",
+        "task": "Action: Check your pending tasks and start working",
+        "source_log": "2026-01-09-MainAgent-Coordination-Approach-MainAgent.md",
+        "source_path": "agent-logs/2026-01-09-MainAgent-Coordination-Approach-MainAgent.md",
+        "timestamp": "2026-01-09T11:46:23.681419",
+        "status": "pending"
+      },
+      {
+        "agent": "All Agents",
+        "task": "- When modifying API endpoints, ensure they're added to verification list - Test endpoints locally before deploying - Review merge conflicts carefully",
+        "source_log": "2026-01-09-Endpoint-Verification-System-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-09-Endpoint-Verification-System-DevOpsAgent.md",
+        "timestamp": "2026-01-09T19:32:45.140817",
+        "status": "pending"
+      }
+    ],
+    "Backend Developer": [
+      {
+        "agent": "Backend Developer",
+        "task": "Consider implementing `/v1/activity` endpoint for Activity page to fetch real activity data",
+        "source_log": "2026-01-08-Frontend-Sections-Testing-and-Fixes-FrontendDeveloper.md",
+        "source_path": "agent-logs/2026-01-08-Frontend-Sections-Testing-and-Fixes-FrontendDeveloper.md",
+        "timestamp": "2026-01-09T11:03:27.869592",
+        "status": "pending"
+      },
+      {
+        "agent": "Backend Developer",
+        "task": "Medium Priority ACTION: Consider implementing activity endpoint - Check your tasks: `python3 scripts/agent_handoff_parser.py --agent BackendDeveloper` - Create log file when complete",
+        "source_log": "2026-01-09-All-Agents-Coordination-MainAgent.md",
+        "source_path": "agent-logs/2026-01-09-All-Agents-Coordination-MainAgent.md",
+        "timestamp": "2026-01-09T11:37:02.632464",
+        "status": "pending"
+      }
+    ],
+    "DeploymentCoordinator": [
+      {
+        "agent": "DeploymentCoordinator",
+        "task": "Review deployment scripts and documentation, plan migration from current PM2 setup (if applicable) to Docker Compose",
+        "source_log": "2026-01-08-Zero-Downtime-Docker-Deployment-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-08-Zero-Downtime-Docker-Deployment-DevOpsAgent.md",
+        "timestamp": "2026-01-09T11:03:27.871625",
+        "status": "pending"
+      },
+      {
+        "agent": "DeploymentCoordinator",
+        "task": "Review ACTION: Review deployment scripts - Check your tasks: `python3 scripts/agent_handoff_parser.py --agent DeploymentCoordinator` - Create log file when complete",
+        "source_log": "2026-01-09-All-Agents-Coordination-MainAgent.md",
+        "source_path": "agent-logs/2026-01-09-All-Agents-Coordination-MainAgent.md",
+        "timestamp": "2026-01-09T11:37:02.632487",
+        "status": "pending"
+      }
+    ],
+    "User": [
+      {
+        "agent": "User",
+        "task": "Action: Restart Cursor IDE",
+        "source_log": "2026-01-09-Cursor-Restart-Guidance-MainAgent.md",
+        "source_path": "agent-logs/2026-01-09-Cursor-Restart-Guidance-MainAgent.md",
+        "timestamp": "2026-01-09T11:28:07.978288",
+        "status": "pending"
+      },
+      {
+        "agent": "User",
+        "task": "Clarification: - ✅ System automates processing and organization - ⚠️ Agents must manually check and manually work on tasks - ✅ Cursor rule prompts agents, but doesn't execute automatically",
+        "source_log": "2026-01-09-Automatic-vs-Manual-Clarification-MainAgent.md",
+        "source_path": "agent-logs/2026-01-09-Automatic-vs-Manual-Clarification-MainAgent.md",
+        "timestamp": "2026-01-09T11:34:46.621478",
+        "status": "pending"
+      }
+    ],
+    "QATester": [
+      {
+        "agent": "QATester",
+        "task": "Add compliance-specific test cases to test suite: - Test compliance evaluation with different compliance levels - Test compliance integration in worker pipeline - Test compliance results in metrics payload - Test threshold violations detection - Use `backend/tests/test_compliance_thresholds.py` as starting point",
+        "source_log": "2026-01-09-Metric-Thresholds-Clinical-Compliance-Review-ClinicalGradeDataScientist.md",
+        "source_path": "agent-logs/2026-01-09-Metric-Thresholds-Clinical-Compliance-Review-ClinicalGradeDataScientist.md",
+        "timestamp": "2026-01-09T11:43:49.774680",
+        "status": "pending"
+      },
+      {
+        "agent": "QATester",
+        "task": "Test enhanced metrics display: - Verify all metrics display correctly - Test with missing metrics (graceful degradation) - Test compliance status display - Test PDF report generation with new format",
+        "source_log": "2026-01-09-Metrics-Improvements-Backend-Frontend-Reports-ClinicalGradeDataScientist.md",
+        "source_path": "agent-logs/2026-01-09-Metrics-Improvements-Backend-Frontend-Reports-ClinicalGradeDataScientist.md",
+        "timestamp": "2026-01-09T21:09:53.289229",
+        "status": "pending"
+      }
+    ],
+    "BackendDeveloper": [
+      {
+        "agent": "BackendDeveloper",
+        "task": "⚠️ High Priority API & Real-Time Updates: 1. Run Details Endpoint for Running Runs: - Fix 405 Method Not Allowed error - Support GET requests for running runs - Return partial data (progress, status, current step) - Priority: High",
+        "source_log": "2026-01-09-New-Run-Comprehensive-Feedback-EndUserTester.md",
+        "source_path": "agent-logs/2026-01-09-New-Run-Comprehensive-Feedback-EndUserTester.md",
+        "timestamp": "2026-01-09T15:01:22.406601",
+        "status": "pending"
+      }
+    ],
+    "Clinical-Grade Data Scientist": [
+      {
+        "agent": "Clinical-Grade Data Scientist",
+        "task": "Design survival analysis and longitudinal features",
+        "source_log": "2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "source_path": "agent-logs/2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "timestamp": "2026-01-09T19:24:28.171127",
+        "status": "pending"
+      },
+      {
+        "agent": "Clinical-Grade Data Scientist",
+        "task": "Build survival analysis-aware synthesis",
+        "source_log": "2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "source_path": "agent-logs/2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "timestamp": "2026-01-09T19:24:28.171291",
+        "status": "pending"
+      }
+    ],
+    "Architecture Agent": [
+      {
+        "agent": "Architecture Agent",
+        "task": "Design model caching system",
+        "source_log": "2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "source_path": "agent-logs/2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "timestamp": "2026-01-09T19:24:28.171253",
+        "status": "pending"
+      },
+      {
+        "agent": "Architecture Agent",
+        "task": "Implement RAG system for clinical context",
+        "source_log": "2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "source_path": "agent-logs/2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "timestamp": "2026-01-09T19:24:28.171309",
+        "status": "pending"
+      },
+      {
+        "agent": "Architecture Agent",
+        "task": "Design confidential computing integration (TEEs)",
+        "source_log": "2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "source_path": "agent-logs/2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+        "timestamp": "2026-01-09T19:24:28.171371",
+        "status": "pending"
+      }
+    ]
+  },
+  "processed_files": [
+    "2026-01-08-Agent-Prompts-From-EndUserTester-Feedback-MainAgent.md",
+    "2026-01-08-Auto-Optimization-System-Implementation-SyntheticDataSpecialist.md",
+    "2026-01-08-Clinical-Compliance-Implementation-ClinicalGradeDataScientist.md",
+    "2026-01-08-Compliance-Evaluator-Integration-SyntheticDataSpecialist.md",
+    "2026-01-08-Comprehensive-QA-Test-Plan-QATester.md",
+    "2026-01-08-Contabo-Execution-Ready-DevOpsAgent.md",
+    "2026-01-08-Critical-Syntax-Errors-Fix-ArchitectureAgent.md",
+    "2026-01-08-Dashboard-Overview-Fixes-and-Error-Handling-FrontendDeveloper.md",
+    "2026-01-08-Docker-Build-Fix-Completed-DevOpsAgent.md",
+    "2026-01-08-Docker-Build-Fix-DevOpsAgent.md",
+    "2026-01-08-Docker-Rebuild-Executed-Successfully-DevOpsAgent.md",
+    "2026-01-08-EndUserTester-Agent-Onboarded-MainAgent.md",
+    "2026-01-08-EndUserTester-Feedback-Prioritized-MainAgent.md",
+    "2026-01-08-EndUserTester-Onboarding-Acknowledged-DevOpsAgent.md",
+    "2026-01-08-Frontend-Sections-Testing-and-Fixes-FrontendDeveloper.md",
+    "2026-01-08-Frontend-Test-Final-Check-QATester.md",
+    "2026-01-08-Frontend-Test-Final-Results-QATester.md",
+    "2026-01-08-Frontend-Test-Results-QATester.md",
+    "2026-01-08-Frontend-Testing-QATester.md",
+    "2026-01-08-Frontend-Tests-Updated-QATester.md",
+    "2026-01-08-Integration-Review-Summary-MainAgent.md",
+    "2026-01-08-Integration-Review-Test-MainAgent.md",
+    "2026-01-08-Integration-Test-Ready-MainAgent.md",
+    "2026-01-08-Integration-Test-Run-Started-MainAgent.md",
+    "2026-01-08-Integration-Test-Status-MainAgent.md",
+    "2026-01-08-Metrics-Integration-Instructions-MainAgent.md",
+    "2026-01-08-Metrics-Integration-Plan-MainAgent.md",
+    "2026-01-08-Multi-Agent-System-Setup-MainAgent.md",
+    "2026-01-08-Optimizer-Integration-Main-Worker-SyntheticDataSpecialist.md",
+    "2026-01-08-QA-Test-Failures-Fix-FrontendDeveloper.md",
+    "2026-01-08-Remaining-QA-Test-Failures-Fix-FrontendDeveloper.md",
+    "2026-01-08-ResultsModal-Test-Failures-Fix-FrontendDeveloper.md",
+    "2026-01-08-Run-Failure-Analysis-AutoOptimize-Status-SyntheticDataSpecialist.md",
+    "2026-01-08-SOTA-Architecture-Recommendations-ArchitectureAgent.md",
+    "2026-01-08-SSH-Access-Request-DevOpsAgent.md",
+    "2026-01-08-SSH-Credentials-Response-MainAgent.md",
+    "2026-01-08-TabDDPM-DataLoader-Fix-MainAgent.md",
+    "2026-01-08-TabDDPM-DataLoader-Test-MainAgent.md",
+    "2026-01-08-TabDDPM-Hyperparameter-Fix-MainAgent.md",
+    "2026-01-08-Team-Sync-Complete-MainAgent.md",
+    "2026-01-08-UX-Improvements-FrontendDeveloper.md",
+    "2026-01-08-User-Testing-Session-1-EndUserTester.md",
+    "2026-01-08-Zero-Downtime-Docker-Deployment-DevOpsAgent.md",
+    "2026-01-09-Agent-Automation-Awareness-Announcement-MainAgent.md",
+    "2026-01-09-Agent-Handoff-Automation-Implemented-EndUserTester.md",
+    "2026-01-09-Agent-Handoff-Automation-Review-MainAgent.md",
+    "2026-01-09-Agent-Handoff-Automation-Setup-Complete-EndUserTester.md",
+    "2026-01-09-Agent-System-Verification-Guide-MainAgent.md",
+    "2026-01-09-All-Agents-Coordination-MainAgent.md",
+    "2026-01-09-All-Green-Improvements-SyntheticDataSpecialist.md",
+    "2026-01-09-Automatic-vs-Manual-Clarification-MainAgent.md",
+    "2026-01-09-Base-Image-Implementation-Complete-MainAgent.md",
+    "2026-01-09-Base-Image-Implementation-Handoff-DevOpsAgent-MainAgent.md",
+    "2026-01-09-CORS-Fix-Retest-Failed-EndUserTester.md",
+    "2026-01-09-CORS-Issue-Project-Detail-Page-FrontendDeveloper.md",
+    "2026-01-09-CORS-Origin-Fix-DevOpsAgent.md",
+    "2026-01-09-Cursor-Restart-Guidance-MainAgent.md",
+    "2026-01-09-Deployment-Complete-Request-User-Testing-DevOpsAgent.md",
+    "2026-01-09-Docker-Build-Optimization-Solutions-MainAgent.md",
+    "2026-01-09-Docker-Build-Performance-Analysis-MainAgent.md",
+    "2026-01-09-EndUserTester-Coordination-New-Features-MainAgent.md",
+    "2026-01-09-Endpoint-Verification-System-DevOpsAgent.md",
+    "2026-01-09-Error-Message-Improvements-Complete-FrontendDeveloper.md",
+    "2026-01-09-Error-Message-Improvements-FrontendDeveloper.md",
+    "2026-01-09-Eye-Icon-Navigation-Fix-FrontendDeveloper.md",
+    "2026-01-09-General-Platform-Testing-EndUserTester.md",
+    "2026-01-09-MainAgent-Coordination-Approach-MainAgent.md",
+    "2026-01-09-Metric-Thresholds-Clinical-Compliance-Review-ClinicalGradeDataScientist.md",
+    "2026-01-09-Metrics-Improvements-Backend-Frontend-Reports-ClinicalGradeDataScientist.md",
+    "2026-01-09-Missing-Run-Detail-Endpoint-Fix-DevOpsAgent.md",
+    "2026-01-09-Morning-Status-and-Testing-Plan-SyntheticDataSpecialist.md",
+    "2026-01-09-New-Run-Comprehensive-Feedback-EndUserTester.md",
+    "2026-01-09-OpenRouter-Agent-Mode-Fix-SyntheticDataSpecialist.md",
+    "2026-01-09-OpenRouter-Integration-Production-Deployment-DevOpsAgent.md",
+    "2026-01-09-OpenRouter-Integration-SyntheticDataSpecialist.md",
+    "2026-01-09-OpenRouter-Integration-Test-DevOpsAgent.md",
+    "2026-01-09-OpenRouter-Model-ID-Fix-DevOpsAgent.md",
+    "2026-01-09-P0-CORS-Fix-DevOpsAgent.md",
+    "2026-01-09-Performance-Updates-Testing-EndUserTester.md",
+    "2026-01-09-Project-Detail-API-Response-Fix-DevOpsAgent.md",
+    "2026-01-09-Project-Detail-Endpoint-Fix-DevOpsAgent.md",
+    "2026-01-09-Quality-Test-Script-Created-SyntheticDataSpecialist.md",
+    "2026-01-09-Separate-Models-Container-Solution-MainAgent.md",
+    "2026-01-09-State-of-Art-All-Green-Implementation-SyntheticDataSpecialist.md",
+    "2026-01-09-Synthetic-Data-Generation-Improvements-SyntheticDataSpecialist.md",
+    "2026-01-09-SyntheticDataSpecialist-Deployment-Complete-DevOpsAgent.md",
+    "2026-01-09-SyntheticDataSpecialist-Latest-Updates-Deployed-DevOpsAgent.md",
+    "2026-01-09-SyntheticDataSpecialist-Updates-Deployed-DevOpsAgent.md",
+    "2026-01-09-Task-Assignments-All-Agents-MainAgent.md",
+    "2026-01-09-UX-Improvements-Retest-EndUserTester.md",
+    "AGENT_AUTOMATION_PROPOSAL.md",
+    "HOW_IT_WORKS.md",
+    "README.md",
+    "SETUP_GUIDE.md",
+    "TEMPLATE.md",
+    "USAGE_GUIDE.md",
+    "test.md"
+  ]
+}

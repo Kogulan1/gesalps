@@ -180,6 +180,21 @@ def _html_for_metrics(payload: Dict[str, Any]) -> str:
     .violations {{ background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:12px; margin-top:12px; }}
     .violations ul {{ margin:8px 0; padding-left:20px; }}
     .violations li {{ color:#991b1b; font-size:11px; margin:4px 0; }}
+    .score-bar {{ background:#e5e7eb; border-radius:9999px; height:8px; margin:8px 0; overflow:hidden; }}
+    .score-fill {{ background:linear-gradient(90deg, #10b981 0%, #059669 100%); height:100%; transition:width 0.3s; }}
+    .score-fill-warn {{ background:linear-gradient(90deg, #f59e0b 0%, #d97706 100%); height:100%; }}
+    .score-fill-fail {{ background:linear-gradient(90deg, #ef4444 0%, #dc2626 100%); height:100%; }}
+    .metrics-summary {{ display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin:16px 0; }}
+    .metric-card {{ background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; padding:12px; text-align:center; }}
+    .metric-value {{ font-size:20px; font-weight:700; color:#0f172a; margin:4px 0; }}
+    .metric-label {{ font-size:11px; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; }}
+    .compliance-section {{ background:#f0fdf4; border:2px solid #86efac; border-radius:12px; padding:16px; margin:16px 0; }}
+    .compliance-header {{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }}
+    .compliance-score {{ font-size:24px; font-weight:700; color:#065f46; }}
+    .compliance-grid {{ display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-top:12px; }}
+    .compliance-item {{ background:white; border-radius:6px; padding:8px; text-align:center; }}
+    .compliance-item-label {{ font-size:10px; color:#6b7280; margin-bottom:4px; }}
+    .compliance-item-status {{ font-size:12px; font-weight:600; }}
   </style>
   <title>{title_text}</title>
   </head>
@@ -193,6 +208,71 @@ def _html_for_metrics(payload: Dict[str, Any]) -> str:
     </div>
     <div class='title'>{title_text}</div>
     <div class='subtle'>Date: {date_str}</div>
+
+    {f'''
+    <div class='compliance-section'>
+      <div class='compliance-header'>
+        <div>
+          <div style='font-size:14px; font-weight:600; color:#065f46; margin-bottom:4px;'>Compliance Status</div>
+          <div class='compliance-score'>{compliance_result.get("score", 0.0):.1%}</div>
+        </div>
+        <div style='font-size:18px; font-weight:700; color:{"#065f46" if compliance_result.get("passed", False) else "#991b1b"};'>
+          {("PASSED" if compliance_result.get("passed", False) else "FAILED")}
+        </div>
+      </div>
+      <div style='font-size:11px; color:#6b7280; margin-bottom:12px;'>
+        Level: {compliance_result.get("level", "unknown").upper()}
+      </div>
+      <div class='compliance-grid'>
+        <div class='compliance-item'>
+          <div class='compliance-item-label'>Privacy</div>
+          <div class='compliance-item-status' style='color:{"#065f46" if compliance_result.get("privacy_passed", False) else "#991b1b"};'>
+            {("✓ Pass" if compliance_result.get("privacy_passed", False) else "✗ Fail")}
+          </div>
+        </div>
+        <div class='compliance-item'>
+          <div class='compliance-item-label'>Utility</div>
+          <div class='compliance-item-status' style='color:{"#065f46" if compliance_result.get("utility_passed", False) else "#991b1b"};'>
+            {("✓ Pass" if compliance_result.get("utility_passed", False) else "✗ Fail")}
+          </div>
+        </div>
+        <div class='compliance-item'>
+          <div class='compliance-item-label'>Fairness</div>
+          <div class='compliance-item-status' style='color:{"#065f46" if compliance_result.get("fairness_passed", False) else "#6b7280"};'>
+            {("✓ Pass" if compliance_result.get("fairness_passed", False) else "— N/A")}
+          </div>
+        </div>
+      </div>
+      {f'''
+      <div class='score-bar'>
+        <div class='score-fill{"-warn" if compliance_result.get("score", 0.0) < 0.7 else "-fail" if compliance_result.get("score", 0.0) < 0.5 else ""}' style='width:{compliance_result.get("score", 0.0) * 100}%;'></div>
+      </div>
+      ''' if compliance_result.get("score") is not None else ''}
+    </div>
+    ''' if compliance_result else ''}
+
+    {f'''
+    <div class='metrics-summary'>
+      <div class='metric-card'>
+        <div class='metric-label'>Privacy Score</div>
+        <div class='metric-value' style='color:{"#065f46" if (mia is None or mia <= 0.60) and (dup is None or dup <= 0.05) else "#991b1b"};'>
+          {("✓" if (mia is None or mia <= 0.60) and (dup is None or dup <= 0.05) else "✗")}
+        </div>
+      </div>
+      <div class='metric-card'>
+        <div class='metric-label'>Utility Score</div>
+        <div class='metric-value' style='color:{"#065f46" if (ks is None or ks <= 0.10) and (corr is None or corr <= 0.10) else "#991b1b"};'>
+          {("✓" if (ks is None or ks <= 0.10) and (corr is None or corr <= 0.10) else "✗")}
+        </div>
+      </div>
+      <div class='metric-card'>
+        <div class='metric-label'>Overall Status</div>
+        <div class='metric-value' style='color:{"#065f46" if ((mia is None or mia <= 0.60) and (dup is None or dup <= 0.05) and (ks is None or ks <= 0.10) and (corr is None or corr <= 0.10)) else "#991b1b"};'>
+          {("✓ Pass" if ((mia is None or mia <= 0.60) and (dup is None or dup <= 0.05) and (ks is None or ks <= 0.10) and (corr is None or corr <= 0.10)) else "✗ Review")}
+        </div>
+      </div>
+    </div>
+    '''}
 
     <div class='card'>
       <div class='section-title'>🔒 Privacy Assessment</div>

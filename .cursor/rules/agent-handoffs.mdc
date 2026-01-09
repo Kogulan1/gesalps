@@ -1,0 +1,80 @@
+---
+description: Agent handoff automation - agents automatically check for pending tasks
+globs: 
+alwaysApply: true
+---
+
+# Agent Handoff Automation Rule
+
+## CRITICAL: Before Starting Any Task
+
+**YOU MUST** check for pending handoffs assigned to you before starting new work:
+
+1. **Identify your agent name** from the context (e.g., DevOpsAgent, FrontendDeveloper, SyntheticDataSpecialist, etc.)
+
+2. **Check pending handoffs** by running:
+   ```bash
+   python3 scripts/agent_handoff_parser.py --agent YourAgentName
+   ```
+   
+   Or if you're unsure of your exact agent name:
+   ```bash
+   python3 scripts/agent_handoff_parser.py --list
+   ```
+
+3. **Prioritize handoffs**:
+   - P0/CRITICAL handoffs take highest priority
+   - Pending handoffs from other agents should be addressed before new tasks
+   - If multiple handoffs exist, work on them in order of priority/urgency
+
+4. **After completing a handoff**, create a log file documenting the completion
+
+## When Creating Log Files with Handoffs
+
+After creating a log file with handoffs in the "Next Steps / Handoff" section:
+
+1. **Process the handoffs** by running:
+   ```bash
+   python3 scripts/agent_handoff_parser.py
+   ```
+   
+   This updates `agent-logs/pending_handoffs.json` so other agents can see the tasks.
+
+2. **Verify handoffs were extracted**:
+   ```bash
+   python3 scripts/agent_handoff_parser.py --list
+   ```
+
+## Agent Name Matching
+
+Use the exact agent name format from existing logs:
+- ✅ `DevOpsAgent` (not "DevOps Agent")
+- ✅ `FrontendDeveloper` (not "Frontend Developer")
+- ✅ `SyntheticDataSpecialist` (not "Synthetic Data Specialist")
+- ✅ `MainAgent` (not "Main Agent")
+
+Check existing logs in `/agent-logs/` to see the exact naming convention.
+
+## Handoff Format in Logs
+
+When creating handoffs, use this exact format:
+```markdown
+## Next Steps / Handoff
+
+- → **AgentName**: Specific task description
+- → **AnotherAgent**: Another task description
+```
+
+## File Locations
+
+- Handoffs file: `agent-logs/pending_handoffs.json`
+- Parser script: `scripts/agent_handoff_parser.py`
+- Usage guide: `agent-logs/USAGE_GUIDE.md`
+
+## Workflow Summary
+
+1. **Before work**: Check `pending_handoffs.json` for your agent
+2. **During work**: Process new log files with `python3 scripts/agent_handoff_parser.py`
+3. **After work**: Create log file documenting completion
+
+This ensures all agents are aware of pending tasks and nothing falls through the cracks.

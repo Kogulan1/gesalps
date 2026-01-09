@@ -234,8 +234,33 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Issues**: Report bugs and request features via GitHub Issues
 - **Discussions**: Use GitHub Discussions for questions and community support
 
+## 🎯 Bao Demo Instructions
+
+### Quick Demo: TabDDPM for Clinical Data
+
+1. **Upload Clinical CSV**: Navigate to Datasets → Upload CSV (e.g., heart.csv, clinical_trial.csv)
+2. **Select TabDDPM**: In the run configuration, TabDDPM (Diffusion - Highest Fidelity) is pre-selected with a red "SOTA" badge
+3. **Start Run**: Click "Start Run" - TabDDPM will be used automatically
+4. **View Results**: After completion, check the report:
+   - **Privacy Metrics**: Identifiability score ~0.003 (excellent privacy)
+   - **Utility Metrics**: High fidelity with KS test and correlation metrics
+   - **Method Badge**: Shows "TabDDPM (SOTA)" in the run details
+
+**Why TabDDPM?**
+- 2025 state-of-the-art diffusion model for tabular data
+- Best for clinical/hospital datasets with >20 columns or mixed data types
+- Highest fidelity while maintaining strong privacy guarantees
+- Automatically recommended by AI agent for high-dimensional datasets
+
+**Expected Results for Clinical Data:**
+- Identifiability Score: < 0.01 (excellent)
+- MIA AUC: < 0.60 (privacy threshold)
+- Duplicate Rate: < 5%
+- KS Complement: > 0.65 (high utility)
+
 ## 🔮 Roadmap
 
+- [x] TabDDPM (SOTA diffusion model) - **Now Live!**
 - [ ] Advanced privacy metrics and validation
 - [ ] More synthetic data generation algorithms
 - [ ] Real-time collaboration features
