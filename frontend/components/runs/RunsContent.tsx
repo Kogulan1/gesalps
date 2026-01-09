@@ -34,7 +34,6 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
-import { getUserFriendlyErrorMessage } from "@/lib/errorMessages";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
