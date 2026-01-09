@@ -86,7 +86,7 @@ supabase: Client = create_client(SUPABASE_URL, SERVICE_ROLE)
 # LLM Provider Configuration (for agent re-planning)
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OPENROUTER_BASE = os.getenv("OPENROUTER_BASE", "https://openrouter.ai/api/v1")
-OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL") or os.getenv("AGENT_MODEL") or "mistralai/mistral-small-24b-instruct:free"
+OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL") or os.getenv("AGENT_MODEL") or "mistralai/mistral-small"
 OLLAMA_BASE = os.getenv("OLLAMA_BASE", "http://ollama:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL") or os.getenv("AGENT_MODEL") or "llama3.1:8b"
 USE_OPENROUTER = bool(OPENROUTER_API_KEY)
