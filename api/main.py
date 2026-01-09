@@ -824,6 +824,32 @@ def list_runs_dev():
         return []
 
 
+@app.get("/v1/runs/{run_id}")
+def get_run(run_id: str, user: Dict[str, Any] = Depends(require_user)):
+    """Get a single run by ID with full details including config_json (agent plan)."""
+    r = supabase.table("runs").select("id, name, dataset_id, status, started_at, finished_at, method, config_json, project_id").eq("id", run_id).single().execute()
+    if r.data is None:
+        raise HTTPException(status_code=404, detail="Run not found")
+    
+    # Verify ownership via project
+    proj = supabase.table("projects").select("owner_id").eq("id", r.data["project_id"]).single().execute()
+    if not proj.data or proj.data.get("owner_id") != user["id"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    
+    row = dict(r.data)
+    
+    # artifacts_ready: succeeded AND metrics row exists
+    ready = False
+    try:
+        if row.get("status") == "succeeded":
+            m = supabase.table("metrics").select("run_id").eq("run_id", run_id).maybe_single().execute()
+            ready = bool(m.data)
+    except Exception:
+        ready = False
+    row["artifacts_ready"] = ready
+    
+    return row
+
 @app.get("/v1/runs/{run_id}/status")
 def run_status(run_id: str, user: Dict[str, Any] = Depends(require_user)):
     r = supabase.table("runs").select("id,status,started_at,finished_at,name,method").eq("id", run_id).single().execute()
