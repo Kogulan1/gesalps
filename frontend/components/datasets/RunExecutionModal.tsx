@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,6 +47,9 @@ interface RunExecutionModalProps {
 type RunState = 'config' | 'started' | 'running' | 'completed' | 'failed';
 
 export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewResults }: RunExecutionModalProps) {
+  const router = useRouter();
+  const locale = useLocale();
+  const { toast } = useToast();
   const [runName, setRunName] = useState("");
   const [method, setMethod] = useState("ddpm");
   const [privacyLevel, setPrivacyLevel] = useState("Medium");
@@ -70,6 +75,7 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
   const timelineRef = useRef<HTMLDivElement>(null); // Ref for auto-scrolling timeline
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
+  const hasNavigatedRef = useRef(false); // Track if we've already navigated to prevent multiple navigations
 
   const methods = [
     { 
@@ -368,12 +374,13 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
       
       // Poll every 500ms for real-time updates (faster polling for better UX)
       // For failed runs, continue polling for a few more cycles to ensure all steps are fetched
+      // For completed runs, poll a few more times to ensure metrics are fetched
       let pollCount = 0;
-      const maxPollCount = runState === 'failed' ? 10 : Infinity; // Poll 10 more times (5 seconds) after failure
+      const maxPollCount = runState === 'failed' ? 10 : (runState === 'completed' ? 5 : Infinity); // Poll 5 more times (2.5 seconds) after completion
       
       const interval = setInterval(() => {
-        // Stop polling after maxPollCount for failed runs
-        if (runState === 'failed' && pollCount >= maxPollCount) {
+        // Stop polling after maxPollCount for failed/completed runs
+        if ((runState === 'failed' || runState === 'completed') && pollCount >= maxPollCount) {
           clearInterval(interval);
           return;
         }
@@ -404,6 +411,25 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
       // Note: 'queued' status stays in 'started' state until it becomes 'running'
     }
   }, [runState, runId, runStatus]);
+
+  // Auto-navigate to runs page when run completes
+  useEffect(() => {
+    if (runState === 'completed' && runId && !hasNavigatedRef.current) {
+      hasNavigatedRef.current = true;
+      // Small delay to let user see the completion message and metrics
+      const timer = setTimeout(() => {
+        handleClose();
+        // Navigate with runId parameter to auto-expand the run
+        router.push(`/${locale}/runs?runId=${runId}`);
+      }, 3000); // 3 second delay to show completion and allow user to see results
+      
+      return () => clearTimeout(timer);
+    }
+    // Reset navigation flag when runId changes (new run started)
+    if (runId && runState === 'config') {
+      hasNavigatedRef.current = false;
+    }
+  }, [runState, runId, router, locale]);
 
   // Update elapsed time
   useEffect(() => {
@@ -442,12 +468,10 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!runName.trim()) {
-      setShowNameConfirm(true);
-      return;
-    }
+    // Auto-generate name if not provided (no confirmation dialog needed)
+    const finalRunName = runName.trim() || `${dataset?.name || 'dataset'}_run_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)}`;
     
-    await startRun(runName.trim());
+    await startRun(finalRunName);
   };
 
   const startRun = async (name: string) => {
@@ -528,6 +552,7 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
         setRunId(result.run_id);
         setRunStatus({ status: 'queued', name: name });
         setStartTime(new Date()); // Start the timer
+        hasNavigatedRef.current = false; // Reset navigation flag for new run
         
         // Immediately fetch initial data (don't wait for polling interval)
         // This ensures steps appear as soon as they're created
@@ -601,7 +626,10 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
       // Revert UI to config if starting failed
       setRunState('config');
       setRunId(null);
-      alert(`Failed to start run: ${error.message}`);
+      const { getUserFriendlyErrorMessage } = await import('@/lib/errorMessages');
+      const friendlyMessage = getUserFriendlyErrorMessage(error);
+      // Use alert for now - toast will be added when useToast is available
+      alert(`Failed to start run: ${friendlyMessage}`);
     } finally {
       setLoading(false);
     }
@@ -1272,9 +1300,10 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
               </Button>
               <Button
                 onClick={() => {
-                  if (onViewResults && runId) {
+                  if (runId) {
                     handleClose();
-                    onViewResults(runId, runStatus?.name || runName || 'Run');
+                    // Navigate to runs page with runId parameter to auto-expand
+                    router.push(`/${locale}/runs?runId=${runId}`);
                   } else {
                     handleClose();
                   }
@@ -1283,7 +1312,7 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
                 className="flex-1"
               >
                 <Eye className="h-4 w-4 mr-2" />
-                View Details
+                View on Runs Page
               </Button>
             </div>
 
@@ -1603,17 +1632,27 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
                 </div>
               </div>
               
-              {/* Working Toggle Switch */}
-              <label className="flex items-center cursor-pointer">
+              {/* Working Toggle Switch - Fixed pointer events */}
+              <label className="flex items-center cursor-pointer relative z-10" onClick={(e) => e.stopPropagation()}>
                 <input
                   type="checkbox"
-              checked={useAgentic}
-                  onChange={(e) => setUseAgentic(e.target.checked)}
+                  checked={useAgentic}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    setUseAgentic(e.target.checked);
+                  }}
+                  onClick={(e) => e.stopPropagation()}
                   className="sr-only"
                 />
-                <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
-                  useAgentic ? 'bg-green-500' : 'bg-gray-300'
-                }`}>
+                <div 
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 cursor-pointer ${
+                    useAgentic ? 'bg-green-500' : 'bg-gray-300'
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setUseAgentic(!useAgentic);
+                  }}
+                >
                   <div className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 ${
                     useAgentic ? 'translate-x-6' : 'translate-x-1'
                   }`} />

@@ -232,7 +232,11 @@ const DEMO_RUNS: Run[] = [
   }
 ];
 
-export function RunsContent() {
+interface RunsContentProps {
+  initialRunId?: string; // Optional runId to auto-expand on page load
+}
+
+export function RunsContent({ initialRunId }: RunsContentProps = {}) {
   const t = useTranslations('dashboard');
   const { toast } = useToast();
   const [runs, setRuns] = useState<Run[]>([]);
@@ -254,7 +258,7 @@ export function RunsContent() {
     runId: null,
     currentName: ""
   });
-  const [expandedRunId, setExpandedRunId] = useState<string | null>(null);
+  const [expandedRunId, setExpandedRunId] = useState<string | null>(initialRunId || null);
   const [runSteps, setRunSteps] = useState<Record<string, any[]>>({}); // Track steps for each run
   const [cancellingRunId, setCancellingRunId] = useState<string | null>(null);
 
@@ -542,6 +546,21 @@ export function RunsContent() {
   useEffect(() => {
     fetchRuns();
   }, []);
+
+  // Auto-expand and scroll to run if initialRunId is provided
+  useEffect(() => {
+    if (initialRunId && runs.length > 0) {
+      // Wait for runs to load, then expand and scroll
+      const timer = setTimeout(() => {
+        setExpandedRunId(initialRunId);
+        const runElement = document.querySelector(`[data-run-id="${initialRunId}"]`);
+        if (runElement) {
+          runElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [initialRunId, runs]);
 
   // Poll for running/queued runs to get real-time updates
   useEffect(() => {
@@ -959,7 +978,7 @@ export function RunsContent() {
                       const latestStep = steps.length > 0 ? steps[steps.length - 1] : null;
                       
                       return (
-                      <div key={run.id}>
+                      <div key={run.id} data-run-id={run.id}>
                         <Card className="hover:shadow-md transition-shadow">
                           <CardContent className="py-3">
                             <div className="flex items-center justify-between">
