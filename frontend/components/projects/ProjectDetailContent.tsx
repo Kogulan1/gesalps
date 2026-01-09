@@ -28,6 +28,10 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
+import { getUserFriendlyErrorMessage } from "@/lib/errorMessages";
+import { ResultsModal } from "@/components/runs/ResultsModal";
+import { DatasetPreviewModal } from "@/components/datasets/DatasetPreviewModal";
+import { downloadAllArtifactsZip } from "@/lib/api";
 
 interface Project {
   id: string;
@@ -82,6 +86,15 @@ export function ProjectDetailContent() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
   const [usingMockData, setUsingMockData] = useState(false);
+  const [previewModal, setPreviewModal] = useState<{ isOpen: boolean; dataset: Dataset | null }>({
+    isOpen: false,
+    dataset: null
+  });
+  const [resultsModal, setResultsModal] = useState<{ isOpen: boolean; runId: string | null; runName: string }>({
+    isOpen: false,
+    runId: null,
+    runName: ""
+  });
 
   const projectId = params.id as string;
 
@@ -209,22 +222,49 @@ export function ProjectDetailContent() {
         throw new Error('Not authenticated');
       }
 
-      const baseUrl = process.env.NEXT_PUBLIC_BACKEND_API_BASE || 'http://localhost:8000';
-      const response = await fetch(`${baseUrl}/v1/projects/${projectId}`, {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const baseUrl = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE;
+      
+      if (!baseUrl) {
+        throw new Error('Backend API base URL not configured. Please set NEXT_PUBLIC_BACKEND_API_BASE environment variable.');
+      }
+
+      const url = `${baseUrl}/v1/projects/${projectId}`;
+      
+      let response: Response;
+      try {
+        response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+      } catch (fetchError) {
+        // Network error (CORS, connection refused, etc.)
+        const errorMsg = fetchError instanceof Error ? fetchError.message : 'Unknown network error';
+        console.error('Network error fetching project:', {
+          url,
+          error: errorMsg,
+          baseUrl,
+          projectId
+        });
+        
+        // Provide more helpful error message
+        if (errorMsg.includes('Failed to fetch') || errorMsg.includes('NetworkError')) {
+          throw new Error(
+            `Cannot connect to backend API at ${baseUrl}. ` +
+            `This could be due to CORS issues, network connectivity, or the API server being down. ` +
+            `Please check your network connection and ensure the backend is running.`
+          );
+        }
+        throw new Error(`Network error: ${errorMsg}`);
+      }
 
       if (!response.ok) {
+        const errorText = await response.text().catch(() => response.statusText);
         if (response.status === 404) {
-          // Project not found in database, use mock data for demo
-          console.log('Project not found in database, using mock data for demo');
-          setUsingMockData(true);
-          return fetchMockProjectData();
+          throw new Error(`Project not found. The project with ID "${projectId}" does not exist or you don't have access to it.`);
         }
-        throw new Error(`Failed to fetch project: ${response.statusText}`);
+        throw new Error(`Failed to fetch project: ${response.status} - ${errorText}`);
       }
 
       const projectData = await response.json();
@@ -260,14 +300,14 @@ export function ProjectDetailContent() {
       const transformedRuns: Run[] = (projectData.runs || []).map((run: any) => ({
         id: run.id,
         name: run.name,
-        dataset_name: "Unknown Dataset", // Would need to join with datasets
+        dataset_name: run.dataset_name || "Unknown Dataset", // Use dataset_name from API
         status: run.status === "succeeded" ? "Completed" : 
                 run.status === "running" ? "Running" :
                 run.status === "failed" ? "Failed" : "Queued",
         started_at: run.started_at,
-        completed_at: run.finished_at,
-        duration: run.finished_at && run.started_at ? 
-          Math.round((new Date(run.finished_at).getTime() - new Date(run.started_at).getTime()) / 60000) : undefined,
+        completed_at: run.completed_at || run.finished_at, // Use completed_at from API if available
+        duration: (run.completed_at || run.finished_at) && run.started_at ? 
+          Math.round((new Date(run.completed_at || run.finished_at).getTime() - new Date(run.started_at).getTime()) / 60000) : undefined,
         scores: {
           auroc: 0.0,
           c_index: 0.0,
@@ -280,9 +320,42 @@ export function ProjectDetailContent() {
       setProject(transformedProject);
       setDatasets(transformedDatasets);
       setRuns(transformedRuns);
+      setUsingMockData(false);
+      setError(null);
     } catch (err) {
       console.error('Error fetching project data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch project data');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch project data';
+      
+      // Log detailed error information for debugging
+      console.error('Project fetch error details:', {
+        projectId,
+        baseUrl: process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE,
+        error: errorMessage,
+        errorType: err instanceof TypeError ? 'TypeError' : err instanceof Error ? err.constructor.name : 'Unknown'
+      });
+      
+      // Determine if this is a network error (connection refused, CORS) vs API error (404, 401, 403)
+      const isNetworkError = (
+        errorMessage.includes('Failed to fetch') || 
+        errorMessage.includes('Network error') ||
+        errorMessage.includes('Cannot connect to backend')
+      ) && !errorMessage.includes('404') && 
+         !errorMessage.includes('401') &&
+         !errorMessage.includes('403') &&
+         !errorMessage.includes('Project not found');
+      
+      // Only use mock data for actual network failures (connection refused, CORS)
+      // Never use mock data for API errors (404, 401, 403) - always show error UI
+      if (isNetworkError) {
+        // Network error - API might be down, use mock data as fallback
+        console.warn('Network error detected, using mock data as fallback');
+        setUsingMockData(true);
+        fetchMockProjectData();
+      } else {
+        // API error (404, 401, 403) or other errors - show error UI, no mock data
+        setUsingMockData(false);
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -341,17 +414,70 @@ export function ProjectDetailContent() {
     );
   }
 
-  if (error || !project) {
+  // Show error UI for API errors (404, 401, 403) - never use mock data for these
+  // Only show error if we're not using mock data (which is only for network failures)
+  if (error && !usingMockData && !project) {
+    // Determine if this is a network error (for troubleshooting tips) vs API error
+    const isNetworkError = (
+      error.includes('Cannot connect to backend') || 
+      error.includes('Network error') ||
+      error.includes('Failed to fetch')
+    ) && !error.includes('404') && 
+       !error.includes('401') &&
+       !error.includes('403') &&
+       !error.includes('Project not found');
+    
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
+      <div className="min-h-screen bg-white flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-2xl text-red-500">⚠</span>
           </div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">Error loading project</h3>
-          <p className="text-gray-500 mb-4">{error || 'Project not found'}</p>
-          <Button onClick={() => router.back()} variant="outline">
-            Go Back
+          <p className="text-gray-500 mb-4 text-sm">{getUserFriendlyErrorMessage(error)}</p>
+          
+          {/* Only show troubleshooting tips for actual network errors, not API errors */}
+          {isNetworkError && (
+            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md text-left">
+              <p className="text-sm text-yellow-800 font-medium mb-1">Troubleshooting:</p>
+              <ul className="text-xs text-yellow-700 list-disc list-inside space-y-1">
+                <li>Check if the backend API is running</li>
+                <li>Verify CORS settings on the backend</li>
+                <li>Check your network connection</li>
+                <li>Verify NEXT_PUBLIC_BACKEND_API_BASE is set correctly</li>
+              </ul>
+            </div>
+          )}
+          
+          <div className="flex items-center justify-center space-x-4">
+            <Button onClick={() => router.back()} variant="outline">
+              Go Back
+            </Button>
+            <Button onClick={() => {
+              setError(null);
+              setLoading(true);
+              fetchProjectData();
+            }} variant="default">
+              Retry
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // If no project and not loading, show error
+  if (!project && !loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-2xl text-gray-400">⚠</span>
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Project not found</h3>
+          <p className="text-gray-500 mb-4">The project you're looking for doesn't exist or you don't have access to it.</p>
+          <Button onClick={() => router.push('/en/projects')} variant="outline">
+            Back to Projects
           </Button>
         </div>
       </div>
@@ -617,8 +743,7 @@ export function ProjectDetailContent() {
                           size="sm" 
                           className="text-gray-700 border-gray-300 hover:bg-gray-50"
                           onClick={() => {
-                            // TODO: Open dataset preview modal
-                            alert('Dataset preview feature coming soon!');
+                            setPreviewModal({ isOpen: true, dataset });
                           }}
                         >
                           <Eye className="h-4 w-4 mr-2" />
@@ -718,8 +843,7 @@ export function ProjectDetailContent() {
                           size="sm" 
                           className="text-gray-700 border-gray-300 hover:bg-gray-50"
                           onClick={() => {
-                            // TODO: Open run results modal
-                            alert('Run results feature coming soon!');
+                            setResultsModal({ isOpen: true, runId: run.id, runName: run.name });
                           }}
                         >
                           <Eye className="h-4 w-4 mr-2" />
@@ -729,9 +853,13 @@ export function ProjectDetailContent() {
                           variant="outline" 
                           size="sm" 
                           className="text-gray-700 border-gray-300 hover:bg-gray-50"
-                          onClick={() => {
-                            // TODO: Download run artifacts
-                            alert('Download feature coming soon!');
+                          onClick={async () => {
+                            try {
+                              await downloadAllArtifactsZip(run.id);
+                            } catch (error) {
+                              console.error('Error downloading artifacts:', error);
+                              alert('Failed to download artifacts');
+                            }
                           }}
                         >
                           <Download className="h-4 w-4 mr-2" />
@@ -790,6 +918,28 @@ export function ProjectDetailContent() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Modals */}
+      <DatasetPreviewModal
+        isOpen={previewModal.isOpen}
+        onClose={() => setPreviewModal({ isOpen: false, dataset: null })}
+        dataset={previewModal.dataset ? {
+          id: previewModal.dataset.id,
+          name: previewModal.dataset.name,
+          description: previewModal.dataset.name,
+          file_path: previewModal.dataset.file_name,
+          size: `${(previewModal.dataset.file_size / 1024 / 1024).toFixed(2)} MB`,
+          rows: previewModal.dataset.rows,
+          columns: previewModal.dataset.columns
+        } : null}
+      />
+
+      <ResultsModal
+        isOpen={resultsModal.isOpen}
+        onClose={() => setResultsModal({ isOpen: false, runId: null, runName: "" })}
+        runId={resultsModal.runId}
+        runName={resultsModal.runName}
+      />
     </div>
   );
 }
