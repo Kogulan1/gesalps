@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/toast/Toaster";
+import { getUserFriendlyErrorMessage } from "@/lib/errorMessages";
 import { 
   Search, 
   Grid3X3, 
@@ -233,6 +235,7 @@ const DEMO_RUNS: Run[] = [
 
 export function RunsContent() {
   const t = useTranslations('dashboard');
+  const { toast } = useToast();
   const [runs, setRuns] = useState<Run[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -455,7 +458,11 @@ export function RunsContent() {
         } catch (err) {
           console.error('Error cancelling run:', err);
           const friendlyMessage = getUserFriendlyErrorMessage(err);
-          alert(friendlyMessage);
+          toast({
+            title: "Cancel Failed",
+            description: friendlyMessage,
+            variant: "error"
+          });
         } finally {
           setCancellingRunId(null);
         }
@@ -469,7 +476,11 @@ export function RunsContent() {
           const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE || 'http://localhost:8000';
           
           if (!base) {
-            alert('Backend API URL not configured. Please set NEXT_PUBLIC_BACKEND_API_BASE in Vercel environment variables.');
+            toast({
+              title: "Configuration Error",
+              description: "Backend API URL not configured. Please set NEXT_PUBLIC_BACKEND_API_BASE in Vercel environment variables.",
+              variant: "error"
+            });
             console.error('[Delete Run] NEXT_PUBLIC_BACKEND_API_BASE is not set');
             return;
           }
@@ -504,7 +515,11 @@ export function RunsContent() {
         } catch (err) {
           console.error('Error deleting run:', err);
           const friendlyMessage = getUserFriendlyErrorMessage(err);
-          alert(friendlyMessage);
+          toast({
+            title: "Delete Failed",
+            description: friendlyMessage,
+            variant: "error"
+          });
         }
       };
 
