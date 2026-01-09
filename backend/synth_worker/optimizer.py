@@ -150,7 +150,26 @@ class SyntheticDataOptimizer:
         
         if primary_type == FailureType.HIGH_KS:
             # Check for extremely high KS (indicates severe training failure)
-            if ks is not None and ks > 0.5:
+            if ks is not None and ks > 0.7:
+                # EXTREME failure - KS > 0.7 indicates training almost certainly failed
+                root_cause = f"EXTREME CRITICAL: KS statistic extremely high ({ks:.3f}). Training almost certainly failed or was incomplete. This is not a normal failure - training likely did not complete."
+                if method == "ddpm":
+                    n_iter = hyperparams.get("n_iter", 300)
+                    # EXTREME: For KS > 0.7, we need very aggressive increases
+                    if n_iter < 500:
+                        suggestions.append(f"EXTREME: TabDDPM n_iter={n_iter} is critically too low. Increase to 600-800 immediately")
+                    elif n_iter < 600:
+                        suggestions.append(f"EXTREME: Increase n_iter from {n_iter} to 800 for extreme failure recovery")
+                    else:
+                        suggestions.append(f"EXTREME: Even with n_iter={n_iter}, training failed. Increase to 800 and verify training completes")
+                    suggestions.append("CRITICAL: Check training logs - training may have crashed or timed out")
+                    suggestions.append("CRITICAL: Verify dataset preprocessing completed correctly")
+                    suggestions.append("CRITICAL: Increase batch_size to 64-128 (not 256) for more stable training with high n_iter")
+                    suggestions.append("CRITICAL: Consider reducing dataset size or columns if training keeps failing")
+                else:
+                    suggestions.append("EXTREME: Training failed. Switch to TabDDPM (ddpm) with n_iter=600-800 immediately")
+                    suggestions.append("CRITICAL: Current method is not suitable - TabDDPM is required for this dataset")
+            elif ks is not None and ks > 0.5:
                 root_cause = f"CRITICAL: KS statistic extremely high ({ks:.3f}). Training likely incomplete or failed. Verify training completed successfully."
                 if method == "ddpm":
                     n_iter = hyperparams.get("n_iter", 300)
@@ -301,7 +320,10 @@ class SyntheticDataOptimizer:
             utility = previous_metrics.get("utility", {})
             ks = utility.get("ks_mean")
             if ks:
-                if ks > 0.5:  # Critical failure (like KS = 0.73)
+                if ks > 0.7:  # EXTREME failure (like KS = 0.73)
+                    # EXTREME: Very aggressive increase for extreme failures
+                    n_iter = min(800, n_iter + 300)  # Increase by 300, cap at 800
+                elif ks > 0.5:  # Critical failure
                     # Very aggressive increase for critical failures
                     n_iter = min(600, n_iter + 200)
                 elif ks > self.KS_MAX:  # Standard failure (KS > 0.10)

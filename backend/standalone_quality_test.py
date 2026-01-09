@@ -329,10 +329,15 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                 dp_requested=False,
             )
             print_info(f"Optimizer suggested hyperparameters: {json.dumps(hparams, indent=2)}")
+            
+            # IMPROVED: Ensure minimum n_iter for proper training
+            if hparams.get("n_iter", 0) < 400:
+                print_warning(f"n_iter={hparams.get('n_iter')} may be too low - increasing to 400 minimum")
+                hparams["n_iter"] = 400
         except Exception as e:
-            print_warning(f"Optimizer not available, using defaults: {type(e).__name__}")
-            # Use good defaults for TabDDPM
-            hparams = {"n_iter": 300, "batch_size": 32}
+            print_warning(f"Optimizer not available, using safe defaults: {type(e).__name__}")
+            # IMPROVED: Use higher defaults to prevent training failures
+            hparams = {"n_iter": 400, "batch_size": 64}  # Increased from 300/32
             print_info(f"Using default hyperparameters: {json.dumps(hparams, indent=2)}")
         
         # Create synthesizer
