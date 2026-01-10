@@ -450,14 +450,15 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
             # Use the EXACT approach from standalone_ddpm_test.py that achieved KS Mean 0.0650
             method = "ddpm"  # Set method for fallback logic
             print_info("Creating SynthCity GenericDataLoader (raw data, no cleaning)...")
-            loader = GenericDataLoader(real_clean)
+            # CRITICAL: Use raw df directly, NOT real_clean (which may have been preprocessed)
+            # The working script uses df directly: loader = GenericDataLoader(df)
+            loader = GenericDataLoader(df)
             
-            # Use n_iter=300 (same as working script that achieved 0.0650)
-            # The working script used n_iter=500, but achieved 0.0650 with n_iter=300
-            # Current test uses n_iter=800 but gets 0.7465 - clearly the issue is data preparation, not n_iter
-            n_iter = 300  # Match the working script's successful configuration
-            print_info(f"Training TabDDPM with n_iter={n_iter} (matching working script)...")
-            print_info("This matches the configuration that achieved KS Mean 0.0650")
+            # Use n_iter=500 (EXACT match to working script that achieved 0.0650)
+            # The working script uses n_iter=500: syn_model = Plugins().get("ddpm", n_iter=500)
+            n_iter = 500  # EXACT match to working script
+            print_info(f"Training TabDDPM with n_iter={n_iter} (EXACT match to working script)...")
+            print_info("This EXACTLY matches standalone_ddpm_test.py that achieved KS Mean 0.0650")
             
             start_time = time.time()
             syn_model = Plugins().get("ddpm", n_iter=n_iter)
@@ -465,24 +466,59 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
             training_time = time.time() - start_time
             print_success(f"Training completed in {training_time:.1f} seconds")
             
-            # Generate
+            # Generate (EXACT match to working script)
             print_info("Generating synthetic data...")
-            synthetic_loader = syn_model.generate(count=len(real_clean))
+            synthetic_loader = syn_model.generate(count=len(df))
             synth = synthetic_loader.dataframe()
             print_success(f"Generated {len(synth)} synthetic rows")
             
-            # Evaluate with custom metrics functions (same as worker.py and fallback path)
-            # This ensures consistent metric calculation across all paths
-            print_info("Evaluating metrics with custom functions (matching worker.py)...")
-            utility = _utility_metrics(real_clean, synth)
-            privacy = _privacy_metrics(real_clean, synth)
-            metrics = {"utility": utility, "privacy": privacy}
-            
-            print_info(f"Metrics Results:")
-            print_info(f"  KS Mean: {utility.get('ks_mean')}")
-            print_info(f"  MIA AUC: {privacy.get('mia_auc')}")
-            print_info(f"  Duplicate Rate: {privacy.get('dup_rate')}")
-            print_info(f"  Correlation Delta: {utility.get('corr_delta')}")
+            # CRITICAL: Use SynthCity eval_privacy and eval_statistical DIRECTLY (EXACT match to working script)
+            # The working script uses: privacy = eval_privacy(df, synthetic_df)
+            #                          utility = eval_statistical(df, synthetic_df)
+            print_info("Evaluating metrics with SynthCity eval_privacy/eval_statistical (EXACT match to working script)...")
+            try:
+                # Try to use eval_privacy and eval_statistical as functions (like working script)
+                privacy_result = eval_privacy(df, synth)
+                utility_result = eval_statistical(df, synth)
+                
+                # Convert SynthCity format to our format
+                # SynthCity uses ks_complement (higher = better), we use ks_mean (lower = better)
+                # ks_mean = 1 - ks_complement
+                ks_complement = utility_result.get('ks_complement', None)
+                if ks_complement is not None:
+                    ks_mean = 1.0 - float(ks_complement)
+                else:
+                    ks_mean = None
+                
+                utility = {
+                    "ks_mean": ks_mean,
+                    "corr_delta": utility_result.get('correlation_difference', None),
+                }
+                privacy = {
+                    "mia_auc": privacy_result.get('mia_auc', None),
+                    "dup_rate": privacy_result.get('duplicate_rate', None),
+                }
+                metrics = {"utility": utility, "privacy": privacy}
+                
+                print_info(f"SynthCity Metrics (EXACT match to working script):")
+                print_info(f"  KS Complement: {ks_complement}")
+                print_info(f"  KS Mean: {ks_mean}")
+                print_info(f"  MIA AUC: {privacy.get('mia_auc')}")
+                print_info(f"  Duplicate Rate: {privacy.get('dup_rate')}")
+                print_info(f"  Correlation Delta: {utility.get('corr_delta')}")
+            except (TypeError, AttributeError) as e:
+                # If eval_privacy/eval_statistical are modules, fall back to custom functions
+                print_warning(f"eval_privacy/eval_statistical are modules, not functions: {type(e).__name__}: {e}")
+                print_warning("Falling back to custom metrics functions...")
+                utility = _utility_metrics(df, synth)
+                privacy = _privacy_metrics(df, synth)
+                metrics = {"utility": utility, "privacy": privacy}
+                
+                print_info(f"Metrics Results (custom functions):")
+                print_info(f"  KS Mean: {utility.get('ks_mean')}")
+                print_info(f"  MIA AUC: {privacy.get('mia_auc')}")
+                print_info(f"  Duplicate Rate: {privacy.get('dup_rate')}")
+                print_info(f"  Correlation Delta: {utility.get('corr_delta')}")
         else:
             # Fallback to factory wrapper approach (if SynthCity direct import fails)
             print_warning("⚠️  Using factory wrapper approach (may not match working script)")
