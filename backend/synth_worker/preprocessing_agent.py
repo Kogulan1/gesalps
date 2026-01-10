@@ -101,7 +101,7 @@ def analyze_dataset_for_preprocessing(df: pd.DataFrame) -> Dict[str, Any]:
                 "type": "categorical" if col_data.nunique() < len(col_data) * 0.5 else "text",
                 "unique_count": int(col_data.nunique()),
                 "missing_count": int(col_data.isna().sum()),
-                "missing_rate": float(col_data.isna().mean()),
+                "missing_rate": float(col_data.isna().mean()) if len(col_data) > 0 else 0.0,
             }
             analysis["column_stats"][col] = stats
     
@@ -136,11 +136,23 @@ def generate_preprocessing_prompt(dataset_analysis: Dict[str, Any], previous_ks:
         
         detail = f"- '{col}' ({dtype})"
         if stats.get("type") == "numeric":
-            detail += f": min={stats.get('min', 'N/A'):.2f}, max={stats.get('max', 'N/A'):.2f}, mean={stats.get('mean', 'N/A'):.2f}, std={stats.get('std', 'N/A'):.2f}"
+            # Handle None values properly - convert to 'N/A' string before formatting
+            min_val = stats.get('min')
+            max_val = stats.get('max')
+            mean_val = stats.get('mean')
+            std_val = stats.get('std')
+            
+            min_str = f"{min_val:.2f}" if min_val is not None else "N/A"
+            max_str = f"{max_val:.2f}" if max_val is not None else "N/A"
+            mean_str = f"{mean_val:.2f}" if mean_val is not None else "N/A"
+            std_str = f"{std_val:.2f}" if std_val is not None else "N/A"
+            
+            detail += f": min={min_str}, max={max_str}, mean={mean_str}, std={std_str}"
             if stats.get("outlier_count", 0) > 0:
                 detail += f", {stats.get('outlier_count')} outliers"
-            if abs(stats.get("skewness", 0)) > 2:
-                detail += f", skew={stats.get('skewness'):.2f}"
+            skewness = stats.get("skewness")
+            if skewness is not None and abs(skewness) > 2:
+                detail += f", skew={skewness:.2f}"
         else:
             detail += f": {stats.get('unique_count', 'N/A')} unique values"
         column_details.append(detail)
