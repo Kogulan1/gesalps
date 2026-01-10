@@ -472,8 +472,18 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
             
             # Evaluate with SynthCity metrics directly (like working script)
             print_info("Evaluating metrics with SynthCity (matching working script)...")
-            privacy_metrics = eval_privacy(real_clean, synth)
-            utility_metrics = eval_statistical(real_clean, synth)
+            # eval_privacy and eval_statistical are modules, need to import functions from them
+            try:
+                from synthcity.metrics.eval_privacy import eval_privacy as eval_privacy_func
+                from synthcity.metrics.eval_statistical import eval_statistical as eval_statistical_func
+                privacy_metrics = eval_privacy_func(real_clean, synth)
+                utility_metrics = eval_statistical_func(real_clean, synth)
+            except (ImportError, AttributeError):
+                # Fallback: try using Metrics class (like worker.py)
+                from synthcity.metrics.eval import Metrics
+                metrics_evaluator = Metrics()
+                privacy_metrics = metrics_evaluator.evaluate_privacy(real_clean, synth)
+                utility_metrics = metrics_evaluator.evaluate_statistical(real_clean, synth)
             
             # Convert SynthCity metrics to our format
             # SynthCity uses ks_complement (higher = better), we use ks_mean (lower = better)
