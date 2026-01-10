@@ -385,9 +385,15 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                 print_warning(f"Optimizer not available: {type(e).__name__}")
         
         # IMPROVED: Ensure minimum n_iter for proper training
-        if hparams.get("n_iter", 0) < 400:
-            print_warning(f"n_iter={hparams.get('n_iter')} may be too low - increasing to 400 minimum")
-            hparams["n_iter"] = 400
+        # For extreme failures (KS > 0.5), we need much higher n_iter
+        current_n_iter = hparams.get("n_iter", 0)
+        if current_n_iter < 600:
+            print_warning(f"n_iter={current_n_iter} may be too low for all green - increasing to 600 minimum")
+            hparams["n_iter"] = 600
+        elif current_n_iter < 800:
+            # If between 600-800, increase to 800 for better results
+            print_info(f"Increasing n_iter from {current_n_iter} to 800 for better quality")
+            hparams["n_iter"] = 800
         
         # Final fallback to safe defaults
         if not hparams:
