@@ -59,8 +59,38 @@ def analyze_dataset_for_preprocessing(df: pd.DataFrame) -> Dict[str, Any]:
         dtype = str(col_data.dtype)
         analysis["data_types"][col] = dtype
         
-        # Numeric columns
-        if pd.api.types.is_numeric_dtype(col_data):
+        # UNIVERSAL HANDLER: Detect and handle all data types
+        
+        # 1. Datetime columns
+        if pd.api.types.is_datetime64_any_dtype(col_data):
+            valid_data = col_data.dropna()
+            stats = {
+                "type": "datetime",
+                "unique_count": int(col_data.nunique()),
+                "missing_count": int(col_data.isna().sum()),
+                "missing_rate": float(col_data.isna().mean()) if len(col_data) > 0 else 0.0,
+            }
+            if len(valid_data) > 0:
+                stats["min"] = str(valid_data.min())
+                stats["max"] = str(valid_data.max())
+                # Extract datetime features for model compatibility
+                analysis["issues"].append(f"Column '{col}' is datetime - should extract features (year, month, day) or convert to numeric")
+            analysis["column_stats"][col] = stats
+        
+        # 2. Boolean columns
+        elif pd.api.types.is_bool_dtype(col_data):
+            stats = {
+                "type": "boolean",
+                "unique_count": int(col_data.nunique()),
+                "missing_count": int(col_data.isna().sum()),
+                "missing_rate": float(col_data.isna().mean()) if len(col_data) > 0 else 0.0,
+            }
+            # Convert boolean to int for model compatibility
+            analysis["issues"].append(f"Column '{col}' is boolean - should convert to int (0/1) for model compatibility")
+            analysis["column_stats"][col] = stats
+        
+        # 3. Numeric columns (int, float)
+        elif pd.api.types.is_numeric_dtype(col_data):
             # Get valid (non-NaN) values for statistics
             valid_data = col_data.dropna()
             
@@ -117,14 +147,41 @@ def analyze_dataset_for_preprocessing(df: pd.DataFrame) -> Dict[str, Any]:
                     logger.warning(f"Failed to calculate skewness for column '{col}': {e}")
             
             analysis["column_stats"][col] = stats
+        
+        # 4. Categorical/text columns (object, string, category)
         else:
-            # Categorical/text columns
-            stats = {
-                "type": "categorical" if col_data.nunique() < len(col_data) * 0.5 else "text",
-                "unique_count": int(col_data.nunique()),
-                "missing_count": int(col_data.isna().sum()),
-                "missing_rate": float(col_data.isna().mean()) if len(col_data) > 0 else 0.0,
-            }
+            # Check if it's actually numeric stored as string
+            try:
+                numeric_test = pd.to_numeric(col_data, errors='coerce')
+                if numeric_test.notna().sum() > len(col_data) * 0.8:  # 80%+ are numeric
+                    analysis["issues"].append(f"Column '{col}' appears numeric but stored as {dtype} - should convert to numeric")
+                    stats = {
+                        "type": "numeric_string",
+                        "unique_count": int(col_data.nunique()),
+                        "missing_count": int(col_data.isna().sum()),
+                        "missing_rate": float(col_data.isna().mean()) if len(col_data) > 0 else 0.0,
+                    }
+                else:
+                    # True categorical/text
+                    is_categorical = col_data.nunique() < len(col_data) * 0.5 and col_data.nunique() < 100
+                    stats = {
+                        "type": "categorical" if is_categorical else "text",
+                        "unique_count": int(col_data.nunique()),
+                        "missing_count": int(col_data.isna().sum()),
+                        "missing_rate": float(col_data.isna().mean()) if len(col_data) > 0 else 0.0,
+                    }
+                    # High cardinality categorical warning
+                    if col_data.nunique() > 50 and col_data.nunique() < len(col_data) * 0.5:
+                        analysis["issues"].append(f"Column '{col}' has high cardinality ({col_data.nunique()} unique values) - may need encoding strategy")
+            except Exception as e:
+                # Fallback: treat as categorical/text
+                stats = {
+                    "type": "categorical" if col_data.nunique() < len(col_data) * 0.5 else "text",
+                    "unique_count": int(col_data.nunique()),
+                    "missing_count": int(col_data.isna().sum()),
+                    "missing_rate": float(col_data.isna().mean()) if len(col_data) > 0 else 0.0,
+                }
+            
             analysis["column_stats"][col] = stats
     
     return analysis
@@ -204,14 +261,20 @@ DETECTED ISSUES:
 {issues_text}
 {ks_context}
 
-YOUR TASK:
-Generate a JSON preprocessing plan that addresses:
+YOUR TASK (UNIVERSAL HANDLER):
+Generate a JSON preprocessing plan that handles ANY data type and delivers SynthCity-compatible format for "all green" metrics:
 1. **Column Renaming**: Rename numeric column names (e.g., '233.0', '2.3') to descriptive names (e.g., 'feature_233', 'measurement_2_3')
-2. **Outlier Handling**: Clip or transform extreme values that may confuse the model
-3. **Distribution Normalization**: Apply transformations (quantile, log, etc.) for highly skewed columns
-4. **Missing Value Handling**: Fill or drop missing values appropriately
-5. **Data Type Corrections**: Ensure correct types (numeric vs categorical)
-6. **Feature Engineering**: Any transformations that will help the model learn better
+2. **Data Type Conversions (UNIVERSAL)**:
+   - Datetime → numeric (extract timestamp or features: year, month, day, hour, minute)
+   - Boolean → int (0/1) for model compatibility
+   - Numeric strings → numeric (convert string numbers to int/float)
+   - Ensure categorical columns are properly typed (category dtype)
+3. **Outlier Handling**: Clip or transform extreme values that may confuse the model
+4. **Distribution Normalization**: Apply transformations (quantile, log, sqrt, standardize, minmax) for highly skewed columns
+5. **Missing Value Handling**: Fill or drop missing values appropriately (mean/median/mode for numeric, mode for categorical)
+6. **Categorical Encoding**: Handle high-cardinality categoricals (label encoding, one-hot, or group rare categories)
+7. **Feature Engineering**: Any transformations that will help the model learn better
+8. **SynthCity Compatibility**: Ensure final output is compatible with SynthCity GenericDataLoader (numeric, categorical, or string only)
 
 OUTPUT FORMAT (JSON only, no markdown, no explanations):
 {{
@@ -239,7 +302,21 @@ OUTPUT FORMAT (JSON only, no markdown, no explanations):
     "columns": ["col1", "col2"]
   }},
   "data_type_corrections": {{
-    "column_name": "int64" | "float64" | "category" | "object",
+    "column_name": "int64" | "float64" | "category" | "object" | "boolean_to_int" | "datetime_to_numeric",
+    ...
+  }},
+  "datetime_extractions": {{
+    "column_name": {{
+      "method": "timestamp" | "extract_features",
+      "features": ["year", "month", "day", "hour", "minute"]  // if extract_features
+    }},
+    ...
+  }},
+  "categorical_encoding": {{
+    "column_name": {{
+      "method": "one_hot" | "label" | "group_rare" | "target_encoding",
+      "max_categories": 50  // for group_rare
+    }},
     ...
   }},
   "rationale": "Brief explanation of why these preprocessing steps will help"
@@ -516,8 +593,41 @@ def apply_preprocessing_plan(df: pd.DataFrame, plan: Dict[str, Any]) -> Tuple[pd
         
     except Exception as e:
         logger.error(f"Error applying preprocessing plan: {type(e).__name__}: {e}")
+        import traceback
+        logger.debug(f"Preprocessing error traceback: {traceback.format_exc()}")
         # Return original DataFrame if preprocessing fails
         return df, {"error": str(e), "applied_steps": applied_steps}
+    
+    # FINAL VALIDATION: Ensure output is compatible with SynthCity GenericDataLoader
+    # SynthCity requires: numeric (int/float), categorical (category), or string (object)
+    try:
+        for col in result_df.columns:
+            col_data = result_df[col]
+            # Convert any remaining incompatible types
+            if pd.api.types.is_datetime64_any_dtype(col_data):
+                # Convert datetime to numeric timestamp
+                result_df[col] = col_data.astype('int64') / 1e9
+                applied_steps.append(f"Final conversion: '{col}' datetime → numeric timestamp")
+            elif pd.api.types.is_bool_dtype(col_data):
+                # Convert boolean to int
+                result_df[col] = col_data.astype(int).astype('Int64')
+                applied_steps.append(f"Final conversion: '{col}' boolean → int")
+            elif pd.api.types.is_numeric_dtype(col_data):
+                # Ensure numeric columns are float or Int64 (nullable int)
+                if col_data.dtype in ['int64', 'int32', 'int16', 'int8']:
+                    result_df[col] = col_data.astype('Int64')  # Nullable int
+                elif col_data.dtype not in ['float64', 'float32']:
+                    result_df[col] = pd.to_numeric(col_data, errors='coerce').astype(float)
+            else:
+                # Ensure object columns are string or category
+                if col_data.dtype != 'category':
+                    # Check if it should be categorical (low cardinality)
+                    if col_data.nunique() < len(col_data) * 0.5 and col_data.nunique() < 100:
+                        result_df[col] = col_data.astype('category')
+                    else:
+                        result_df[col] = col_data.astype(str)
+    except Exception as e:
+        logger.warning(f"Final validation/conversion failed: {type(e).__name__}: {e}")
     
     return result_df, {"applied_steps": applied_steps, "rationale": plan.get("rationale", "")}
 
