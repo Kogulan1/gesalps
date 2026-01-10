@@ -312,11 +312,12 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
         metadata.detect_from_dataframe(real_clean)
         
         # Test with TabDDPM (best for clinical data)
+        # If TabDDPM fails repeatedly, try CTGAN as alternative
         print_info("Testing with TabDDPM (recommended for clinical data)...")
         
         # IMPROVED: Try ClinicalModelSelector first to trigger OpenRouter and get optimized hyperparameters
         hparams = {}
-        method = "ddpm"  # Default method
+        method = "ddpm"  # Default method - will try CTGAN if TabDDPM fails
         
         try:
             if CONTAINER_MODE:
