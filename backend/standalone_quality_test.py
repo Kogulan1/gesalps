@@ -348,10 +348,10 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                 # Try to import preprocessing agent
                 try:
                     from preprocessing_agent import get_preprocessing_plan
-                PREPROCESSING_AVAILABLE = True
-                get_preprocessing_plan_func = get_preprocessing_plan
-                print_success("[PREPROCESSING] ✅ Successfully imported preprocessing_agent.get_preprocessing_plan")
-            except ImportError as e1:
+                    PREPROCESSING_AVAILABLE = True
+                    get_preprocessing_plan_func = get_preprocessing_plan
+                    print_success("[PREPROCESSING] ✅ Successfully imported preprocessing_agent.get_preprocessing_plan")
+                except ImportError as e1:
                 print_warning(f"[PREPROCESSING] ⚠️  Failed to import preprocessing_agent: {type(e1).__name__}: {e1}")
                 try:
                     print_info("[PREPROCESSING] Step 2: Attempting to import preprocessing (fallback)...")
