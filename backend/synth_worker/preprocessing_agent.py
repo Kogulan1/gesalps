@@ -322,11 +322,16 @@ OUTPUT FORMAT (JSON only, no markdown, no explanations):
   "rationale": "Brief explanation of why these preprocessing steps will help"
 }}
 
-CRITICAL REQUIREMENTS:
+CRITICAL REQUIREMENTS (UNIVERSAL HANDLER):
 - Column names MUST be renamed if they are numeric (e.g., '233.0' → 'feature_233')
-- Address any detected issues (outliers, skewness, etc.)
+- Handle ALL data types: numeric, categorical, datetime, boolean, mixed types
+- Convert datetime to numeric (timestamp or extract features) for model compatibility
+- Convert boolean to int (0/1) for model compatibility
+- Address any detected issues (outliers, skewness, high cardinality, etc.)
+- Handle high-cardinality categoricals (group rare or encode appropriately)
 - Keep transformations simple and reversible if possible
-- Focus on making the data learnable by diffusion models
+- Focus on making the data learnable by diffusion models (TabDDPM)
+- Ensure final output is SynthCity-compatible (numeric, categorical, or string only)
 - Output ONLY valid JSON, no markdown formatting, no code blocks
 
 Generate the preprocessing plan now:"""
