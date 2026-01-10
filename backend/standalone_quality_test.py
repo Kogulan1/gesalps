@@ -338,7 +338,7 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
         
         # Apply preprocessing for all paths (production pipeline always uses it)
         # This is critical for achieving "all green" metrics
-            try:
+        try:
                 print_info("[PREPROCESSING] Step 1: Attempting to import preprocessing_agent...")
                 # Try to import preprocessing agent
                 try:
