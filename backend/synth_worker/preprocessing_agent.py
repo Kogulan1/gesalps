@@ -61,38 +61,60 @@ def analyze_dataset_for_preprocessing(df: pd.DataFrame) -> Dict[str, Any]:
         
         # Numeric columns
         if pd.api.types.is_numeric_dtype(col_data):
+            # Get valid (non-NaN) values for statistics
+            valid_data = col_data.dropna()
+            
             stats = {
                 "type": "numeric",
-                "min": float(col_data.min()) if col_data.notna().any() else None,
-                "max": float(col_data.max()) if col_data.notna().any() else None,
-                "mean": float(col_data.mean()) if col_data.notna().any() else None,
-                "std": float(col_data.std()) if col_data.notna().any() else None,
-                "median": float(col_data.median()) if col_data.notna().any() else None,
+                "min": float(valid_data.min()) if len(valid_data) > 0 else None,
+                "max": float(valid_data.max()) if len(valid_data) > 0 else None,
+                "mean": float(valid_data.mean()) if len(valid_data) > 0 else None,
+                "std": float(valid_data.std()) if len(valid_data) > 0 else None,
+                "median": float(valid_data.median()) if len(valid_data) > 0 else None,
                 "unique_count": int(col_data.nunique()),
                 "missing_count": int(col_data.isna().sum()),
-                "missing_rate": float(col_data.isna().mean()),
+                "missing_rate": float(col_data.isna().mean()) if len(col_data) > 0 else 0.0,
             }
             
             # Detect issues
             if pd.api.types.is_string_dtype(type(col)) or str(col).replace('.', '').isdigit():
                 analysis["issues"].append(f"Column '{col}' has numeric name - may confuse models")
             
-            # Check for outliers (using IQR method)
-            q1 = col_data.quantile(0.25)
-            q3 = col_data.quantile(0.75)
-            iqr = q3 - q1
-            if iqr > 0:
-                outliers = ((col_data < (q1 - 1.5 * iqr)) | (col_data > (q3 + 1.5 * iqr))).sum()
-                if outliers > 0:
-                    stats["outlier_count"] = int(outliers)
-                    stats["outlier_rate"] = float(outliers / len(col_data))
+            # Check for outliers (using IQR method) - only if we have valid data
+            if len(valid_data) > 0:
+                try:
+                    q1 = valid_data.quantile(0.25)
+                    q3 = valid_data.quantile(0.75)
+                    iqr = q3 - q1
+                    if iqr > 0 and not pd.isna(iqr):
+                        outliers = ((valid_data < (q1 - 1.5 * iqr)) | (valid_data > (q3 + 1.5 * iqr))).sum()
+                        if outliers > 0:
+                            stats["outlier_count"] = int(outliers)
+                            stats["outlier_rate"] = float(outliers / len(valid_data))
+                except Exception as e:
+                    logger.warning(f"Failed to calculate outliers for column '{col}': {e}")
             
-            # Check skewness
-            if stats["std"] and stats["std"] > 0:
-                skew = float(((col_data - stats["mean"]) / stats["std"]) ** 3).mean()
-                stats["skewness"] = skew
-                if abs(skew) > 2:
-                    analysis["issues"].append(f"Column '{col}' is highly skewed (skew={skew:.2f})")
+            # Check skewness - only if we have valid mean and std
+            if stats["std"] is not None and stats["std"] > 0 and stats["mean"] is not None:
+                try:
+                    # Use scipy.stats.skew if available, otherwise calculate manually
+                    try:
+                        from scipy.stats import skew
+                        skew_val = float(skew(valid_data))
+                    except ImportError:
+                        # Manual skewness calculation
+                        if len(valid_data) > 0:
+                            centered = valid_data - stats["mean"]
+                            skew_val = float((centered ** 3).mean() / (stats["std"] ** 3))
+                        else:
+                            skew_val = None
+                    
+                    if skew_val is not None and not pd.isna(skew_val):
+                        stats["skewness"] = skew_val
+                        if abs(skew_val) > 2:
+                            analysis["issues"].append(f"Column '{col}' is highly skewed (skew={skew_val:.2f})")
+                except Exception as e:
+                    logger.warning(f"Failed to calculate skewness for column '{col}': {e}")
             
             analysis["column_stats"][col] = stats
         else:
@@ -480,5 +502,7 @@ def get_preprocessing_plan(df: pd.DataFrame, previous_ks: Optional[float] = None
         }
         
     except Exception as e:
-        logger.error(f"Preprocessing agent failed: {type(e).__name__}: {e}")
+        logger.error(f"Preprocessing agent failed: {type(e).__name__}: {e}", exc_info=True)
+        import traceback
+        logger.debug(f"Preprocessing agent traceback: {traceback.format_exc()}")
         return None, None
