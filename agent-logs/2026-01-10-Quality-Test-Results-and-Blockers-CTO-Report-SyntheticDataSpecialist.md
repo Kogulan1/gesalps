@@ -286,15 +286,20 @@ Compliance:
 ### → **BackendAgent**: 
 **PRIORITY: P0 - CRITICAL**
 
-**Action**: Fix preprocessing agent integration
+**Action**: Fix preprocessing agent integration - Module missing in container
+
+**CONFIRMED ISSUE**: `preprocessing_agent.py` module is NOT in the container
+- Test result: `ModuleNotFoundError: No module named 'preprocessing_agent'`
+- File exists in repo: `backend/synth_worker/preprocessing_agent.py` ✅
+- File missing in container: `/app/preprocessing_agent.py` ❌
 
 **Tasks**:
-1. Verify `preprocessing_agent.py` exists in container: `docker exec gesalps_worker ls -la /app/preprocessing_agent.py`
-2. Verify import succeeds: `docker exec gesalps_worker python -c "from preprocessing_agent import get_preprocessing_plan; print('OK')"`
-3. Check `PREPROCESSING_AVAILABLE` flag in worker logs
-4. Add explicit logging to confirm preprocessing is called
-5. Fix any import/execution issues
-6. Test preprocessing agent independently
+1. **IMMEDIATE**: Pull latest code on VPS: `cd /opt/gesalps/backend && git pull origin main`
+2. **IMMEDIATE**: Rebuild container: `docker compose build --no-cache synth-worker`
+3. **IMMEDIATE**: Verify file exists: `docker exec gesalps_worker ls -la /app/preprocessing_agent.py`
+4. **IMMEDIATE**: Verify import succeeds: `docker exec gesalps_worker python -c "from preprocessing_agent import get_preprocessing_plan; print('OK')"`
+5. Restart container: `docker compose restart synth-worker`
+6. Re-run quality test to verify preprocessing is called
 7. Report findings
 
 ### → **SyntheticDataSpecialist**: 
