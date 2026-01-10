@@ -485,41 +485,45 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                 metrics_evaluator = Metrics()
                 metrics_df = metrics_evaluator.evaluate(real_loader, synth_loader)
                 
-                # Extract metrics from DataFrame (convert to dict format)
-                # Metrics DataFrame has columns like 'metric', 'value', 'direction'
-                metrics_dict = {}
-                if hasattr(metrics_df, 'to_dict'):
-                    metrics_dict = metrics_df.to_dict()
-                elif isinstance(metrics_df, dict):
-                    metrics_dict = metrics_df
-                
-                # Extract specific metrics we need
-                # Look for ks_complement, mia_auc, duplicate_rate, correlation_difference
+                # Extract metrics from DataFrame
+                # Metrics DataFrame has metric names as index, and 'mean' column for values
                 ks_complement = None
                 mia_auc = None
                 dup_rate = None
                 corr_delta = None
                 
-                # Try to extract from DataFrame or dict
-                if isinstance(metrics_df, pd.DataFrame):
-                    # DataFrame format: look for metric names in rows/columns
-                    for idx, row in metrics_df.iterrows():
-                        metric_name = str(row.get('metric', '')).lower()
-                        value = row.get('value', None)
-                        if 'ks' in metric_name and 'complement' in metric_name:
-                            ks_complement = float(value) if value is not None else None
-                        elif 'mia' in metric_name or 'auc' in metric_name:
-                            mia_auc = float(value) if value is not None else None
-                        elif 'duplicate' in metric_name:
-                            dup_rate = float(value) if value is not None else None
-                        elif 'correlation' in metric_name or 'corr' in metric_name:
-                            corr_delta = float(value) if value is not None else None
-                elif isinstance(metrics_dict, dict):
-                    # Dict format: look for keys
-                    ks_complement = metrics_dict.get('ks_complement') or metrics_dict.get('ks_complement_mean')
-                    mia_auc = metrics_dict.get('mia_auc') or metrics_dict.get('mia_auc_mean')
-                    dup_rate = metrics_dict.get('duplicate_rate') or metrics_dict.get('duplicate_rate_mean')
-                    corr_delta = metrics_dict.get('correlation_difference') or metrics_dict.get('corr_delta')
+                # Extract from DataFrame: metric names are in the index, values in 'mean' column
+                if isinstance(metrics_df, pd.DataFrame) and 'mean' in metrics_df.columns:
+                    for metric_name in metrics_df.index:
+                        metric_name_lower = str(metric_name).lower()
+                        value = metrics_df.loc[metric_name, 'mean']
+                        
+                        # Look for KS complement (statistical metrics)
+                        if 'statistical' in metric_name_lower and 'ks' in metric_name_lower and 'complement' in metric_name_lower:
+                            ks_complement = float(value) if pd.notna(value) else None
+                        # Look for MIA AUC (privacy metrics)
+                        elif 'privacy' in metric_name_lower and ('mia' in metric_name_lower or 'auc' in metric_name_lower):
+                            if 'mia' in metric_name_lower:
+                                mia_auc = float(value) if pd.notna(value) else None
+                        # Look for duplicate rate
+                        elif 'duplicate' in metric_name_lower or 'dup' in metric_name_lower:
+                            dup_rate = float(value) if pd.notna(value) else None
+                        # Look for correlation difference
+                        elif 'correlation' in metric_name_lower or ('corr' in metric_name_lower and 'delta' in metric_name_lower):
+                            corr_delta = float(value) if pd.notna(value) else None
+                
+                # If not found, try alternative metric name patterns
+                if ks_complement is None:
+                    for metric_name in metrics_df.index:
+                        if 'ks' in str(metric_name).lower():
+                            ks_complement = float(metrics_df.loc[metric_name, 'mean']) if pd.notna(metrics_df.loc[metric_name, 'mean']) else None
+                            break
+                
+                if mia_auc is None:
+                    for metric_name in metrics_df.index:
+                        if 'mia' in str(metric_name).lower():
+                            mia_auc = float(metrics_df.loc[metric_name, 'mean']) if pd.notna(metrics_df.loc[metric_name, 'mean']) else None
+                            break
                 
                 # Convert ks_complement to ks_mean (ks_mean = 1 - ks_complement)
                 if ks_complement is not None:
