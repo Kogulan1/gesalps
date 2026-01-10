@@ -472,47 +472,82 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
             
             # Evaluate with SynthCity metrics directly (like working script)
             print_info("Evaluating metrics with SynthCity (matching working script)...")
-            # Use evaluator classes directly (eval_privacy/eval_statistical are modules in this version)
-            from synthcity.metrics.eval_privacy import PrivacyEvaluator
-            from synthcity.metrics.eval_statistical import StatisticalEvaluator
-            from synthcity.plugins.core.dataloader import GenericDataLoader
-            
-            # Convert DataFrames to GenericDataLoader (required by evaluators)
-            real_loader = GenericDataLoader(real_clean)
-            synth_loader = GenericDataLoader(synth)
-            
-            # Evaluate privacy
-            privacy_evaluator = PrivacyEvaluator()
-            privacy_metrics = privacy_evaluator.evaluate(real_loader, synth_loader)
-            
-            # Evaluate utility/statistical
-            statistical_evaluator = StatisticalEvaluator()
-            utility_metrics = statistical_evaluator.evaluate(real_loader, synth_loader)
-            
-            # Convert SynthCity metrics to our format
-            # SynthCity uses ks_complement (higher = better), we use ks_mean (lower = better)
-            # ks_mean = 1 - ks_complement
-            ks_complement = utility_metrics.get('ks_complement', None)
-            if ks_complement is not None:
-                ks_mean = 1.0 - float(ks_complement)
-            else:
-                ks_mean = None
-            
-            utility = {
-                "ks_mean": ks_mean,
-                "corr_delta": utility_metrics.get('correlation_difference', None),
-            }
-            privacy = {
-                "mia_auc": privacy_metrics.get('mia_auc', None),
-                "dup_rate": privacy_metrics.get('duplicate_rate', None),
-            }
-            metrics = {"utility": utility, "privacy": privacy}
-            
-            print_info(f"SynthCity Metrics:")
-            print_info(f"  KS Complement: {ks_complement}")
-            print_info(f"  KS Mean: {ks_mean}")
-            print_info(f"  MIA AUC: {privacy.get('mia_auc')}")
-            print_info(f"  Duplicate Rate: {privacy.get('dup_rate')}")
+            # Use Metrics class (like worker.py) - this is the correct API for this SynthCity version
+            try:
+                from synthcity.metrics.eval import Metrics
+                from synthcity.plugins.core.dataloader import GenericDataLoader
+                
+                # Convert DataFrames to GenericDataLoader (required by Metrics)
+                real_loader = GenericDataLoader(real_clean)
+                synth_loader = GenericDataLoader(synth)
+                
+                # Use Metrics class to evaluate (returns DataFrame like worker.py)
+                metrics_evaluator = Metrics()
+                metrics_df = metrics_evaluator.evaluate(real_loader, synth_loader)
+                
+                # Extract metrics from DataFrame (convert to dict format)
+                # Metrics DataFrame has columns like 'metric', 'value', 'direction'
+                metrics_dict = {}
+                if hasattr(metrics_df, 'to_dict'):
+                    metrics_dict = metrics_df.to_dict()
+                elif isinstance(metrics_df, dict):
+                    metrics_dict = metrics_df
+                
+                # Extract specific metrics we need
+                # Look for ks_complement, mia_auc, duplicate_rate, correlation_difference
+                ks_complement = None
+                mia_auc = None
+                dup_rate = None
+                corr_delta = None
+                
+                # Try to extract from DataFrame or dict
+                if isinstance(metrics_df, pd.DataFrame):
+                    # DataFrame format: look for metric names in rows/columns
+                    for idx, row in metrics_df.iterrows():
+                        metric_name = str(row.get('metric', '')).lower()
+                        value = row.get('value', None)
+                        if 'ks' in metric_name and 'complement' in metric_name:
+                            ks_complement = float(value) if value is not None else None
+                        elif 'mia' in metric_name or 'auc' in metric_name:
+                            mia_auc = float(value) if value is not None else None
+                        elif 'duplicate' in metric_name:
+                            dup_rate = float(value) if value is not None else None
+                        elif 'correlation' in metric_name or 'corr' in metric_name:
+                            corr_delta = float(value) if value is not None else None
+                elif isinstance(metrics_dict, dict):
+                    # Dict format: look for keys
+                    ks_complement = metrics_dict.get('ks_complement') or metrics_dict.get('ks_complement_mean')
+                    mia_auc = metrics_dict.get('mia_auc') or metrics_dict.get('mia_auc_mean')
+                    dup_rate = metrics_dict.get('duplicate_rate') or metrics_dict.get('duplicate_rate_mean')
+                    corr_delta = metrics_dict.get('correlation_difference') or metrics_dict.get('corr_delta')
+                
+                # Convert ks_complement to ks_mean (ks_mean = 1 - ks_complement)
+                if ks_complement is not None:
+                    ks_mean = 1.0 - float(ks_complement)
+                else:
+                    ks_mean = None
+                
+                utility = {
+                    "ks_mean": ks_mean,
+                    "corr_delta": corr_delta,
+                }
+                privacy = {
+                    "mia_auc": mia_auc,
+                    "dup_rate": dup_rate,
+                }
+                metrics = {"utility": utility, "privacy": privacy}
+                
+                print_info(f"SynthCity Metrics:")
+                print_info(f"  KS Complement: {ks_complement}")
+                print_info(f"  KS Mean: {ks_mean}")
+                print_info(f"  MIA AUC: {mia_auc}")
+                print_info(f"  Duplicate Rate: {dup_rate}")
+                print_info(f"  Correlation Delta: {corr_delta}")
+            except Exception as e:
+                print_error(f"Failed to evaluate with SynthCity Metrics: {type(e).__name__}: {e}")
+                import traceback
+                print_error(f"Traceback:\n{traceback.format_exc()}")
+                raise  # Re-raise to see the full error
         else:
             # Fallback to factory wrapper approach (if SynthCity direct import fails)
             print_warning("⚠️  Using factory wrapper approach (may not match working script)")
