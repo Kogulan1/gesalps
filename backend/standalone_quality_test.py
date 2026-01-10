@@ -467,12 +467,77 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
         
         elapsed = time.time() - start_time
         
+        # If TabDDPM failed with high KS, try CTGAN as alternative
+        if not all_green and method == "ddpm" and metrics.get("utility", {}).get("ks_mean", 0) > 0.5:
+            print_warning(f"TabDDPM failed with KS={metrics.get('utility', {}).get('ks_mean', 0):.4f}. Trying CTGAN as alternative...")
+            try:
+                # Try CTGAN with optimized parameters
+                if CONTAINER_MODE:
+                    from optimizer import get_optimizer
+                else:
+                    from synth_worker.optimizer import get_optimizer
+                optimizer = get_optimizer()
+                ctgan_hparams = optimizer.suggest_hyperparameters(
+                    method="ctgan",
+                    dataset_size=(len(real_clean), len(real_clean.columns)),
+                    previous_metrics=metrics,
+                    dp_requested=False,
+                )
+                # Ensure sufficient epochs for CTGAN
+                if ctgan_hparams.get("epochs", 0) < 300:
+                    ctgan_hparams["epochs"] = 300
+                
+                print_info(f"Trying CTGAN with hyperparameters: {json.dumps(ctgan_hparams, indent=2)}")
+                ctgan_synthesizer, _ = create_synthesizer(
+                    method="ctgan",
+                    metadata=metadata,
+                    hyperparams=ctgan_hparams,
+                )
+                
+                print_info("Training CTGAN...")
+                ctgan_start = time.time()
+                ctgan_synthesizer.fit(real_clean)
+                ctgan_training_time = time.time() - ctgan_start
+                print_success(f"CTGAN training completed in {ctgan_training_time:.1f} seconds")
+                
+                ctgan_synth = ctgan_synthesizer.sample(num_rows=len(real_clean))
+                print_success(f"Generated {len(ctgan_synth)} synthetic rows with CTGAN")
+                
+                # Evaluate CTGAN metrics
+                ctgan_utility = _utility_metrics(real_clean, ctgan_synth)
+                ctgan_privacy = _privacy_metrics(real_clean, ctgan_synth)
+                ctgan_metrics = {"utility": ctgan_utility, "privacy": ctgan_privacy}
+                
+                ctgan_all_green, ctgan_passed, ctgan_failed = check_all_green(ctgan_metrics)
+                
+                # Use CTGAN if it's better
+                if ctgan_all_green or (ctgan_metrics.get("utility", {}).get("ks_mean", 1.0) < metrics.get("utility", {}).get("ks_mean", 1.0)):
+                    print_success(f"CTGAN performed better! KS Mean: {ctgan_metrics.get('utility', {}).get('ks_mean', 0):.4f}")
+                    return {
+                        "success": True,
+                        "all_green": ctgan_all_green,
+                        "overall_ok": ctgan_all_green,
+                        "metrics": ctgan_metrics,
+                        "method": "ctgan",
+                        "attempts": 2,
+                        "elapsed": time.time() - start_time,
+                        "training_time": ctgan_training_time,
+                        "passed_checks": ctgan_passed,
+                        "failed_checks": ctgan_failed,
+                        "reasons": ctgan_failed if not ctgan_all_green else [],
+                        "synthetic_df": ctgan_synth,
+                    }
+                else:
+                    print_warning(f"CTGAN didn't improve results. KS Mean: {ctgan_metrics.get('utility', {}).get('ks_mean', 0):.4f} vs TabDDPM: {metrics.get('utility', {}).get('ks_mean', 0):.4f}")
+            except Exception as e:
+                print_warning(f"CTGAN fallback failed: {type(e).__name__}: {e}")
+        
         return {
             "success": True,
             "all_green": all_green,
             "overall_ok": overall_ok,
             "metrics": metrics,
-            "method": "ddpm",
+            "method": method,
             "attempts": 1,
             "elapsed": elapsed,
             "training_time": training_time,
