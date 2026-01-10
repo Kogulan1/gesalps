@@ -70,6 +70,47 @@ def execute_pipeline_with_retry(
         raise RuntimeError("Dataset file not found")
     
     real = _download_csv_from_storage(file_url)
+    
+    # MANDATORY: Smart preprocessing via OpenRouter LLM (before model training)
+    # Uses SyntheticDataSpecialist's preprocessing_agent.py implementation
+    try:
+        from synth_worker.preprocessing_agent import get_preprocessing_plan
+        PREPROCESSING_AVAILABLE = True
+    except ImportError:
+        PREPROCESSING_AVAILABLE = False
+        get_preprocessing_plan = None
+    
+    preprocessing_metadata = {}
+    if PREPROCESSING_AVAILABLE and get_preprocessing_plan:
+        try:
+            cfg = run.get("config_json") or {}
+            enable_smart_preprocess = cfg.get("enable_smart_preprocess", True)
+            if "smart_preprocess" in cfg:
+                enable_smart_preprocess = cfg.get("smart_preprocess", True)
+            
+            if enable_smart_preprocess:
+                try:
+                    print("[worker_dp][preprocessing] Applying mandatory smart preprocessing via OpenRouter LLM...")
+                except Exception:
+                    pass
+                
+                # Call preprocessing agent
+                preprocessed_df, preprocessing_metadata = get_preprocessing_plan(real, previous_ks=None)
+                
+                if preprocessed_df is not None and preprocessing_metadata:
+                    real = preprocessed_df
+                    try:
+                        applied_steps = preprocessing_metadata.get("metadata", {}).get("applied_steps", [])
+                        print(f"[worker_dp][preprocessing] Applied {len(applied_steps)} preprocessing steps")
+                    except Exception:
+                        pass
+        except Exception as e:
+            try:
+                print(f"[worker_dp][preprocessing] Preprocessing failed, continuing with original data: {type(e).__name__}")
+            except Exception:
+                pass
+            preprocessing_metadata = {"error": str(e), "preprocessing_method": "failed"}
+    
     real_clean = _clean_df_for_sdv(real)
     
     n_rows = len(real_clean)
@@ -198,6 +239,31 @@ def execute_pipeline_with_retry(
             # If last attempt, return best result
             if attempt == max_retries:
                 break
+            
+            # ENHANCED: If preprocessing was applied and KS is still high, try different model
+            # This addresses cases where preprocessing alone wasn't enough
+            if preprocessing_metadata and preprocessing_metadata.get("metadata"):
+                utility = metrics.get("utility", {})
+                ks_mean = utility.get("ks_mean", 0.0)
+                KS_MAX = worker_module.KS_MAX
+                
+                if ks_mean > KS_MAX and attempt == 1:
+                    # First attempt after preprocessing still has high KS - try CTGAN
+                    if method != "ctgan":
+                        try:
+                            print(f"[worker_dp][retry] High KS ({ks_mean:.3f}) after preprocessing, switching to CTGAN")
+                        except Exception:
+                            pass
+                        method = "ctgan"
+                        hyperparams = optimizer.suggest_hyperparameters(
+                            method="ctgan",
+                            dataset_size=dataset_size,
+                            previous_metrics=previous_metrics,
+                            dp_requested=dp_requested,
+                        )
+                        hyperparams = _apply_defaults("ctgan", hyperparams)
+                        time.sleep(1.0)
+                        continue
             
             # Adaptive: adjust hyperparameters based on failure
             if failure_type == FailureType.HIGH_KS or failure_type == FailureType.HIGH_CORR_DELTA:

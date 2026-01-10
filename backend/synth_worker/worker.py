@@ -71,6 +71,14 @@ except ImportError:
     COMPLIANCE_AVAILABLE = False
     get_compliance_evaluator = None
 
+# Smart preprocessing module (SyntheticDataSpecialist implementation)
+try:
+    from preprocessing_agent import get_preprocessing_plan
+    PREPROCESSING_AVAILABLE = True
+except ImportError:
+    PREPROCESSING_AVAILABLE = False
+    get_preprocessing_plan = None
+
 # Silence only the deprecation warning coming from old lite API paths (if any)
 warnings.filterwarnings("ignore", category=FutureWarning, module="sdv.lite.single_table")
 
@@ -1167,6 +1175,56 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
         raise RuntimeError("Dataset file not found")
 
     real = _download_csv_from_storage(file_url)
+    
+    # MANDATORY: Smart preprocessing via OpenRouter LLM (before model training)
+    # This automatically detects/fixes issues like numeric column names, skewed distributions, feature collapse
+    # Uses SyntheticDataSpecialist's preprocessing_agent.py implementation
+    preprocessing_metadata = {}
+    if PREPROCESSING_AVAILABLE and get_preprocessing_plan:
+        try:
+            # Check if smart preprocessing is enabled (default: True - mandatory per CTO directive)
+            cfg = run.get("config_json") or {}
+            enable_smart_preprocess = cfg.get("enable_smart_preprocess", True)
+            # Also check for legacy parameter name
+            if "smart_preprocess" in cfg:
+                enable_smart_preprocess = cfg.get("smart_preprocess", True)
+            
+            if enable_smart_preprocess:
+                try:
+                    print("[worker][preprocessing] Applying mandatory smart preprocessing via OpenRouter LLM...")
+                except Exception:
+                    pass
+                
+                # Call preprocessing agent (returns (preprocessed_df, metadata) or (None, None) if fails)
+                preprocessed_df, preprocessing_metadata = get_preprocessing_plan(real, previous_ks=None)
+                
+                if preprocessed_df is not None and preprocessing_metadata:
+                    real = preprocessed_df  # Use preprocessed DataFrame
+                    try:
+                        applied_steps = preprocessing_metadata.get("metadata", {}).get("applied_steps", [])
+                        print(f"[worker][preprocessing] Applied {len(applied_steps)} preprocessing steps")
+                        if preprocessing_metadata.get("metadata", {}).get("rationale"):
+                            rationale = preprocessing_metadata.get("metadata", {}).get("rationale", "")[:150]
+                            print(f"[worker][preprocessing] Rationale: {rationale}...")
+                    except Exception:
+                        pass
+                else:
+                    try:
+                        print("[worker][preprocessing] Preprocessing agent returned no plan (OpenRouter may be unavailable)")
+                    except Exception:
+                        pass
+            else:
+                try:
+                    print("[worker][preprocessing] Smart preprocessing disabled by config (not recommended)")
+                except Exception:
+                    pass
+        except Exception as e:
+            try:
+                print(f"[worker][preprocessing] Preprocessing failed, continuing with original data: {type(e).__name__}")
+            except Exception:
+                pass
+            preprocessing_metadata = {"error": str(e), "preprocessing_method": "failed"}
+    
     real_clean = _clean_df_for_sdv(real)
 
     # Prepare metadata/loader based on backend preference
@@ -2243,6 +2301,53 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
                     print(f"[worker][optimizer] Optimization error: {type(e).__name__}")
                 except Exception:
                     pass
+        
+        # IMPROVED: If KS Mean is still high after 3 attempts, re-run preprocessing with previous_ks
+        # This allows the LLM to adapt its preprocessing plan based on failure
+        if attempts >= 3 and not overall_ok:
+            current_ks = metrics.get("utility", {}).get("ks_mean")
+            if current_ks and current_ks > 0.5:  # High KS Mean - try adaptive preprocessing
+                try:
+                    from preprocessing_agent import get_preprocessing_plan
+                    # Re-apply preprocessing with knowledge of previous failure
+                    preprocessed_df, new_preprocessing_metadata = get_preprocessing_plan(real, previous_ks=current_ks)
+                    if preprocessed_df is not None and new_preprocessing_metadata:
+                        # Update real_clean with new preprocessing
+                        real_clean = _clean_df_for_sdv(preprocessed_df)
+                        # Re-prepare metadata and loader
+                        synthcity_loader = _prepare_synthcity_loader(real_clean)
+                        using_synthcity_loader = synthcity_loader is not None
+                        metadata = SingleTableMetadata()
+                        metadata.detect_from_dataframe(real_clean)
+                        try:
+                            print(f"[worker][preprocessing] Re-applied adaptive preprocessing (KS={current_ks:.4f})")
+                            print(f"[worker][preprocessing] New steps: {', '.join(new_preprocessing_metadata.get('metadata', {}).get('applied_steps', [])[:3])}")
+                        except Exception:
+                            pass
+                except ImportError:
+                    pass
+                except Exception as e:
+                    try:
+                        print(f"[worker][preprocessing] Adaptive preprocessing failed: {type(e).__name__}")
+                    except Exception:
+                        pass
+                
+                # IMPROVED: Force fallback to CTGAN/TVAE if KS still high after 3 attempts with preprocessing
+                if current_ks and current_ks > 0.5:
+                    # Force method switch if preprocessing didn't help enough
+                    if current_method in ("ddpm", "tabddpm", "diffusion"):
+                        next_method = "ctgan"
+                        try:
+                            print(f"[worker] High KS ({current_ks:.4f}) after 3 attempts with TabDDPM, forcing fallback to CTGAN")
+                        except Exception:
+                            pass
+                    elif current_method == "ctgan":
+                        next_method = "tvae"
+                        try:
+                            print(f"[worker] High KS ({current_ks:.4f}) after 3 attempts with CTGAN, forcing fallback to TVAE")
+                        except Exception:
+                            pass
+        
         # Simple reactive rule: switch model if KS worsens notably vs previous
         try:
             if prev_metrics is not None:

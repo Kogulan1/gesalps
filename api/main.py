@@ -619,7 +619,7 @@ class StartRun(BaseModel):
     dataset_id: str
     method: str
     mode: str
-    config_json: Dict[str, Any] | None = None
+    config_json: Dict[str, Any] | None = None  # Can include "enable_smart_preprocess": true/false (default: true)
     name: str | None = None
 
 @app.post("/v1/runs")
