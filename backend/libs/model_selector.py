@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 # OpenRouter (preferred if key is available - better performance)
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OPENROUTER_BASE = os.getenv("OPENROUTER_BASE", "https://openrouter.ai/api/v1")
-OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL") or os.getenv("AGENT_MODEL") or "mistralai/mistral-small-3"  # Free model - best for cost optimization
+OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL") or os.getenv("AGENT_MODEL") or "mistralai/mistral-small-3.1-24b-instruct:free"  # Free model - best for cost optimization
 
 # Ollama (fallback if OpenRouter not available)
 OLLAMA_BASE = os.getenv("OLLAMA_BASE", "http://ollama:11434")
