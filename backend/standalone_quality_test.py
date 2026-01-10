@@ -312,21 +312,41 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
         print_info(f"Original raw data shape: {original_raw_df.shape[0]} rows, {original_raw_df.shape[1]} columns")
         print_info("=" * 80)
         
+        # Check if we should use SYNTHCITY_DIRECT approach (matches working script exactly)
+        # If so, SKIP preprocessing entirely (working script has NO preprocessing)
+        try:
+            from synthcity.plugins import Plugins
+            from synthcity.plugins.core.dataloader import GenericDataLoader
+            from synthcity.metrics import eval_privacy, eval_statistical
+            USE_SYNTHCITY_DIRECT = True
+        except ImportError:
+            USE_SYNTHCITY_DIRECT = False
+        
         # MANDATORY: Apply smart preprocessing via OpenRouter LLM (before model training)
         # This matches the production worker pipeline and is critical for achieving "all green" metrics
-        # NOTE: For SYNTHCITY_DIRECT path, we'll use original_raw_df instead of preprocessed df
-        print_info("=" * 80)
-        print_info("PREPROCESSING STEP - Starting preprocessing execution")
-        print_info(f"Original data shape: {df.shape[0]} rows, {df.shape[1]} columns")
-        print_info("=" * 80)
+        # NOTE: For SYNTHCITY_DIRECT path, we'll SKIP preprocessing to match working script exactly
+        if not USE_SYNTHCITY_DIRECT:
+            print_info("=" * 80)
+            print_info("PREPROCESSING STEP - Starting preprocessing execution")
+            print_info(f"Original data shape: {df.shape[0]} rows, {df.shape[1]} columns")
+            print_info("=" * 80)
+        else:
+            print_info("=" * 80)
+            print_info("SKIPPING PREPROCESSING (SYNTHCITY_DIRECT path - matches working script exactly)")
+            print_info("The working script (standalone_ddpm_test.py) has NO preprocessing")
+            print_info("=" * 80)
         
         preprocessing_metadata = {}
         original_df_shape = df.shape
         
-        try:
-            print_info("[PREPROCESSING] Step 1: Attempting to import preprocessing_agent...")
-            # Try to import preprocessing agent
+        # Skip preprocessing if using SYNTHCITY_DIRECT (matches working script)
+        if USE_SYNTHCITY_DIRECT:
+            print_info("Preprocessing skipped for SYNTHCITY_DIRECT path (matches working script)")
+        else:
             try:
+                print_info("[PREPROCESSING] Step 1: Attempting to import preprocessing_agent...")
+                # Try to import preprocessing agent
+                try:
                 from preprocessing_agent import get_preprocessing_plan
                 PREPROCESSING_AVAILABLE = True
                 get_preprocessing_plan_func = get_preprocessing_plan
@@ -346,12 +366,12 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                     smart_preprocess_func = None
                     print_error(f"[PREPROCESSING] ❌ Failed to import preprocessing: {type(e2).__name__}: {e2}")
                     print_error("[PREPROCESSING] ❌ Both preprocessing modules failed to import")
-            
-            print_info(f"[PREPROCESSING] PREPROCESSING_AVAILABLE = {PREPROCESSING_AVAILABLE}")
-            print_info(f"[PREPROCESSING] get_preprocessing_plan_func = {get_preprocessing_plan_func is not None}")
-            print_info(f"[PREPROCESSING] smart_preprocess_func = {smart_preprocess_func is not None if 'smart_preprocess_func' in locals() else 'N/A'}")
-            
-            if PREPROCESSING_AVAILABLE:
+                
+                print_info(f"[PREPROCESSING] PREPROCESSING_AVAILABLE = {PREPROCESSING_AVAILABLE}")
+                print_info(f"[PREPROCESSING] get_preprocessing_plan_func = {get_preprocessing_plan_func is not None}")
+                print_info(f"[PREPROCESSING] smart_preprocess_func = {smart_preprocess_func is not None if 'smart_preprocess_func' in locals() else 'N/A'}")
+                
+                if PREPROCESSING_AVAILABLE:
                 if get_preprocessing_plan_func:
                     # Use preprocessing_agent.py (SyntheticDataSpecialist's implementation)
                     print_info("[PREPROCESSING] Step 3: Calling get_preprocessing_plan()...")
@@ -412,21 +432,22 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                     print_warning("[PREPROCESSING] ⚠️  Preprocessing functions not available")
                     print_warning(f"[PREPROCESSING] get_preprocessing_plan_func: {get_preprocessing_plan_func is not None if 'get_preprocessing_plan_func' in locals() else 'N/A'}")
                     print_warning(f"[PREPROCESSING] smart_preprocess_func: {smart_preprocess_func is not None if 'smart_preprocess_func' in locals() else 'N/A'}")
-            else:
-                print_warning("[PREPROCESSING] ⚠️  Preprocessing module not available - skipping preprocessing step")
-        except Exception as e:
-            print_error(f"[PREPROCESSING] ❌ CRITICAL: Preprocessing failed with exception")
-            print_error(f"[PREPROCESSING] Exception type: {type(e).__name__}")
-            print_error(f"[PREPROCESSING] Exception message: {str(e)}")
-            import traceback
-            print_error(f"[PREPROCESSING] Full traceback:\n{traceback.format_exc()}")
-            print_warning("[PREPROCESSING] ⚠️  Continuing with original data (no preprocessing applied)")
-            preprocessing_metadata = {"error": str(e), "preprocessing_method": "failed", "exception_type": type(e).__name__}
-        
-        print_info("=" * 80)
-        print_info("PREPROCESSING STEP - Completed")
-        print_info(f"Final data shape: {df.shape[0]} rows, {df.shape[1]} columns")
-        print_info("=" * 80)
+                else:
+                    print_warning("[PREPROCESSING] ⚠️  Preprocessing module not available - skipping preprocessing step")
+            except Exception as e:
+                print_error(f"[PREPROCESSING] ❌ CRITICAL: Preprocessing failed with exception")
+                print_error(f"[PREPROCESSING] Exception type: {type(e).__name__}")
+                print_error(f"[PREPROCESSING] Exception message: {str(e)}")
+                import traceback
+                print_error(f"[PREPROCESSING] Full traceback:\n{traceback.format_exc()}")
+                print_warning("[PREPROCESSING] ⚠️  Continuing with original data (no preprocessing applied)")
+                preprocessing_metadata = {"error": str(e), "preprocessing_method": "failed", "exception_type": type(e).__name__}
+            
+            if not USE_SYNTHCITY_DIRECT:
+                print_info("=" * 80)
+                print_info("PREPROCESSING STEP - Completed")
+                print_info(f"Final data shape: {df.shape[0]} rows, {df.shape[1]} columns")
+                print_info("=" * 80)
         
         # CRITICAL FIX: Use raw data directly with SynthCity (like standalone_ddpm_test.py)
         # The working script achieved KS Mean 0.0650 by using raw data, not _clean_df_for_sdv()
