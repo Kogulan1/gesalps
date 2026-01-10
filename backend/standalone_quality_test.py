@@ -352,86 +352,86 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                     get_preprocessing_plan_func = get_preprocessing_plan
                     print_success("[PREPROCESSING] ✅ Successfully imported preprocessing_agent.get_preprocessing_plan")
                 except ImportError as e1:
-                print_warning(f"[PREPROCESSING] ⚠️  Failed to import preprocessing_agent: {type(e1).__name__}: {e1}")
-                try:
-                    print_info("[PREPROCESSING] Step 2: Attempting to import preprocessing (fallback)...")
-                    from preprocessing import smart_preprocess
-                    PREPROCESSING_AVAILABLE = True
-                    get_preprocessing_plan_func = None
-                    smart_preprocess_func = smart_preprocess
-                    print_success("[PREPROCESSING] ✅ Successfully imported preprocessing.smart_preprocess")
-                except ImportError as e2:
-                    PREPROCESSING_AVAILABLE = False
-                    get_preprocessing_plan_func = None
-                    smart_preprocess_func = None
-                    print_error(f"[PREPROCESSING] ❌ Failed to import preprocessing: {type(e2).__name__}: {e2}")
-                    print_error("[PREPROCESSING] ❌ Both preprocessing modules failed to import")
+                    print_warning(f"[PREPROCESSING] ⚠️  Failed to import preprocessing_agent: {type(e1).__name__}: {e1}")
+                    try:
+                        print_info("[PREPROCESSING] Step 2: Attempting to import preprocessing (fallback)...")
+                        from preprocessing import smart_preprocess
+                        PREPROCESSING_AVAILABLE = True
+                        get_preprocessing_plan_func = None
+                        smart_preprocess_func = smart_preprocess
+                        print_success("[PREPROCESSING] ✅ Successfully imported preprocessing.smart_preprocess")
+                    except ImportError as e2:
+                        PREPROCESSING_AVAILABLE = False
+                        get_preprocessing_plan_func = None
+                        smart_preprocess_func = None
+                        print_error(f"[PREPROCESSING] ❌ Failed to import preprocessing: {type(e2).__name__}: {e2}")
+                        print_error("[PREPROCESSING] ❌ Both preprocessing modules failed to import")
                 
                 print_info(f"[PREPROCESSING] PREPROCESSING_AVAILABLE = {PREPROCESSING_AVAILABLE}")
                 print_info(f"[PREPROCESSING] get_preprocessing_plan_func = {get_preprocessing_plan_func is not None}")
                 print_info(f"[PREPROCESSING] smart_preprocess_func = {smart_preprocess_func is not None if 'smart_preprocess_func' in locals() else 'N/A'}")
                 
                 if PREPROCESSING_AVAILABLE:
-                if get_preprocessing_plan_func:
-                    # Use preprocessing_agent.py (SyntheticDataSpecialist's implementation)
-                    print_info("[PREPROCESSING] Step 3: Calling get_preprocessing_plan()...")
-                    print_info(f"[PREPROCESSING] Input DataFrame shape: {df.shape}")
-                    print_info(f"[PREPROCESSING] Input DataFrame columns: {list(df.columns)[:5]}...")
-                    
-                    try:
-                        preprocessed_df, preprocessing_metadata = get_preprocessing_plan_func(df, previous_ks=None)
-                        print_info(f"[PREPROCESSING] get_preprocessing_plan() returned")
-                        print_info(f"[PREPROCESSING] preprocessed_df is None: {preprocessed_df is None}")
-                        print_info(f"[PREPROCESSING] preprocessing_metadata is None: {preprocessing_metadata is None}")
+                    if get_preprocessing_plan_func:
+                        # Use preprocessing_agent.py (SyntheticDataSpecialist's implementation)
+                        print_info("[PREPROCESSING] Step 3: Calling get_preprocessing_plan()...")
+                        print_info(f"[PREPROCESSING] Input DataFrame shape: {df.shape}")
+                        print_info(f"[PREPROCESSING] Input DataFrame columns: {list(df.columns)[:5]}...")
                         
-                        if preprocessed_df is not None:
-                            print_info(f"[PREPROCESSING] Preprocessed DataFrame shape: {preprocessed_df.shape}")
-                            print_info(f"[PREPROCESSING] Original DataFrame shape: {original_df_shape}")
+                        try:
+                            preprocessed_df, preprocessing_metadata = get_preprocessing_plan_func(df, previous_ks=None)
+                            print_info(f"[PREPROCESSING] get_preprocessing_plan() returned")
+                            print_info(f"[PREPROCESSING] preprocessed_df is None: {preprocessed_df is None}")
+                            print_info(f"[PREPROCESSING] preprocessing_metadata is None: {preprocessing_metadata is None}")
                             
-                        if preprocessing_metadata:
-                            print_info(f"[PREPROCESSING] Metadata keys: {list(preprocessing_metadata.keys())}")
-                            if "metadata" in preprocessing_metadata:
-                                print_info(f"[PREPROCESSING] metadata.applied_steps: {preprocessing_metadata.get('metadata', {}).get('applied_steps', 'N/A')}")
-                        
-                        if preprocessed_df is not None and preprocessing_metadata:
-                            df = preprocessed_df  # Use preprocessed DataFrame
-                            applied_steps = preprocessing_metadata.get("metadata", {}).get("applied_steps", [])
-                            print_success(f"[PREPROCESSING] ✅ Preprocessing applied: {len(applied_steps)} steps")
-                            print_info(f"[PREPROCESSING] Applied steps: {applied_steps[:5] if applied_steps else 'None'}")
-                            if preprocessing_metadata.get("metadata", {}).get("rationale"):
-                                rationale = preprocessing_metadata.get("metadata", {}).get("rationale", "")[:200]
-                                print_info(f"[PREPROCESSING] Rationale: {rationale}...")
+                            if preprocessed_df is not None:
+                                print_info(f"[PREPROCESSING] Preprocessed DataFrame shape: {preprocessed_df.shape}")
+                                print_info(f"[PREPROCESSING] Original DataFrame shape: {original_df_shape}")
+                                
+                            if preprocessing_metadata:
+                                print_info(f"[PREPROCESSING] Metadata keys: {list(preprocessing_metadata.keys())}")
+                                if "metadata" in preprocessing_metadata:
+                                    print_info(f"[PREPROCESSING] metadata.applied_steps: {preprocessing_metadata.get('metadata', {}).get('applied_steps', 'N/A')}")
+                            
+                            if preprocessed_df is not None and preprocessing_metadata:
+                                df = preprocessed_df  # Use preprocessed DataFrame
+                                applied_steps = preprocessing_metadata.get("metadata", {}).get("applied_steps", [])
+                                print_success(f"[PREPROCESSING] ✅ Preprocessing applied: {len(applied_steps)} steps")
+                                print_info(f"[PREPROCESSING] Applied steps: {applied_steps[:5] if applied_steps else 'None'}")
+                                if preprocessing_metadata.get("metadata", {}).get("rationale"):
+                                    rationale = preprocessing_metadata.get("metadata", {}).get("rationale", "")[:200]
+                                    print_info(f"[PREPROCESSING] Rationale: {rationale}...")
+                                print_info(f"[PREPROCESSING] Final DataFrame shape after preprocessing: {df.shape}")
+                            else:
+                                print_warning("[PREPROCESSING] ⚠️  Preprocessing agent returned no plan (OpenRouter may be unavailable)")
+                                print_warning(f"[PREPROCESSING] preprocessed_df: {preprocessed_df}, metadata: {preprocessing_metadata}")
+                        except Exception as e3:
+                            print_error(f"[PREPROCESSING] ❌ Exception in get_preprocessing_plan(): {type(e3).__name__}: {e3}")
+                            import traceback
+                            print_error(f"[PREPROCESSING] Traceback:\n{traceback.format_exc()}")
+                            raise
+                    elif 'smart_preprocess_func' in locals() and smart_preprocess_func:
+                        # Use preprocessing.py (BackendAgent's wrapper)
+                        print_info("[PREPROCESSING] Step 3: Calling smart_preprocess()...")
+                        try:
+                            df, preprocessing_metadata = smart_preprocess_func(
+                                df=df,
+                                dataset_name="heart",
+                                enable_smart_preprocess=True,
+                                fallback_on_error=True
+                            )
+                            applied_ops = preprocessing_metadata.get("applied_operations", [])
+                            print_success(f"[PREPROCESSING] ✅ Preprocessing applied: {len(applied_ops)} operations")
                             print_info(f"[PREPROCESSING] Final DataFrame shape after preprocessing: {df.shape}")
-                        else:
-                            print_warning("[PREPROCESSING] ⚠️  Preprocessing agent returned no plan (OpenRouter may be unavailable)")
-                            print_warning(f"[PREPROCESSING] preprocessed_df: {preprocessed_df}, metadata: {preprocessing_metadata}")
-                    except Exception as e3:
-                        print_error(f"[PREPROCESSING] ❌ Exception in get_preprocessing_plan(): {type(e3).__name__}: {e3}")
-                        import traceback
-                        print_error(f"[PREPROCESSING] Traceback:\n{traceback.format_exc()}")
-                        raise
-                elif 'smart_preprocess_func' in locals() and smart_preprocess_func:
-                    # Use preprocessing.py (BackendAgent's wrapper)
-                    print_info("[PREPROCESSING] Step 3: Calling smart_preprocess()...")
-                    try:
-                        df, preprocessing_metadata = smart_preprocess_func(
-                            df=df,
-                            dataset_name="heart",
-                            enable_smart_preprocess=True,
-                            fallback_on_error=True
-                        )
-                        applied_ops = preprocessing_metadata.get("applied_operations", [])
-                        print_success(f"[PREPROCESSING] ✅ Preprocessing applied: {len(applied_ops)} operations")
-                        print_info(f"[PREPROCESSING] Final DataFrame shape after preprocessing: {df.shape}")
-                    except Exception as e4:
-                        print_error(f"[PREPROCESSING] ❌ Exception in smart_preprocess(): {type(e4).__name__}: {e4}")
-                        import traceback
-                        print_error(f"[PREPROCESSING] Traceback:\n{traceback.format_exc()}")
-                        raise
-                else:
-                    print_warning("[PREPROCESSING] ⚠️  Preprocessing functions not available")
-                    print_warning(f"[PREPROCESSING] get_preprocessing_plan_func: {get_preprocessing_plan_func is not None if 'get_preprocessing_plan_func' in locals() else 'N/A'}")
-                    print_warning(f"[PREPROCESSING] smart_preprocess_func: {smart_preprocess_func is not None if 'smart_preprocess_func' in locals() else 'N/A'}")
+                        except Exception as e4:
+                            print_error(f"[PREPROCESSING] ❌ Exception in smart_preprocess(): {type(e4).__name__}: {e4}")
+                            import traceback
+                            print_error(f"[PREPROCESSING] Traceback:\n{traceback.format_exc()}")
+                            raise
+                    else:
+                        print_warning("[PREPROCESSING] ⚠️  Preprocessing functions not available")
+                        print_warning(f"[PREPROCESSING] get_preprocessing_plan_func: {get_preprocessing_plan_func is not None if 'get_preprocessing_plan_func' in locals() else 'N/A'}")
+                        print_warning(f"[PREPROCESSING] smart_preprocess_func: {smart_preprocess_func is not None if 'smart_preprocess_func' in locals() else 'N/A'}")
                 else:
                     print_warning("[PREPROCESSING] ⚠️  Preprocessing module not available - skipping preprocessing step")
             except Exception as e:
