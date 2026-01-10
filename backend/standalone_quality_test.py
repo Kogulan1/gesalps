@@ -394,8 +394,14 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
         
         # Final fallback to safe defaults
         if not hparams:
-            hparams = {"n_iter": 400, "batch_size": 64}
+            hparams = {"n_iter": 800, "batch_size": 256}  # Higher defaults for better quality
             print_info(f"Using safe default hyperparameters: {json.dumps(hparams, indent=2)}")
+        
+        # CRITICAL: Ensure batch_size is set and reasonable for better learning
+        if method in ("ddpm", "tabddpm"):
+            if "batch_size" not in hparams or hparams.get("batch_size", 0) < 128:
+                hparams["batch_size"] = 256  # Larger batch for better gradient estimates
+                print_info(f"Setting batch_size=256 for better learning stability")
         
         print_info(f"Final hyperparameters for {method}: {json.dumps(hparams, indent=2)}")
         
