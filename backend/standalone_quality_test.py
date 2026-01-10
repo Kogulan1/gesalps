@@ -313,7 +313,8 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
         print_info("=" * 80)
         
         # Check if we should use SYNTHCITY_DIRECT approach (matches working script exactly)
-        # If so, SKIP preprocessing entirely (working script has NO preprocessing)
+        # CRITICAL: Even though working script doesn't show preprocessing, production pipeline uses it
+        # The working script may have been run with preprocessing applied, or preprocessing is needed for quality
         try:
             from synthcity.plugins import Plugins
             from synthcity.plugins.core.dataloader import GenericDataLoader
@@ -324,25 +325,19 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
         
         # MANDATORY: Apply smart preprocessing via OpenRouter LLM (before model training)
         # This matches the production worker pipeline and is critical for achieving "all green" metrics
-        # NOTE: For SYNTHCITY_DIRECT path, we'll SKIP preprocessing to match working script exactly
-        if not USE_SYNTHCITY_DIRECT:
-            print_info("=" * 80)
-            print_info("PREPROCESSING STEP - Starting preprocessing execution")
-            print_info(f"Original data shape: {df.shape[0]} rows, {df.shape[1]} columns")
-            print_info("=" * 80)
-        else:
-            print_info("=" * 80)
-            print_info("SKIPPING PREPROCESSING (SYNTHCITY_DIRECT path - matches working script exactly)")
-            print_info("The working script (standalone_ddpm_test.py) has NO preprocessing")
-            print_info("=" * 80)
+        # The production pipeline ALWAYS uses preprocessing (worker.py lines 1179-1222)
+        # Even for SYNTHCITY_DIRECT path, we should use preprocessing to match production quality
+        print_info("=" * 80)
+        print_info("PREPROCESSING STEP - Starting preprocessing execution")
+        print_info(f"Original data shape: {df.shape[0]} rows, {df.shape[1]} columns")
+        print_info("NOTE: Production pipeline uses preprocessing (mandatory per worker.py)")
+        print_info("=" * 80)
         
         preprocessing_metadata = {}
         original_df_shape = df.shape
         
-        # Skip preprocessing if using SYNTHCITY_DIRECT (matches working script)
-        if USE_SYNTHCITY_DIRECT:
-            print_info("Preprocessing skipped for SYNTHCITY_DIRECT path (matches working script)")
-        else:
+        # Apply preprocessing for all paths (production pipeline always uses it)
+        # This is critical for achieving "all green" metrics
             try:
                 print_info("[PREPROCESSING] Step 1: Attempting to import preprocessing_agent...")
                 # Try to import preprocessing agent
@@ -443,11 +438,10 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                 print_warning("[PREPROCESSING] ⚠️  Continuing with original data (no preprocessing applied)")
                 preprocessing_metadata = {"error": str(e), "preprocessing_method": "failed", "exception_type": type(e).__name__}
             
-            if not USE_SYNTHCITY_DIRECT:
-                print_info("=" * 80)
-                print_info("PREPROCESSING STEP - Completed")
-                print_info(f"Final data shape: {df.shape[0]} rows, {df.shape[1]} columns")
-                print_info("=" * 80)
+            print_info("=" * 80)
+            print_info("PREPROCESSING STEP - Completed")
+            print_info(f"Final data shape: {df.shape[0]} rows, {df.shape[1]} columns")
+            print_info("=" * 80)
         
         # CRITICAL FIX: Use raw data directly with SynthCity (like standalone_ddpm_test.py)
         # The working script achieved KS Mean 0.0650 by using raw data, not _clean_df_for_sdv()
@@ -599,11 +593,13 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
             # Use the EXACT approach from standalone_ddpm_test.py that achieved KS Mean 0.0650
             method = "ddpm"  # Set method for fallback logic
             print_info("Creating SynthCity GenericDataLoader (raw data, no cleaning)...")
-            # CRITICAL: Use original_raw_df (saved BEFORE preprocessing), NOT df (which may have been preprocessed)
-            # The working script uses raw df directly with NO preprocessing: loader = GenericDataLoader(df)
-            # We saved original_raw_df before preprocessing to match this exactly
-            print_info("Using original_raw_df (saved before preprocessing) to match working script exactly")
-            loader = GenericDataLoader(original_raw_df)
+            # CRITICAL: Use preprocessed df (after preprocessing), NOT original_raw_df
+            # Production pipeline ALWAYS uses preprocessing (worker.py lines 1179-1222)
+            # Preprocessing fixes issues like numeric column names, outliers, skewed distributions
+            # This is essential for achieving "all green" metrics (KS Mean ≤ 0.10)
+            print_info("Using preprocessed df (after preprocessing) to match production pipeline")
+            print_info("Preprocessing is mandatory in production and fixes data quality issues")
+            loader = GenericDataLoader(df)  # Use preprocessed df, not original_raw_df
             
             # Use n_iter=500 (EXACT match to working script that achieved 0.0650)
             # The working script uses n_iter=500: syn_model = Plugins().get("ddpm", n_iter=500)
@@ -617,22 +613,22 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
             training_time = time.time() - start_time
             print_success(f"Training completed in {training_time:.1f} seconds")
             
-            # Generate (EXACT match to working script)
+            # Generate synthetic data
             print_info("Generating synthetic data...")
-            synthetic_loader = syn_model.generate(count=len(original_raw_df))
+            synthetic_loader = syn_model.generate(count=len(df))
             synth = synthetic_loader.dataframe()
             print_success(f"Generated {len(synth)} synthetic rows")
             
             # CRITICAL: Use SynthCity eval_privacy and eval_statistical DIRECTLY (EXACT match to working script)
             # The working script uses: privacy = eval_privacy(df, synthetic_df)
             #                          utility = eval_statistical(df, synthetic_df)
-            # Use original_raw_df (not preprocessed df) to match working script exactly
-            print_info("Evaluating metrics with SynthCity eval_privacy/eval_statistical (EXACT match to working script)...")
-            print_info("Using original_raw_df (not preprocessed) to match working script exactly")
+            # Use preprocessed df (matches production pipeline which always preprocesses)
+            print_info("Evaluating metrics with SynthCity eval_privacy/eval_statistical...")
+            print_info("Using preprocessed df (matches production pipeline)")
             try:
                 # Try to use eval_privacy and eval_statistical as functions (like working script)
-                privacy_result = eval_privacy(original_raw_df, synth)
-                utility_result = eval_statistical(original_raw_df, synth)
+                privacy_result = eval_privacy(df, synth)
+                utility_result = eval_statistical(df, synth)
                 
                 # Convert SynthCity format to our format
                 # SynthCity returns ks_complement (higher = better, closer to 1 = better)
@@ -665,9 +661,9 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                 # If eval_privacy/eval_statistical are modules, fall back to custom functions
                 print_warning(f"eval_privacy/eval_statistical are modules, not functions: {type(e).__name__}: {e}")
                 print_warning("Falling back to custom metrics functions...")
-                # Use original_raw_df (not preprocessed df) to match working script
-                utility = _utility_metrics(original_raw_df, synth)
-                privacy = _privacy_metrics(original_raw_df, synth)
+                # Use preprocessed df (matches production pipeline)
+                utility = _utility_metrics(df, synth)
+                privacy = _privacy_metrics(df, synth)
                 metrics = {"utility": utility, "privacy": privacy}
                 
                 print_info(f"Metrics Results (custom functions):")
