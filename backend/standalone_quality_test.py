@@ -473,17 +473,16 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                 try:
                     from synthcity.metrics.eval_privacy import DomiasMIABNAF
                     from synthcity.plugins.core.dataloader import GenericDataLoader
-                    from sklearn.model_selection import train_test_split
                     
-                    # Split real data into train/val for MIA evaluation
-                    train_df, val_df = train_test_split(real_df, test_size=0.3, random_state=42)
-                    train_loader = GenericDataLoader(train_df)
-                    val_loader = GenericDataLoader(val_df)
+                    # Create loaders for MIA evaluation
+                    # DomiasMIABNAF.evaluate() signature: evaluate(X_gt, X_syn)
+                    real_loader = GenericDataLoader(real_df)
                     synth_loader = GenericDataLoader(synth_df)
                     
-                    # Use DomiasMIA for privacy evaluation (needs X_train, X_val, X_syn)
+                    # Use DomiasMIA for privacy evaluation
+                    # API: mia.evaluate(X_gt, X_syn) - both are DataLoaders
                     mia = DomiasMIABNAF()
-                    mia_result = mia.evaluate(train_loader, synth_loader, X_val=val_loader)
+                    mia_result = mia.evaluate(real_loader, synth_loader)
                     
                     # Calculate duplicate rate
                     dup_rate = None
