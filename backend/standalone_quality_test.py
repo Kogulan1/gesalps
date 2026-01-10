@@ -303,8 +303,18 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                 _thresholds_status
             )
         
+        # CRITICAL: Save original raw df BEFORE any preprocessing
+        # The working script (standalone_ddpm_test.py) uses raw df directly with NO preprocessing
+        # We need to preserve the original df for the SYNTHCITY_DIRECT path to match exactly
+        original_raw_df = df.copy()
+        print_info("=" * 80)
+        print_info("SAVED ORIGINAL RAW DATA (for SYNTHCITY_DIRECT path to match working script)")
+        print_info(f"Original raw data shape: {original_raw_df.shape[0]} rows, {original_raw_df.shape[1]} columns")
+        print_info("=" * 80)
+        
         # MANDATORY: Apply smart preprocessing via OpenRouter LLM (before model training)
         # This matches the production worker pipeline and is critical for achieving "all green" metrics
+        # NOTE: For SYNTHCITY_DIRECT path, we'll use original_raw_df instead of preprocessed df
         print_info("=" * 80)
         print_info("PREPROCESSING STEP - Starting preprocessing execution")
         print_info(f"Original data shape: {df.shape[0]} rows, {df.shape[1]} columns")
@@ -450,9 +460,11 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
             # Use the EXACT approach from standalone_ddpm_test.py that achieved KS Mean 0.0650
             method = "ddpm"  # Set method for fallback logic
             print_info("Creating SynthCity GenericDataLoader (raw data, no cleaning)...")
-            # CRITICAL: Use raw df directly, NOT real_clean (which may have been preprocessed)
-            # The working script uses df directly: loader = GenericDataLoader(df)
-            loader = GenericDataLoader(df)
+            # CRITICAL: Use original_raw_df (saved BEFORE preprocessing), NOT df (which may have been preprocessed)
+            # The working script uses raw df directly with NO preprocessing: loader = GenericDataLoader(df)
+            # We saved original_raw_df before preprocessing to match this exactly
+            print_info("Using original_raw_df (saved before preprocessing) to match working script exactly")
+            loader = GenericDataLoader(original_raw_df)
             
             # Use n_iter=500 (EXACT match to working script that achieved 0.0650)
             # The working script uses n_iter=500: syn_model = Plugins().get("ddpm", n_iter=500)
@@ -468,18 +480,20 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
             
             # Generate (EXACT match to working script)
             print_info("Generating synthetic data...")
-            synthetic_loader = syn_model.generate(count=len(df))
+            synthetic_loader = syn_model.generate(count=len(original_raw_df))
             synth = synthetic_loader.dataframe()
             print_success(f"Generated {len(synth)} synthetic rows")
             
             # CRITICAL: Use SynthCity eval_privacy and eval_statistical DIRECTLY (EXACT match to working script)
             # The working script uses: privacy = eval_privacy(df, synthetic_df)
             #                          utility = eval_statistical(df, synthetic_df)
+            # Use original_raw_df (not preprocessed df) to match working script exactly
             print_info("Evaluating metrics with SynthCity eval_privacy/eval_statistical (EXACT match to working script)...")
+            print_info("Using original_raw_df (not preprocessed) to match working script exactly")
             try:
                 # Try to use eval_privacy and eval_statistical as functions (like working script)
-                privacy_result = eval_privacy(df, synth)
-                utility_result = eval_statistical(df, synth)
+                privacy_result = eval_privacy(original_raw_df, synth)
+                utility_result = eval_statistical(original_raw_df, synth)
                 
                 # Convert SynthCity format to our format
                 # SynthCity uses ks_complement (higher = better), we use ks_mean (lower = better)
@@ -510,8 +524,9 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                 # If eval_privacy/eval_statistical are modules, fall back to custom functions
                 print_warning(f"eval_privacy/eval_statistical are modules, not functions: {type(e).__name__}: {e}")
                 print_warning("Falling back to custom metrics functions...")
-                utility = _utility_metrics(df, synth)
-                privacy = _privacy_metrics(df, synth)
+                # Use original_raw_df (not preprocessed df) to match working script
+                utility = _utility_metrics(original_raw_df, synth)
+                privacy = _privacy_metrics(original_raw_df, synth)
                 metrics = {"utility": utility, "privacy": privacy}
                 
                 print_info(f"Metrics Results (custom functions):")
