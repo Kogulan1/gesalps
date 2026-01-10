@@ -378,42 +378,73 @@ def apply_preprocessing_plan(df: pd.DataFrame, plan: Dict[str, Any]) -> Tuple[pd
             
             for col in columns:
                 if col in result_df.columns and result_df[col].isna().any():
-                    if method == "fill_mean" and pd.api.types.is_numeric_dtype(result_df[col]):
-                        result_df[col].fillna(result_df[col].mean(), inplace=True)
-                        applied_steps.append(f"Filled missing values in '{col}' with mean")
-                    elif method == "fill_median" and pd.api.types.is_numeric_dtype(result_df[col]):
-                        result_df[col].fillna(result_df[col].median(), inplace=True)
-                        applied_steps.append(f"Filled missing values in '{col}' with median")
-                    elif method == "fill_mode":
-                        mode_val = result_df[col].mode()
-                        if len(mode_val) > 0:
-                            result_df[col].fillna(mode_val[0], inplace=True)
-                            applied_steps.append(f"Filled missing values in '{col}' with mode")
-                    elif method == "drop":
-                        result_df = result_df.dropna(subset=[col])
-                        applied_steps.append(f"Dropped rows with missing values in '{col}'")
+                    try:
+                        if method == "fill_mean" and pd.api.types.is_numeric_dtype(result_df[col]):
+                            # Get valid (non-NaN) values for mean calculation
+                            valid_values = result_df[col].dropna()
+                            if len(valid_values) > 0:
+                                mean_val = float(valid_values.mean())
+                                result_df[col].fillna(mean_val, inplace=True)
+                                applied_steps.append(f"Filled missing values in '{col}' with mean")
+                            else:
+                                logger.warning(f"Cannot fill '{col}' with mean: no valid values")
+                        elif method == "fill_median" and pd.api.types.is_numeric_dtype(result_df[col]):
+                            # Get valid (non-NaN) values for median calculation
+                            valid_values = result_df[col].dropna()
+                            if len(valid_values) > 0:
+                                median_val = float(valid_values.median())
+                                result_df[col].fillna(median_val, inplace=True)
+                                applied_steps.append(f"Filled missing values in '{col}' with median")
+                            else:
+                                logger.warning(f"Cannot fill '{col}' with median: no valid values")
+                        elif method == "fill_mode":
+                            # Get valid (non-NaN) values for mode calculation
+                            valid_values = result_df[col].dropna()
+                            if len(valid_values) > 0:
+                                mode_val = valid_values.mode()
+                                if len(mode_val) > 0:
+                                    result_df[col].fillna(mode_val.iloc[0], inplace=True)
+                                    applied_steps.append(f"Filled missing values in '{col}' with mode")
+                                else:
+                                    logger.warning(f"Cannot fill '{col}' with mode: no mode found")
+                            else:
+                                logger.warning(f"Cannot fill '{col}' with mode: no valid values")
+                        elif method == "drop":
+                            result_df = result_df.dropna(subset=[col])
+                            applied_steps.append(f"Dropped rows with missing values in '{col}'")
+                    except Exception as e:
+                        logger.warning(f"Failed to handle missing values in '{col}' with method '{method}': {type(e).__name__}: {e}")
         
         # 4. Outlier handling
         if "outlier_handling" in plan and isinstance(plan["outlier_handling"], dict):
             for col, config in plan["outlier_handling"].items():
                 if col in result_df.columns and pd.api.types.is_numeric_dtype(result_df[col]):
-                    method = config.get("method", "clip")
-                    lower_p = config.get("lower_percentile", 0.01)
-                    upper_p = config.get("upper_percentile", 0.99)
-                    
-                    if method == "clip":
-                        lower_val = result_df[col].quantile(lower_p)
-                        upper_val = result_df[col].quantile(upper_p)
-                        clipped_count = ((result_df[col] < lower_val) | (result_df[col] > upper_val)).sum()
-                        result_df[col] = result_df[col].clip(lower=lower_val, upper=upper_val)
-                        applied_steps.append(f"Clipped {clipped_count} outliers in '{col}' ({lower_p}-{upper_p} percentiles)")
-                    elif method == "remove":
-                        lower_val = result_df[col].quantile(lower_p)
-                        upper_val = result_df[col].quantile(upper_p)
-                        before = len(result_df)
-                        result_df = result_df[(result_df[col] >= lower_val) & (result_df[col] <= upper_val)]
-                        removed = before - len(result_df)
-                        applied_steps.append(f"Removed {removed} rows with outliers in '{col}'")
+                    try:
+                        # Get valid (non-NaN) values for percentile calculation
+                        valid_values = result_df[col].dropna()
+                        if len(valid_values) == 0:
+                            logger.warning(f"Cannot handle outliers in '{col}': no valid values")
+                            continue
+                        
+                        method = config.get("method", "clip")
+                        lower_p = config.get("lower_percentile", 0.01)
+                        upper_p = config.get("upper_percentile", 0.99)
+                        
+                        if method == "clip":
+                            lower_val = float(valid_values.quantile(lower_p))
+                            upper_val = float(valid_values.quantile(upper_p))
+                            clipped_count = ((result_df[col] < lower_val) | (result_df[col] > upper_val)).sum()
+                            result_df[col] = result_df[col].clip(lower=lower_val, upper=upper_val)
+                            applied_steps.append(f"Clipped {clipped_count} outliers in '{col}' ({lower_p}-{upper_p} percentiles)")
+                        elif method == "remove":
+                            lower_val = float(valid_values.quantile(lower_p))
+                            upper_val = float(valid_values.quantile(upper_p))
+                            before = len(result_df)
+                            result_df = result_df[(result_df[col] >= lower_val) & (result_df[col] <= upper_val)]
+                            removed = before - len(result_df)
+                            applied_steps.append(f"Removed {removed} rows with outliers in '{col}'")
+                    except Exception as e:
+                        logger.warning(f"Failed to handle outliers in '{col}': {type(e).__name__}: {e}")
         
         # 5. Transformations
         if "transformations" in plan and isinstance(plan["transformations"], dict):
@@ -428,33 +459,62 @@ def apply_preprocessing_plan(df: pd.DataFrame, plan: Dict[str, Any]) -> Tuple[pd
                 if col in result_df.columns and pd.api.types.is_numeric_dtype(result_df[col]):
                     method = config.get("method")
                     
-                    if method == "quantile" and SKLEARN_AVAILABLE:
-                        transformer = QuantileTransformer(output_distribution='normal', n_quantiles=min(1000, len(result_df)))
-                        result_df[col] = transformer.fit_transform(result_df[[col]]).flatten()
-                        applied_steps.append(f"Applied quantile transformation to '{col}'")
-                    elif method == "log":
-                        # Log transform (handle zeros/negatives)
-                        min_val = result_df[col].min()
-                        if min_val <= 0:
-                            result_df[col] = np.log1p(result_df[col] - min_val + 1)
-                        else:
-                            result_df[col] = np.log(result_df[col])
-                        applied_steps.append(f"Applied log transformation to '{col}'")
-                    elif method == "sqrt":
-                        min_val = result_df[col].min()
-                        if min_val < 0:
-                            result_df[col] = np.sqrt(result_df[col] - min_val)
-                        else:
-                            result_df[col] = np.sqrt(result_df[col])
-                        applied_steps.append(f"Applied sqrt transformation to '{col}'")
-                    elif method == "standardize" and SKLEARN_AVAILABLE:
-                        scaler = StandardScaler()
-                        result_df[col] = scaler.fit_transform(result_df[[col]]).flatten()
-                        applied_steps.append(f"Standardized '{col}'")
-                    elif method == "minmax" and SKLEARN_AVAILABLE:
-                        scaler = MinMaxScaler()
-                        result_df[col] = scaler.fit_transform(result_df[[col]]).flatten()
-                        applied_steps.append(f"Applied min-max scaling to '{col}'")
+                    try:
+                        if method == "quantile" and SKLEARN_AVAILABLE:
+                            # Get valid (non-NaN) values for transformation
+                            valid_mask = result_df[col].notna()
+                            if valid_mask.sum() > 0:
+                                transformer = QuantileTransformer(output_distribution='normal', n_quantiles=min(1000, valid_mask.sum()))
+                                result_df.loc[valid_mask, col] = transformer.fit_transform(result_df.loc[valid_mask, [col]]).flatten()
+                                applied_steps.append(f"Applied quantile transformation to '{col}'")
+                            else:
+                                logger.warning(f"Cannot apply quantile transformation to '{col}': no valid values")
+                        elif method == "log":
+                            # Log transform (handle zeros/negatives)
+                            valid_values = result_df[col].dropna()
+                            if len(valid_values) > 0:
+                                min_val = float(valid_values.min())
+                                if min_val <= 0:
+                                    result_df[col] = np.log1p(result_df[col] - min_val + 1)
+                                else:
+                                    result_df[col] = np.log(result_df[col].clip(lower=1e-10))  # Avoid log(0)
+                                applied_steps.append(f"Applied log transformation to '{col}'")
+                            else:
+                                logger.warning(f"Cannot apply log transformation to '{col}': no valid values")
+                        elif method == "sqrt":
+                            # Sqrt transform (handle negatives)
+                            valid_values = result_df[col].dropna()
+                            if len(valid_values) > 0:
+                                min_val = float(valid_values.min())
+                                if min_val < 0:
+                                    result_df[col] = np.sqrt(result_df[col] - min_val)
+                                else:
+                                    result_df[col] = np.sqrt(result_df[col])
+                                applied_steps.append(f"Applied sqrt transformation to '{col}'")
+                            else:
+                                logger.warning(f"Cannot apply sqrt transformation to '{col}': no valid values")
+                        elif method == "standardize" and SKLEARN_AVAILABLE:
+                            # Get valid (non-NaN) values for standardization
+                            valid_mask = result_df[col].notna()
+                            if valid_mask.sum() > 0:
+                                scaler = StandardScaler()
+                                result_df.loc[valid_mask, col] = scaler.fit_transform(result_df.loc[valid_mask, [col]]).flatten()
+                                applied_steps.append(f"Standardized '{col}'")
+                            else:
+                                logger.warning(f"Cannot standardize '{col}': no valid values")
+                        elif method == "minmax" and SKLEARN_AVAILABLE:
+                            # Get valid (non-NaN) values for min-max scaling
+                            valid_mask = result_df[col].notna()
+                            if valid_mask.sum() > 0:
+                                scaler = MinMaxScaler()
+                                result_df.loc[valid_mask, col] = scaler.fit_transform(result_df.loc[valid_mask, [col]]).flatten()
+                                applied_steps.append(f"Applied min-max scaling to '{col}'")
+                            else:
+                                logger.warning(f"Cannot apply min-max scaling to '{col}': no valid values")
+                    except Exception as e:
+                        logger.warning(f"Failed to apply transformation '{method}' to '{col}': {type(e).__name__}: {e}")
+                    except Exception as e:
+                        logger.warning(f"Failed to apply transformation '{method}' to '{col}': {type(e).__name__}: {e}")
         
     except Exception as e:
         logger.error(f"Error applying preprocessing plan: {type(e).__name__}: {e}")
