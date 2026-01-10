@@ -513,8 +513,6 @@ def apply_preprocessing_plan(df: pd.DataFrame, plan: Dict[str, Any]) -> Tuple[pd
                                 logger.warning(f"Cannot apply min-max scaling to '{col}': no valid values")
                     except Exception as e:
                         logger.warning(f"Failed to apply transformation '{method}' to '{col}': {type(e).__name__}: {e}")
-                    except Exception as e:
-                        logger.warning(f"Failed to apply transformation '{method}' to '{col}': {type(e).__name__}: {e}")
         
     except Exception as e:
         logger.error(f"Error applying preprocessing plan: {type(e).__name__}: {e}")
