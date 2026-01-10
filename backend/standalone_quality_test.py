@@ -471,97 +471,18 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
             synth = synthetic_loader.dataframe()
             print_success(f"Generated {len(synth)} synthetic rows")
             
-            # Evaluate with SynthCity metrics directly (like working script)
-            print_info("Evaluating metrics with SynthCity (matching working script)...")
-            # Use Metrics class (like worker.py) - this is the correct API for this SynthCity version
-            try:
-                from synthcity.metrics.eval import Metrics
-                from synthcity.plugins.core.dataloader import GenericDataLoader
-                
-                # Convert DataFrames to GenericDataLoader (required by Metrics)
-                real_loader = GenericDataLoader(real_clean)
-                synth_loader = GenericDataLoader(synth)
-                
-                # Use Metrics class to evaluate (returns DataFrame like worker.py)
-                metrics_evaluator = Metrics()
-                metrics_df = metrics_evaluator.evaluate(real_loader, synth_loader)
-                
-                # Extract metrics from DataFrame
-                # Metrics DataFrame has metric names as index, and 'mean' column for values
-                ks_complement = None
-                mia_auc = None
-                dup_rate = None
-                corr_delta = None
-                
-                # Extract from DataFrame: metric names are in the index, values in 'mean' column
-                if isinstance(metrics_df, pd.DataFrame) and 'mean' in metrics_df.columns:
-                    for metric_name in metrics_df.index:
-                        metric_name_lower = str(metric_name).lower()
-                        value = metrics_df.loc[metric_name, 'mean']
-                        
-                        # Look for KS complement (statistical metrics) - pattern: statistical.*ks.*complement
-                        if 'statistical' in metric_name_lower and 'ks' in metric_name_lower and 'complement' in metric_name_lower:
-                            ks_complement = float(value) if pd.notna(value) else None
-                        # Look for MIA AUC (privacy metrics) - pattern: privacy.*mia or privacy.*auc
-                        elif 'privacy' in metric_name_lower:
-                            if 'mia' in metric_name_lower and 'auc' in metric_name_lower:
-                                mia_auc = float(value) if pd.notna(value) else None
-                        # Look for duplicate rate - pattern: privacy.*duplicate
-                        elif 'duplicate' in metric_name_lower or ('dup' in metric_name_lower and 'rate' in metric_name_lower):
-                            dup_rate = float(value) if pd.notna(value) else None
-                        # Look for correlation difference - pattern: statistical.*correlation
-                        elif 'correlation' in metric_name_lower or ('corr' in metric_name_lower and 'delta' in metric_name_lower):
-                            corr_delta = float(value) if pd.notna(value) else None
-                
-                # If not found, try alternative metric name patterns (broader search)
-                if ks_complement is None:
-                    for metric_name in metrics_df.index:
-                        metric_name_lower = str(metric_name).lower()
-                        if 'ks' in metric_name_lower and 'complement' in metric_name_lower:
-                            ks_complement = float(metrics_df.loc[metric_name, 'mean']) if pd.notna(metrics_df.loc[metric_name, 'mean']) else None
-                            break
-                
-                if mia_auc is None:
-                    for metric_name in metrics_df.index:
-                        metric_name_lower = str(metric_name).lower()
-                        if 'mia' in metric_name_lower and 'auc' in metric_name_lower:
-                            mia_auc = float(metrics_df.loc[metric_name, 'mean']) if pd.notna(metrics_df.loc[metric_name, 'mean']) else None
-                            break
-                
-                if dup_rate is None:
-                    for metric_name in metrics_df.index:
-                        metric_name_lower = str(metric_name).lower()
-                        if 'duplicate' in metric_name_lower or 'dup' in metric_name_lower:
-                            dup_rate = float(metrics_df.loc[metric_name, 'mean']) if pd.notna(metrics_df.loc[metric_name, 'mean']) else None
-                            break
-                
-                # Convert ks_complement to ks_mean (ks_mean = 1 - ks_complement)
-                if ks_complement is not None:
-                    ks_mean = 1.0 - float(ks_complement)
-                else:
-                    ks_mean = None
-                
-                utility = {
-                    "ks_mean": ks_mean,
-                    "corr_delta": corr_delta,
-                }
-                privacy = {
-                    "mia_auc": mia_auc,
-                    "dup_rate": dup_rate,
-                }
-                metrics = {"utility": utility, "privacy": privacy}
-                
-                print_info(f"SynthCity Metrics:")
-                print_info(f"  KS Complement: {ks_complement}")
-                print_info(f"  KS Mean: {ks_mean}")
-                print_info(f"  MIA AUC: {mia_auc}")
-                print_info(f"  Duplicate Rate: {dup_rate}")
-                print_info(f"  Correlation Delta: {corr_delta}")
-            except Exception as e:
-                print_error(f"Failed to evaluate with SynthCity Metrics: {type(e).__name__}: {e}")
-                import traceback
-                print_error(f"Traceback:\n{traceback.format_exc()}")
-                raise  # Re-raise to see the full error
+            # Evaluate with custom metrics functions (same as worker.py and fallback path)
+            # This ensures consistent metric calculation across all paths
+            print_info("Evaluating metrics with custom functions (matching worker.py)...")
+            utility = _utility_metrics(real_clean, synth)
+            privacy = _privacy_metrics(real_clean, synth)
+            metrics = {"utility": utility, "privacy": privacy}
+            
+            print_info(f"Metrics Results:")
+            print_info(f"  KS Mean: {utility.get('ks_mean')}")
+            print_info(f"  MIA AUC: {privacy.get('mia_auc')}")
+            print_info(f"  Duplicate Rate: {privacy.get('dup_rate')}")
+            print_info(f"  Correlation Delta: {utility.get('corr_delta')}")
         else:
             # Fallback to factory wrapper approach (if SynthCity direct import fails)
             print_warning("⚠️  Using factory wrapper approach (may not match working script)")
