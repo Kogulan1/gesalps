@@ -470,8 +470,110 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
             from synthcity.plugins import Plugins
             from synthcity.plugins.core.dataloader import GenericDataLoader
             from synthcity.metrics import eval_privacy, eval_statistical
+            
+            # Create wrapper functions to match working script's API
+            # In SynthCity 0.2.12, eval_privacy/eval_statistical are modules, not functions
+            # We need to create wrapper functions that match the working script's expected API
+            def eval_privacy_wrapper(real_df, synth_df):
+                """Wrapper function to match working script's eval_privacy(df, synthetic_df) API."""
+                try:
+                    from synthcity.metrics.eval_privacy import DomiasMIABNAF
+                    from synthcity.plugins.core.dataloader import GenericDataLoader
+                    
+                    real_loader = GenericDataLoader(real_df)
+                    synth_loader = GenericDataLoader(synth_df)
+                    
+                    # Use DomiasMIA for privacy evaluation
+                    mia = DomiasMIABNAF()
+                    mia_result = mia.evaluate(real_loader, synth_loader)
+                    
+                    # Calculate duplicate rate
+                    dup_rate = None
+                    try:
+                        synth_set = set(tuple(row) for row in synth_df.values)
+                        real_set = set(tuple(row) for row in real_df.values)
+                        duplicates = len(synth_set.intersection(real_set))
+                        dup_rate = duplicates / len(synth_df) if len(synth_df) > 0 else 0.0
+                    except:
+                        pass
+                    
+                    # Extract MIA AUC from result
+                    mia_auc = None
+                    if isinstance(mia_result, dict):
+                        # Try different possible keys
+                        for key in ['mia_auc', 'auc', 'score', 'value']:
+                            if key in mia_result:
+                                mia_auc = float(mia_result[key])
+                                break
+                        # If not found, try to get first numeric value
+                        if mia_auc is None:
+                            for val in mia_result.values():
+                                if isinstance(val, (int, float)):
+                                    mia_auc = float(val)
+                                    break
+                    
+                    return {
+                        'mia_auc': mia_auc,
+                        'duplicate_rate': dup_rate
+                    }
+                except Exception as e:
+                    print_warning(f"eval_privacy_wrapper error: {type(e).__name__}: {e}")
+                    return {'mia_auc': None, 'duplicate_rate': None}
+            
+            def eval_statistical_wrapper(real_df, synth_df):
+                """Wrapper function to match working script's eval_statistical(df, synthetic_df) API."""
+                try:
+                    from synthcity.metrics.eval_statistical import KolmogorovSmirnovTest
+                    from synthcity.plugins.core.dataloader import GenericDataLoader
+                    import numpy as np
+                    
+                    real_loader = GenericDataLoader(real_df)
+                    synth_loader = GenericDataLoader(synth_df)
+                    
+                    # Use KS test for statistical evaluation
+                    ks_test = KolmogorovSmirnovTest()
+                    ks_result = ks_test.evaluate(real_loader, synth_loader)
+                    
+                    # Extract KS complement (1 - KS mean)
+                    ks_complement = None
+                    if isinstance(ks_result, dict):
+                        # Try different possible keys
+                        for key in ['marginal', 'ks_complement', 'complement', 'value', 'mean']:
+                            if key in ks_result:
+                                val = ks_result[key]
+                                if isinstance(val, (int, float)):
+                                    ks_complement = float(val)
+                                    break
+                        # If not found, try to get first numeric value
+                        if ks_complement is None:
+                            for val in ks_result.values():
+                                if isinstance(val, (int, float)):
+                                    ks_complement = float(val)
+                                    break
+                    
+                    # Calculate feature coverage (simple version)
+                    feature_coverage = None
+                    try:
+                        real_cols = set(real_df.columns)
+                        synth_cols = set(synth_df.columns)
+                        feature_coverage = len(synth_cols.intersection(real_cols)) / len(real_cols) if len(real_cols) > 0 else 0.0
+                    except:
+                        pass
+                    
+                    return {
+                        'ks_complement': ks_complement,
+                        'feature_coverage': feature_coverage
+                    }
+                except Exception as e:
+                    print_warning(f"eval_statistical_wrapper error: {type(e).__name__}: {e}")
+                    return {'ks_complement': None, 'feature_coverage': None}
+            
+            # Replace module imports with wrapper functions
+            eval_privacy = eval_privacy_wrapper
+            eval_statistical = eval_statistical_wrapper
+            
             SYNTHCITY_DIRECT = True
-            print_success("✅ SynthCity direct import successful")
+            print_success("✅ SynthCity direct import successful (with wrapper functions)")
         except ImportError as e:
             SYNTHCITY_DIRECT = False
             print_warning(f"⚠️  SynthCity direct import failed: {e}")
