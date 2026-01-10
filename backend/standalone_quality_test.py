@@ -303,7 +303,56 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                 _thresholds_status
             )
         
-        # Prepare data (same as worker does)
+        # MANDATORY: Apply smart preprocessing via OpenRouter LLM (before model training)
+        # This matches the production worker pipeline and is critical for achieving "all green" metrics
+        print_info("Applying mandatory smart preprocessing via OpenRouter LLM...")
+        preprocessing_metadata = {}
+        try:
+            # Try to import preprocessing agent
+            try:
+                from preprocessing_agent import get_preprocessing_plan
+                PREPROCESSING_AVAILABLE = True
+            except ImportError:
+                try:
+                    from preprocessing import smart_preprocess
+                    PREPROCESSING_AVAILABLE = True
+                    get_preprocessing_plan = None
+                except ImportError:
+                    PREPROCESSING_AVAILABLE = False
+                    get_preprocessing_plan = None
+            
+            if PREPROCESSING_AVAILABLE:
+                if get_preprocessing_plan:
+                    # Use preprocessing_agent.py (SyntheticDataSpecialist's implementation)
+                    preprocessed_df, preprocessing_metadata = get_preprocessing_plan(df, previous_ks=None)
+                    if preprocessed_df is not None and preprocessing_metadata:
+                        df = preprocessed_df  # Use preprocessed DataFrame
+                        applied_steps = preprocessing_metadata.get("metadata", {}).get("applied_steps", [])
+                        print_success(f"✅ Preprocessing applied: {len(applied_steps)} steps")
+                        if preprocessing_metadata.get("metadata", {}).get("rationale"):
+                            rationale = preprocessing_metadata.get("metadata", {}).get("rationale", "")[:200]
+                            print_info(f"Preprocessing rationale: {rationale}...")
+                    else:
+                        print("⚠️  Preprocessing agent returned no plan (OpenRouter may be unavailable)")
+                elif smart_preprocess:
+                    # Use preprocessing.py (BackendAgent's wrapper)
+                    df, preprocessing_metadata = smart_preprocess(
+                        df=df,
+                        dataset_name="heart",
+                        enable_smart_preprocess=True,
+                        fallback_on_error=True
+                    )
+                    applied_ops = preprocessing_metadata.get("applied_operations", [])
+                    print(f"✅ Preprocessing applied: {len(applied_ops)} operations")
+                else:
+                    print("⚠️  Preprocessing functions not available")
+            else:
+                print("⚠️  Preprocessing module not available - skipping preprocessing step")
+        except Exception as e:
+            print(f"⚠️  Preprocessing failed, continuing with original data: {type(e).__name__}: {e}")
+            preprocessing_metadata = {"error": str(e), "preprocessing_method": "failed"}
+        
+        # Prepare data (same as worker does) - AFTER preprocessing
         real_clean = _clean_df_for_sdv(df)
         print_info(f"Prepared data: {real_clean.shape[0]} rows, {real_clean.shape[1]} columns")
         
