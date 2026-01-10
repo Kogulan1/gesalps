@@ -479,13 +479,17 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                 try:
                     from synthcity.metrics.eval_privacy import DomiasMIABNAF
                     from synthcity.plugins.core.dataloader import GenericDataLoader
+                    from sklearn.model_selection import train_test_split
                     
-                    real_loader = GenericDataLoader(real_df)
+                    # Split real data into train/val for MIA evaluation
+                    train_df, val_df = train_test_split(real_df, test_size=0.3, random_state=42)
+                    train_loader = GenericDataLoader(train_df)
+                    val_loader = GenericDataLoader(val_df)
                     synth_loader = GenericDataLoader(synth_df)
                     
-                    # Use DomiasMIA for privacy evaluation
+                    # Use DomiasMIA for privacy evaluation (needs X_train, X_val, X_syn)
                     mia = DomiasMIABNAF()
-                    mia_result = mia.evaluate(real_loader, synth_loader)
+                    mia_result = mia.evaluate(train_loader, synth_loader, X_val=val_loader)
                     
                     # Calculate duplicate rate
                     dup_rate = None
@@ -501,10 +505,12 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                     mia_auc = None
                     if isinstance(mia_result, dict):
                         # Try different possible keys
-                        for key in ['mia_auc', 'auc', 'score', 'value']:
+                        for key in ['mia_auc', 'auc', 'score', 'value', 'mean']:
                             if key in mia_result:
-                                mia_auc = float(mia_result[key])
-                                break
+                                val = mia_result[key]
+                                if isinstance(val, (int, float)):
+                                    mia_auc = float(val)
+                                    break
                         # If not found, try to get first numeric value
                         if mia_auc is None:
                             for val in mia_result.values():
@@ -518,6 +524,8 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                     }
                 except Exception as e:
                     print_warning(f"eval_privacy_wrapper error: {type(e).__name__}: {e}")
+                    import traceback
+                    print_warning(f"Traceback: {traceback.format_exc()[:200]}")
                     return {'mia_auc': None, 'duplicate_rate': None}
             
             def eval_statistical_wrapper(real_df, synth_df):
@@ -534,22 +542,28 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                     ks_test = KolmogorovSmirnovTest()
                     ks_result = ks_test.evaluate(real_loader, synth_loader)
                     
-                    # Extract KS complement (1 - KS mean)
-                    ks_complement = None
+                    # Extract KS value from result
+                    # KS test returns marginal KS statistic (lower is better)
+                    # KS complement = 1 - KS mean (higher is better, closer to 1 = better)
+                    ks_mean = None
                     if isinstance(ks_result, dict):
                         # Try different possible keys
-                        for key in ['marginal', 'ks_complement', 'complement', 'value', 'mean']:
+                        for key in ['marginal', 'ks', 'ks_mean', 'value', 'mean']:
                             if key in ks_result:
                                 val = ks_result[key]
                                 if isinstance(val, (int, float)):
-                                    ks_complement = float(val)
+                                    ks_mean = float(val)
                                     break
                         # If not found, try to get first numeric value
-                        if ks_complement is None:
+                        if ks_mean is None:
                             for val in ks_result.values():
                                 if isinstance(val, (int, float)):
-                                    ks_complement = float(val)
+                                    ks_mean = float(val)
                                     break
+                    
+                    # Calculate KS complement (1 - KS mean)
+                    # Working script expects ks_complement (higher = better, closer to 1 = better)
+                    ks_complement = 1.0 - ks_mean if ks_mean is not None else None
                     
                     # Calculate feature coverage (simple version)
                     feature_coverage = None
@@ -566,6 +580,8 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                     }
                 except Exception as e:
                     print_warning(f"eval_statistical_wrapper error: {type(e).__name__}: {e}")
+                    import traceback
+                    print_warning(f"Traceback: {traceback.format_exc()[:200]}")
                     return {'ks_complement': None, 'feature_coverage': None}
             
             # Replace module imports with wrapper functions
