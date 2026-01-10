@@ -448,6 +448,7 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
         
         if SYNTHCITY_DIRECT:
             # Use the EXACT approach from standalone_ddpm_test.py that achieved KS Mean 0.0650
+            method = "ddpm"  # Set method for fallback logic
             print_info("Creating SynthCity GenericDataLoader (raw data, no cleaning)...")
             loader = GenericDataLoader(real_clean)
             
@@ -498,31 +499,40 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                         metric_name_lower = str(metric_name).lower()
                         value = metrics_df.loc[metric_name, 'mean']
                         
-                        # Look for KS complement (statistical metrics)
+                        # Look for KS complement (statistical metrics) - pattern: statistical.*ks.*complement
                         if 'statistical' in metric_name_lower and 'ks' in metric_name_lower and 'complement' in metric_name_lower:
                             ks_complement = float(value) if pd.notna(value) else None
-                        # Look for MIA AUC (privacy metrics)
-                        elif 'privacy' in metric_name_lower and ('mia' in metric_name_lower or 'auc' in metric_name_lower):
-                            if 'mia' in metric_name_lower:
+                        # Look for MIA AUC (privacy metrics) - pattern: privacy.*mia or privacy.*auc
+                        elif 'privacy' in metric_name_lower:
+                            if 'mia' in metric_name_lower and 'auc' in metric_name_lower:
                                 mia_auc = float(value) if pd.notna(value) else None
-                        # Look for duplicate rate
-                        elif 'duplicate' in metric_name_lower or 'dup' in metric_name_lower:
+                        # Look for duplicate rate - pattern: privacy.*duplicate
+                        elif 'duplicate' in metric_name_lower or ('dup' in metric_name_lower and 'rate' in metric_name_lower):
                             dup_rate = float(value) if pd.notna(value) else None
-                        # Look for correlation difference
+                        # Look for correlation difference - pattern: statistical.*correlation
                         elif 'correlation' in metric_name_lower or ('corr' in metric_name_lower and 'delta' in metric_name_lower):
                             corr_delta = float(value) if pd.notna(value) else None
                 
-                # If not found, try alternative metric name patterns
+                # If not found, try alternative metric name patterns (broader search)
                 if ks_complement is None:
                     for metric_name in metrics_df.index:
-                        if 'ks' in str(metric_name).lower():
+                        metric_name_lower = str(metric_name).lower()
+                        if 'ks' in metric_name_lower and 'complement' in metric_name_lower:
                             ks_complement = float(metrics_df.loc[metric_name, 'mean']) if pd.notna(metrics_df.loc[metric_name, 'mean']) else None
                             break
                 
                 if mia_auc is None:
                     for metric_name in metrics_df.index:
-                        if 'mia' in str(metric_name).lower():
+                        metric_name_lower = str(metric_name).lower()
+                        if 'mia' in metric_name_lower and 'auc' in metric_name_lower:
                             mia_auc = float(metrics_df.loc[metric_name, 'mean']) if pd.notna(metrics_df.loc[metric_name, 'mean']) else None
+                            break
+                
+                if dup_rate is None:
+                    for metric_name in metrics_df.index:
+                        metric_name_lower = str(metric_name).lower()
+                        if 'duplicate' in metric_name_lower or 'dup' in metric_name_lower:
+                            dup_rate = float(metrics_df.loc[metric_name, 'mean']) if pd.notna(metrics_df.loc[metric_name, 'mean']) else None
                             break
                 
                 # Convert ks_complement to ks_mean (ks_mean = 1 - ks_complement)
