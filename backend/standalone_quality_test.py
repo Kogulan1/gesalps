@@ -314,38 +314,117 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
         # Test with TabDDPM (best for clinical data)
         print_info("Testing with TabDDPM (recommended for clinical data)...")
         
-        # Get optimized hyperparameters (use defaults if optimizer not available)
+        # IMPROVED: Try ClinicalModelSelector first to trigger OpenRouter and get optimized hyperparameters
         hparams = {}
+        method = "ddpm"  # Default method
+        
         try:
             if CONTAINER_MODE:
-                from optimizer import get_optimizer
+                from libs.model_selector import select_model_for_dataset
             else:
-                from synth_worker.optimizer import get_optimizer
-            optimizer = get_optimizer()
-            hparams = optimizer.suggest_hyperparameters(
-                method="ddpm",
-                dataset_size=(len(real_clean), len(real_clean.columns)),
-                previous_metrics=None,
-                dp_requested=False,
-            )
-            print_info(f"Optimizer suggested hyperparameters: {json.dumps(hparams, indent=2)}")
+                from libs.model_selector import select_model_for_dataset
             
-            # IMPROVED: Ensure minimum n_iter for proper training
-            if hparams.get("n_iter", 0) < 400:
-                print_warning(f"n_iter={hparams.get('n_iter')} may be too low - increasing to 400 minimum")
-                hparams["n_iter"] = 400
+            print_info("Calling ClinicalModelSelector (OpenRouter) for optimized hyperparameters...")
+            plan = select_model_for_dataset(
+                df=real_clean,
+                schema=None,
+                preference=None,
+                goal=None,
+                user_prompt=None,
+                compliance_level="hipaa_like",
+            )
+            
+            if plan and isinstance(plan, dict):
+                # Extract method and hyperparameters from plan
+                choice = plan.get("choice") or {}
+                plan_method = choice.get("method") or plan.get("method")
+                if plan_method:
+                    method = str(plan_method).lower()
+                    print_success(f"ClinicalModelSelector selected method: {method}")
+                
+                # Extract hyperparameters
+                plan_hparams = plan.get("hyperparams", {})
+                if plan_hparams:
+                    # Get method-specific hyperparameters
+                    method_hparams = (
+                        plan_hparams.get(method) or 
+                        (plan_hparams.get("ddpm") if method in ("ddpm", "tabddpm") else None) or
+                        (plan_hparams.get("ctgan") if method == "ctgan" else None) or
+                        (plan_hparams.get("tvae") if method == "tvae" else None) or
+                        {}
+                    )
+                    if method_hparams:
+                        hparams = method_hparams
+                        print_success(f"OpenRouter provided hyperparameters: {json.dumps(hparams, indent=2)}")
+                    else:
+                        print_warning("OpenRouter plan didn't include method-specific hyperparameters")
+                else:
+                    print_warning("OpenRouter plan didn't include hyperparameters")
+            else:
+                print_warning("ClinicalModelSelector returned invalid plan, using optimizer defaults")
         except Exception as e:
-            print_warning(f"Optimizer not available, using safe defaults: {type(e).__name__}")
-            # IMPROVED: Use higher defaults to prevent training failures
-            hparams = {"n_iter": 400, "batch_size": 64}  # Increased from 300/32
-            print_info(f"Using default hyperparameters: {json.dumps(hparams, indent=2)}")
+            print_warning(f"ClinicalModelSelector (OpenRouter) failed: {type(e).__name__}: {e}")
+            print_info("Falling back to optimizer suggestions...")
         
-        # Create synthesizer
+        # Fallback to optimizer if ClinicalModelSelector didn't provide hyperparameters
+        if not hparams:
+            try:
+                if CONTAINER_MODE:
+                    from optimizer import get_optimizer
+                else:
+                    from synth_worker.optimizer import get_optimizer
+                optimizer = get_optimizer()
+                hparams = optimizer.suggest_hyperparameters(
+                    method=method,
+                    dataset_size=(len(real_clean), len(real_clean.columns)),
+                    previous_metrics=None,
+                    dp_requested=False,
+                )
+                print_info(f"Optimizer suggested hyperparameters: {json.dumps(hparams, indent=2)}")
+            except Exception as e:
+                print_warning(f"Optimizer not available: {type(e).__name__}")
+        
+        # IMPROVED: Ensure minimum n_iter for proper training
+        if hparams.get("n_iter", 0) < 400:
+            print_warning(f"n_iter={hparams.get('n_iter')} may be too low - increasing to 400 minimum")
+            hparams["n_iter"] = 400
+        
+        # Final fallback to safe defaults
+        if not hparams:
+            hparams = {"n_iter": 400, "batch_size": 64}
+            print_info(f"Using safe default hyperparameters: {json.dumps(hparams, indent=2)}")
+        
+        print_info(f"Final hyperparameters for {method}: {json.dumps(hparams, indent=2)}")
+        
+        # Create synthesizer with method from ClinicalModelSelector or default
+        print_info(f"Creating synthesizer with method='{method}' and hyperparams={json.dumps(hparams)}")
         synthesizer, _ = create_synthesizer(
-            method="ddpm",
+            method=method,
             metadata=metadata,
             hyperparams=hparams,
         )
+        
+        # CRITICAL: Verify n_iter was actually set (SynthCity may not apply params correctly)
+        if method in ("ddpm", "tabddpm"):
+            try:
+                # Check if synthesizer has the plugin and verify n_iter
+                if hasattr(synthesizer, '_plugin'):
+                    plugin = synthesizer._plugin
+                    # Try multiple ways to get n_iter from SynthCity plugin
+                    actual_n_iter = (
+                        getattr(plugin, 'n_iter', None) or
+                        getattr(plugin, '_params', {}).get('n_iter') or
+                        getattr(plugin, 'args', {}).get('n_iter') or
+                        hparams.get('n_iter')
+                    )
+                    if actual_n_iter:
+                        print_success(f"Verified: TabDDPM n_iter={actual_n_iter}")
+                        if actual_n_iter != hparams.get('n_iter'):
+                            print_warning(f"WARNING: Requested n_iter={hparams.get('n_iter')} but plugin has n_iter={actual_n_iter}")
+                    else:
+                        print_error(f"CRITICAL: Could not verify n_iter in TabDDPM plugin! Training may fail.")
+            except Exception as e:
+                print_warning(f"Could not verify n_iter: {type(e).__name__}: {e}")
         
         # Train
         print_info("Training TabDDPM (this may take a few minutes)...")

@@ -139,6 +139,28 @@ class SynthcitySynthesizer(BaseSynthesizer):
             except Exception:
                 pass
         
+        # CRITICAL: Verify n_iter is actually set before training (for TabDDPM)
+        if self.method == "ddpm" or self._plugin_name == "ddpm":
+            try:
+                # Try multiple ways to get n_iter from SynthCity plugin
+                plugin_n_iter = (
+                    getattr(self._plugin, 'n_iter', None) or
+                    getattr(self._plugin, '_params', {}).get('n_iter') or
+                    getattr(self._plugin, 'args', {}).get('n_iter') or
+                    (self.hyperparams or {}).get('n_iter')
+                )
+                if plugin_n_iter:
+                    print(f"[worker][TabDDPM] VERIFIED: Plugin n_iter={plugin_n_iter} before training")
+                    if plugin_n_iter < 300:
+                        print(f"[worker][TabDDPM] WARNING: n_iter={plugin_n_iter} is very low - training may produce poor results")
+                else:
+                    print(f"[worker][TabDDPM] ERROR: Could not verify n_iter in plugin! Training may fail or use defaults.")
+            except Exception as e:
+                try:
+                    print(f"[worker][TabDDPM] Could not verify n_iter: {type(e).__name__}")
+                except Exception:
+                    pass
+        
         # Check if data is a SynthCity DataLoader
         if hasattr(data, 'dataframe') or (hasattr(data, '__class__') and 'DataLoader' in str(type(data))):
             # It's a DataLoader - use it directly
