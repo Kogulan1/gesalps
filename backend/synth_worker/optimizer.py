@@ -193,8 +193,8 @@ class SyntheticDataOptimizer:
                     suggestions.append("Increase batch_size to 256 for better gradient estimates")
                     suggestions.append("Verify training completed - check logs for completion messages")
                 elif method in ("ctgan", "tvae"):
-                    epochs = hyperparams.get("epochs", 300)
-                    suggestions.append(f"SEVERE: Increase epochs from {epochs} to {min(600, epochs + 200)}")
+                    epochs = hyperparams.get("num_epochs", hyperparams.get("epochs", 300))
+                    suggestions.append(f"SEVERE: Increase num_epochs from {epochs} to {min(600, epochs + 200)}")
                     suggestions.append("Consider switching to TabDDPM (ddpm) for better results")
             else:
                 root_cause = f"Utility failure: KS statistic too high ({ks:.3f}). Model not capturing distribution well."
