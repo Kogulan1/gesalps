@@ -635,10 +635,12 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                 utility_result = eval_statistical(original_raw_df, synth)
                 
                 # Convert SynthCity format to our format
-                # SynthCity uses ks_complement (higher = better), we use ks_mean (lower = better)
+                # SynthCity returns ks_complement (higher = better, closer to 1 = better)
+                # We need ks_mean (lower = better, closer to 0 = better)
                 # ks_mean = 1 - ks_complement
                 ks_complement = utility_result.get('ks_complement', None)
                 if ks_complement is not None:
+                    # ks_complement is already the complement (1 - KS), so KS = 1 - complement
                     ks_mean = 1.0 - float(ks_complement)
                 else:
                     ks_mean = None
