@@ -490,8 +490,8 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                     dp_requested=False,
                 )
                 # Ensure sufficient epochs for CTGAN
-                if ctgan_hparams.get("epochs", 0) < 300:
-                    ctgan_hparams["epochs"] = 300
+                if ctgan_hparams.get("num_epochs", 0) < 300:
+                    ctgan_hparams["num_epochs"] = 300
                 
                 print_info(f"Trying CTGAN with hyperparameters: {json.dumps(ctgan_hparams, indent=2)}")
                 ctgan_synthesizer, _ = create_synthesizer(

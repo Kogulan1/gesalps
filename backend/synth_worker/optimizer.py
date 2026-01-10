@@ -207,9 +207,9 @@ class SyntheticDataOptimizer:
                         suggestions.append(f"Increase n_iter from {n_iter} to 500")
                     suggestions.append("Try increasing batch_size to 256 for better gradient estimates")
                 elif method in ("ctgan", "tvae"):
-                    epochs = hyperparams.get("epochs", 300)
+                    epochs = hyperparams.get("num_epochs", hyperparams.get("epochs", 300))
                     if epochs < 400:
-                        suggestions.append(f"Increase epochs from {epochs} to {min(500, epochs + 100)}")
+                        suggestions.append(f"Increase num_epochs from {epochs} to {min(500, epochs + 100)}")
                     suggestions.append("Consider using TabDDPM (ddpm) for better distribution matching")
         
         elif primary_type == FailureType.HIGH_CORR_DELTA:
@@ -409,7 +409,7 @@ class SyntheticDataOptimizer:
                 embedding_dim = min(512, embedding_dim + 64)
         
         params = {
-            "epochs": epochs,
+            "num_epochs": epochs,
             "batch_size": batch_size,
             "embedding_dim": embedding_dim,
             "pac": 10,
@@ -461,7 +461,7 @@ class SyntheticDataOptimizer:
                 epochs = min(450, epochs + 100)
         
         return {
-            "epochs": epochs,
+            "num_epochs": epochs,
             "batch_size": batch_size,
             "embedding_dim": embedding_dim,
         }
