@@ -347,7 +347,7 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                 print_info("[PREPROCESSING] Step 1: Attempting to import preprocessing_agent...")
                 # Try to import preprocessing agent
                 try:
-                from preprocessing_agent import get_preprocessing_plan
+                    from preprocessing_agent import get_preprocessing_plan
                 PREPROCESSING_AVAILABLE = True
                 get_preprocessing_plan_func = get_preprocessing_plan
                 print_success("[PREPROCESSING] ✅ Successfully imported preprocessing_agent.get_preprocessing_plan")
