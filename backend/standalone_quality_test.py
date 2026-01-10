@@ -471,45 +471,48 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
             def eval_privacy_wrapper(real_df, synth_df):
                 """Wrapper function to match working script's eval_privacy(df, synthetic_df) API."""
                 try:
-                    from synthcity.metrics.eval_privacy import DomiasMIABNAF
-                    from synthcity.plugins.core.dataloader import GenericDataLoader
+                    # Use Metrics API (same approach as worker.py _privacy_metrics_synthcity)
+                    # This is more reliable than direct DomiasMIABNAF calls
+                    from synthcity.metrics.eval import Metrics
                     
-                    # Create loaders for MIA evaluation
-                    # DomiasMIABNAF.evaluate() signature: evaluate(X_gt, X_syn)
-                    real_loader = GenericDataLoader(real_df)
-                    synth_loader = GenericDataLoader(synth_df)
+                    # Use Metrics().evaluate() API (correct way to call SynthCity evaluators)
+                    metrics_evaluator = Metrics()
+                    metrics_df = metrics_evaluator.evaluate(
+                        real_df,
+                        synth_df,
+                        metrics={
+                            "privacy": ["k-anonymization", "identifiability_score", "delta-presence"]
+                        },
+                        reduction="mean"
+                    )
                     
-                    # Use DomiasMIA for privacy evaluation
-                    # API: mia.evaluate(X_gt, X_syn) - both are DataLoaders
-                    mia = DomiasMIABNAF()
-                    mia_result = mia.evaluate(real_loader, synth_loader)
-                    
-                    # Calculate duplicate rate
-                    dup_rate = None
-                    try:
-                        synth_set = set(tuple(row) for row in synth_df.values)
-                        real_set = set(tuple(row) for row in real_df.values)
-                        duplicates = len(synth_set.intersection(real_set))
-                        dup_rate = duplicates / len(synth_df) if len(synth_df) > 0 else 0.0
-                    except:
-                        pass
-                    
-                    # Extract MIA AUC from result
+                    # Extract metrics from DataFrame
                     mia_auc = None
-                    if isinstance(mia_result, dict):
-                        # Try different possible keys
-                        for key in ['mia_auc', 'auc', 'score', 'value', 'mean']:
-                            if key in mia_result:
-                                val = mia_result[key]
-                                if isinstance(val, (int, float)):
-                                    mia_auc = float(val)
-                                    break
-                        # If not found, try to get first numeric value
-                        if mia_auc is None:
-                            for val in mia_result.values():
-                                if isinstance(val, (int, float)):
-                                    mia_auc = float(val)
-                                    break
+                    dup_rate = None
+                    
+                    if not metrics_df.empty:
+                        for idx in metrics_df.index:
+                            metric_name = str(idx).lower()
+                            mean_val = metrics_df.loc[idx, "mean"] if "mean" in metrics_df.columns else None
+                            
+                            if "mia" in metric_name or "membership" in metric_name or "inference" in metric_name:
+                                mia_auc = float(mean_val) if mean_val is not None else None
+                            elif "duplicate" in metric_name or "dup" in metric_name:
+                                dup_rate = float(mean_val) if mean_val is not None else None
+                            elif "identifiability" in metric_name:
+                                # Identifiability score can be used as a privacy metric
+                                if mia_auc is None:
+                                    mia_auc = float(mean_val) if mean_val is not None else None
+                    
+                    # Calculate duplicate rate manually if not found
+                    if dup_rate is None:
+                        try:
+                            synth_set = set(tuple(row) for row in synth_df.values)
+                            real_set = set(tuple(row) for row in real_df.values)
+                            duplicates = len(synth_set.intersection(real_set))
+                            dup_rate = duplicates / len(synth_df) if len(synth_df) > 0 else 0.0
+                        except:
+                            dup_rate = None
                     
                     return {
                         'mia_auc': mia_auc,
