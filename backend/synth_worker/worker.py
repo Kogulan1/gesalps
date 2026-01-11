@@ -564,6 +564,33 @@ def _utility_metrics(real: pd.DataFrame, synth: pd.DataFrame) -> Dict[str, Any]:
                 print("[worker][metrics] Using SynthCity evaluators for utility metrics")
             except Exception:
                 pass
+            # CRITICAL FIX: SynthCity evaluators don't return corr_delta, so calculate it using custom implementation
+            if synthcity_result.get('corr_delta') is None:
+                # Calculate corr_delta using custom implementation
+                def _corr_upper(df: pd.DataFrame):
+                    try:
+                        num = df.select_dtypes(include=[np.number])
+                        if num.shape[1] < 2:
+                            return None
+                        c = num.corr().to_numpy()
+                        iu = np.triu_indices_from(c, k=1)
+                        return c[iu]
+                    except Exception as e:
+                        logger.warning(f"Failed to calculate correlation matrix: {type(e).__name__}: {e}")
+                        return None
+                
+                try:
+                    c_real = _corr_upper(real)
+                    c_synth = _corr_upper(synth)
+                    if c_real is not None and c_synth is not None and len(c_real) == len(c_synth):
+                        synthcity_result['corr_delta'] = float(np.mean(np.abs(c_real - c_synth)))
+                        logger.info(f"Corr Delta calculated (custom): {synthcity_result['corr_delta']:.4f}")
+                    else:
+                        logger.warning(f"Corr Delta calculation skipped - c_real: {c_real is not None}, c_synth: {c_synth is not None}, lengths match: {len(c_real) == len(c_synth) if (c_real is not None and c_synth is not None) else False}")
+                except Exception as e:
+                    logger.error(f"Corr Delta calculation failed: {type(e).__name__}: {e}")
+                    import traceback
+                    logger.debug(f"Corr Delta traceback: {traceback.format_exc()[:200]}")
             return synthcity_result
     
     # Fallback to custom implementation
