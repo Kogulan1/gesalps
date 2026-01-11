@@ -598,15 +598,16 @@ def _utility_metrics(real: pd.DataFrame, synth: pd.DataFrame) -> Dict[str, Any]:
     try:
         c_real = _corr_upper(real)
         c_synth = _corr_upper(synth)
-        corr_delta = (
-            float(np.mean(np.abs(c_real - c_synth)))
-            if (c_real is not None and c_synth is not None and len(c_real) == len(c_synth))
-            else None
-        )
-        if corr_delta is None:
-            logger.warning("Corr Delta calculation returned None - check data shapes and types")
+        if c_real is not None and c_synth is not None and len(c_real) == len(c_synth):
+            corr_delta = float(np.mean(np.abs(c_real - c_synth)))
+            logger.info(f"Corr Delta calculated: {corr_delta:.4f}")
+        else:
+            logger.warning(f"Corr Delta calculation skipped - c_real: {c_real is not None}, c_synth: {c_synth is not None}, lengths match: {len(c_real) == len(c_synth) if (c_real is not None and c_synth is not None) else False}")
+            corr_delta = None
     except Exception as e:
         logger.error(f"Corr Delta calculation failed: {type(e).__name__}: {e}")
+        import traceback
+        logger.debug(f"Corr Delta traceback: {traceback.format_exc()[:200]}")
         corr_delta = None
 
     # Fallback for categorical-only datasets to avoid placeholders
@@ -1051,11 +1052,14 @@ def _privacy_metrics(real: pd.DataFrame, synth: pd.DataFrame) -> Dict[str, Any]:
                 on=common,
             )
             dup_rate = float(len(dup)) / max(1, len(synth))
+            logger.info(f"Dup rate calculated: {dup_rate:.4f} ({len(dup)} duplicates out of {len(synth)} synthetic rows)")
             if dup_rate is None or np.isnan(dup_rate):
                 logger.warning("Dup rate calculation returned NaN - defaulting to 0.0")
                 dup_rate = 0.0
     except Exception as e:
         logger.error(f"Dup rate calculation failed: {type(e).__name__}: {e}")
+        import traceback
+        logger.debug(f"Dup rate traceback: {traceback.format_exc()[:200]}")
         dup_rate = 0.0  # Default to 0.0 instead of None to prevent N/A
 
     return {"mia_auc": mia_auc, "dup_rate": dup_rate}
