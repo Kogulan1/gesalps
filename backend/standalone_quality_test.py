@@ -902,9 +902,15 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                     previous_metrics=metrics,
                     dp_requested=False,
                 )
-                # PHASE 2: Ensure sufficient num_epochs for CTGAN (SynthCity uses num_epochs, not epochs)
-                if ctgan_hparams.get("num_epochs", 0) < 400:
-                    ctgan_hparams["num_epochs"] = 400  # Increased from 300 for better quality
+                # CRITICAL FIX: SynthCity CTGAN uses 'n_iter' (not 'num_epochs' or 'epochs')
+                # Convert num_epochs to n_iter for SynthCity compatibility
+                if "num_epochs" in ctgan_hparams:
+                    n_iter_value = ctgan_hparams.pop("num_epochs")
+                    if n_iter_value < 400:
+                        n_iter_value = 400  # Increased from 300 for better quality
+                    ctgan_hparams["n_iter"] = n_iter_value
+                elif "n_iter" not in ctgan_hparams:
+                    ctgan_hparams["n_iter"] = 400  # Default if neither is present
                 # Remove any legacy "epochs" parameter
                 if "epochs" in ctgan_hparams:
                     del ctgan_hparams["epochs"]
