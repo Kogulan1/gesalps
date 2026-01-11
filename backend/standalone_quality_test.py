@@ -883,9 +883,12 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
         
         elapsed = time.time() - start_time
         
-        # If TabDDPM failed with high KS, try CTGAN as alternative
-        if not all_green and method == "ddpm" and metrics.get("utility", {}).get("ks_mean", 0) > 0.5:
-            print_warning(f"TabDDPM failed with KS={metrics.get('utility', {}).get('ks_mean', 0):.4f}. Trying CTGAN as alternative...")
+        # PHASE 2: If TabDDPM failed with high KS, try CTGAN as alternative (per CTO plan)
+        # Fallback threshold: KS > 0.25 after preprocessing (more aggressive than worker.py's 0.5)
+        current_ks = metrics.get("utility", {}).get("ks_mean", 0)
+        if not all_green and method == "ddpm" and current_ks > 0.25:
+            print_warning(f"TabDDPM failed with KS={current_ks:.4f} (threshold: ≤0.10). Trying CTGAN as alternative...")
+            print_info("PHASE 2: Auto-fallback to CTGAN per CTO plan (KS > 0.25 after preprocessing)")
             try:
                 # Try CTGAN with optimized parameters
                 if CONTAINER_MODE:
