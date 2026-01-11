@@ -1017,6 +1017,35 @@ def _privacy_metrics(real: pd.DataFrame, synth: pd.DataFrame) -> Dict[str, Any]:
                 print("[worker][metrics] Using SynthCity evaluators for privacy metrics")
             except Exception:
                 pass
+            # CRITICAL FIX: SynthCity evaluators don't return dup_rate, so calculate it using custom implementation
+            if synthcity_result.get('dup_rate') is None:
+                # Calculate dup_rate using custom implementation
+                try:
+                    common = list(set(real.columns) & set(synth.columns))
+                    if len(common) == 0:
+                        logger.warning("No common columns between real and synth for dup_rate calculation")
+                        synthcity_result['dup_rate'] = 0.0
+                    else:
+                        # Align dtypes to avoid int/float merge warnings and ensure consistent equality
+                        real_aligned, synth_aligned = _align_for_merge(real[common], synth[common], common)
+                        dup = pd.merge(
+                            real_aligned,
+                            synth_aligned,
+                            how="inner",
+                            on=common,
+                            indicator=False,
+                        )
+                        dup_rate = float(len(dup)) / max(1, len(synth))
+                        synthcity_result['dup_rate'] = dup_rate
+                        logger.info(f"Dup rate calculated (custom): {dup_rate:.4f} ({len(dup)} duplicates out of {len(synth)} synthetic rows)")
+                        if dup_rate is None or np.isnan(dup_rate):
+                            logger.warning("Dup rate calculation returned NaN - defaulting to 0.0")
+                            synthcity_result['dup_rate'] = 0.0
+                except Exception as e:
+                    logger.error(f"Dup rate calculation failed: {type(e).__name__}: {e}")
+                    import traceback
+                    logger.debug(f"Dup rate traceback: {traceback.format_exc()[:200]}")
+                    synthcity_result['dup_rate'] = 0.0  # Default to 0.0 instead of None to prevent N/A
             return synthcity_result
     
     # Fallback to custom implementation
