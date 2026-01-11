@@ -312,8 +312,9 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
         print_info(f"Original raw data shape: {original_raw_df.shape[0]} rows, {original_raw_df.shape[1]} columns")
         print_info("=" * 80)
         
-        # FLAG: Enable/disable preprocessing (set to False to match working script)
-        ENABLE_PREPROCESSING = False  # MUTED: Disabled to test without preprocessing
+        # FLAG: Enable/disable preprocessing
+        # ENABLED: Using universal preprocessing from SyntheticDataSpecialistAgent to improve KS Mean
+        ENABLE_PREPROCESSING = True
         
         # Check if we should use SYNTHCITY_DIRECT approach (matches working script exactly)
         # CRITICAL: Even though working script doesn't show preprocessing, production pipeline uses it
@@ -343,28 +344,53 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
             # Apply preprocessing for all paths (production pipeline always uses it)
             # This is critical for achieving "all green" metrics
             try:
-                print_info("[PREPROCESSING] Step 1: Attempting to import preprocessing_agent...")
-                # Try to import preprocessing agent
-                try:
-                    from preprocessing_agent import get_preprocessing_plan
-                    PREPROCESSING_AVAILABLE = True
-                    get_preprocessing_plan_func = get_preprocessing_plan
-                    print_success("[PREPROCESSING] ✅ Successfully imported preprocessing_agent.get_preprocessing_plan")
-                except ImportError as e1:
-                    print_warning(f"[PREPROCESSING] ⚠️  Failed to import preprocessing_agent: {type(e1).__name__}: {e1}")
+                print_info("[PREPROCESSING] Step 1: Attempting to import universal preprocessing_agent...")
+                # Try to import universal preprocessing agent (SyntheticDataSpecialistAgent's implementation)
+                PREPROCESSING_AVAILABLE = False
+                get_preprocessing_plan_func = None
+                smart_preprocess_func = None
+                
+                # Try multiple import paths
+                import_paths = [
+                    ("preprocessing_agent", "get_preprocessing_plan"),  # Direct import (Docker)
+                    ("synth_worker.preprocessing_agent", "get_preprocessing_plan"),  # With prefix
+                ]
+                
+                for module_path, func_name in import_paths:
+                    try:
+                        module = __import__(module_path, fromlist=[func_name])
+                        get_preprocessing_plan = getattr(module, func_name)
+                        PREPROCESSING_AVAILABLE = True
+                        get_preprocessing_plan_func = get_preprocessing_plan
+                        print_success(f"[PREPROCESSING] ✅ Successfully imported {module_path}.{func_name}")
+                        break
+                    except (ImportError, AttributeError) as e:
+                        print_warning(f"[PREPROCESSING] ⚠️  Failed to import {module_path}: {type(e).__name__}: {e}")
+                        continue
+                
+                # Fallback to smart_preprocess if preprocessing_agent not available
+                if not PREPROCESSING_AVAILABLE:
                     try:
                         print_info("[PREPROCESSING] Step 2: Attempting to import preprocessing (fallback)...")
-                        from preprocessing import smart_preprocess
-                        PREPROCESSING_AVAILABLE = True
-                        get_preprocessing_plan_func = None
-                        smart_preprocess_func = smart_preprocess
-                        print_success("[PREPROCESSING] ✅ Successfully imported preprocessing.smart_preprocess")
-                    except ImportError as e2:
-                        PREPROCESSING_AVAILABLE = False
-                        get_preprocessing_plan_func = None
-                        smart_preprocess_func = None
-                        print_error(f"[PREPROCESSING] ❌ Failed to import preprocessing: {type(e2).__name__}: {e2}")
-                        print_error("[PREPROCESSING] ❌ Both preprocessing modules failed to import")
+                        fallback_paths = [
+                            ("preprocessing", "smart_preprocess"),
+                            ("synth_worker.preprocessing", "smart_preprocess"),
+                        ]
+                        for module_path, func_name in fallback_paths:
+                            try:
+                                module = __import__(module_path, fromlist=[func_name])
+                                smart_preprocess = getattr(module, func_name)
+                                PREPROCESSING_AVAILABLE = True
+                                smart_preprocess_func = smart_preprocess
+                                print_success(f"[PREPROCESSING] ✅ Successfully imported {module_path}.{func_name}")
+                                break
+                            except (ImportError, AttributeError):
+                                continue
+                    except Exception as e2:
+                        print_error(f"[PREPROCESSING] ❌ Failed to import preprocessing fallback: {type(e2).__name__}: {e2}")
+                
+                if not PREPROCESSING_AVAILABLE:
+                    print_error("[PREPROCESSING] ❌ Both preprocessing modules failed to import")
                 
                 print_info(f"[PREPROCESSING] PREPROCESSING_AVAILABLE = {PREPROCESSING_AVAILABLE}")
                 print_info(f"[PREPROCESSING] get_preprocessing_plan_func = {get_preprocessing_plan_func is not None}")
