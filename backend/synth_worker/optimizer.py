@@ -410,13 +410,15 @@ class SyntheticDataOptimizer:
         
         # CRITICAL FIX: SynthCity CTGAN uses 'n_iter' (not 'num_epochs' or 'epochs')
         # The factory tries SynthCity first, so we use 'n_iter' for compatibility
+        # CRITICAL FIX: SynthCity CTGAN only accepts specific parameters
+        # It uses: n_iter, batch_size, generator_n_units_hidden, discriminator_n_units_hidden, lr
+        # It does NOT accept: embedding_dim, pac, generator_lr, discriminator_lr (those are SDV CTGAN params)
         params = {
             "n_iter": epochs,  # SynthCity CTGAN uses n_iter (like TabDDPM)
             "batch_size": batch_size,
-            "embedding_dim": embedding_dim,
-            "pac": 10,
-            "generator_lr": 2e-4,
-            "discriminator_lr": 2e-4,
+            "generator_n_units_hidden": embedding_dim,  # Map embedding_dim to generator_n_units_hidden
+            "discriminator_n_units_hidden": embedding_dim,  # Use same for discriminator
+            "lr": 2e-4,  # Single learning rate (not separate generator_lr/discriminator_lr)
         }
         
         if dp_requested:
