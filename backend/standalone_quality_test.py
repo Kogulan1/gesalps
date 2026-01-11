@@ -433,14 +433,14 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                         print_warning(f"[PREPROCESSING] smart_preprocess_func: {smart_preprocess_func is not None if 'smart_preprocess_func' in locals() else 'N/A'}")
                 else:
                     print_warning("[PREPROCESSING] ⚠️  Preprocessing module not available - skipping preprocessing step")
-        except Exception as e:
-            print_error(f"[PREPROCESSING] ❌ CRITICAL: Preprocessing failed with exception")
-            print_error(f"[PREPROCESSING] Exception type: {type(e).__name__}")
-            print_error(f"[PREPROCESSING] Exception message: {str(e)}")
-            import traceback
-            print_error(f"[PREPROCESSING] Full traceback:\n{traceback.format_exc()}")
-            print_warning("[PREPROCESSING] ⚠️  Continuing with original data (no preprocessing applied)")
-            preprocessing_metadata = {"error": str(e), "preprocessing_method": "failed", "exception_type": type(e).__name__}
+            except Exception as e:
+                print_error(f"[PREPROCESSING] ❌ CRITICAL: Preprocessing failed with exception")
+                print_error(f"[PREPROCESSING] Exception type: {type(e).__name__}")
+                print_error(f"[PREPROCESSING] Exception message: {str(e)}")
+                import traceback
+                print_error(f"[PREPROCESSING] Full traceback:\n{traceback.format_exc()}")
+                print_warning("[PREPROCESSING] ⚠️  Continuing with original data (no preprocessing applied)")
+                preprocessing_metadata = {"error": str(e), "preprocessing_method": "failed", "exception_type": type(e).__name__}
             
             print_info("=" * 80)
             print_info("PREPROCESSING STEP - Completed")
