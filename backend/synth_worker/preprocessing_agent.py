@@ -127,15 +127,19 @@ def analyze_dataset_for_preprocessing(df: pd.DataFrame) -> Dict[str, Any]:
             # Check skewness - only if we have valid mean and std
             if stats["std"] is not None and stats["std"] > 0 and stats["mean"] is not None:
                 try:
+                    # Ensure mean and std are scalars (not Series)
+                    mean_val = float(stats["mean"]) if not isinstance(stats["mean"], pd.Series) else float(stats["mean"].iloc[0])
+                    std_val = float(stats["std"]) if not isinstance(stats["std"], pd.Series) else float(stats["std"].iloc[0])
+                    
                     # Use scipy.stats.skew if available, otherwise calculate manually
                     try:
                         from scipy.stats import skew
                         skew_val = float(skew(valid_data))
                     except ImportError:
                         # Manual skewness calculation
-                        if len(valid_data) > 0:
-                            centered = valid_data - stats["mean"]
-                            skew_val = float((centered ** 3).mean() / (stats["std"] ** 3))
+                        if len(valid_data) > 0 and std_val > 0:
+                            centered = valid_data - mean_val
+                            skew_val = float((centered ** 3).mean() / (std_val ** 3))
                         else:
                             skew_val = None
                     
