@@ -62,7 +62,7 @@ def eval_statistical_wrapper(real_df, synth_df):
                 real_df,
                 synth_df,
                 metrics={
-                    "statistical": ["ks_test"]
+                    "stats": ["ks_test", "feature_corr", "jensenshannon_dist"]
                 },
                 reduction="mean"
             )
@@ -81,6 +81,8 @@ def eval_statistical_wrapper(real_df, synth_df):
                         ks_stat = float(mean_val) if mean_val is not None else None
                         if ks_stat is not None:
                             ks_complement = 1.0 - ks_stat
+                    elif "feature" in metric_name and "coverage" in metric_name:
+                        feature_coverage = float(mean_val) if mean_val is not None else None
             
             return {
                 'ks_complement': ks_complement,
@@ -88,6 +90,8 @@ def eval_statistical_wrapper(real_df, synth_df):
             }
         except Exception as e:
             print(f"Error in eval_statistical_wrapper: {e}")
+            import traceback
+            print(f"Traceback: {traceback.format_exc()[:200]}")
             return {'ks_complement': None, 'feature_coverage': None}
 
 # Load your heart.csv (already downloaded)
