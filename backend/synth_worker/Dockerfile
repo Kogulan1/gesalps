@@ -46,6 +46,11 @@ COPY libs/ /app/libs/
 # The COPY synth_worker/ above should already include it, but verify
 RUN test -f /app/optimizer.py || echo "Warning: optimizer.py not found"
 
+# PHASE 1 BLOCKER FIX: Explicitly verify preprocessing_agent.py is copied
+# This ensures preprocessing runs in production (fixes high KS due to missing preprocessing)
+RUN test -f /app/preprocessing_agent.py || echo "ERROR: preprocessing_agent.py not found - preprocessing will fail!"
+RUN test -f /app/preprocessing_agent.py && echo "✅ preprocessing_agent.py verified" || exit 1
+
 # Ensure unbuffered stdout/stderr so logs appear in `docker logs`
 ENV PYTHONUNBUFFERED=1
 CMD ["python", "-u", "worker.py"]
