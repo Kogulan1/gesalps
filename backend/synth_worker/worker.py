@@ -1835,109 +1835,126 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
             
             print(f"[worker][agent] Will attempt {len(attempts_list)} methods: {[a.get('method') for a in attempts_list]}")
 
-        accepted: Optional[Dict[str, Any]] = None
-        best: Optional[Dict[str, Any]] = None
-        best_score = 1e9
-        for i, item in enumerate(attempts_list, start=1):
-            # Check for cancellation before each attempt
+        # GreenGuard: Iterative Optimization Loop
+        # Strategy: Train -> Check -> If Red -> Optimize Params -> Retry
+        
+        green_guard_attempts = []
+        best_green_result = None
+        best_score_so_far = 1e9
+        
+        # Max retries for GreenGuard loop
+        MAX_RETRIES = 5
+        
+        current_method_info = attempts_list[0] # Start with primary choice
+        current_params = current_method_info.get("hyperparams", {})
+        
+        for i in range(1, MAX_RETRIES + 1):
+            # Check for cancellation
             if cancellation_checker and cancellation_checker(run["id"]):
-                print(f"[worker] Run {run['id']} cancelled, stopping execution")
-                try:
-                    supabase.table("run_steps").insert({
-                        "run_id": run["id"],
-                        "step_no": i,
-                        "title": "cancelled",
-                        "detail": "Execution cancelled by user",
-                    }).execute()
-                except Exception:
-                    pass
                 raise RuntimeError("Run cancelled by user")
-            
+                
             try:
-                step_detail = f"attempt {i}: method={item.get('method')}"
-                print(f"[worker][step] INSERTING step {i}: training - {step_detail}")
-                supabase.table("run_steps").insert({
-                    "run_id": run["id"],
-                    "step_no": i,
-                    "title": "training",
-                    "detail": step_detail,
-                }).execute()
-                print(f"[worker][step] SUCCESS: step {i} inserted")
-            except Exception as e:
-                print(f"[worker][step] ERROR inserting training step {i}: {type(e).__name__}: {e}")
-
-            try:
-                # Add timeout protection for training attempts
+                # Log step
+                step_title = f"attempt {i}: {current_method_info.get('method')}"
+                if i > 1:
+                    step_title += " (optimization)"
+                
+                print(f"[worker][GreenGuard] Starting {step_title}")
+                _log_step(i, "training", step_title, {})
+                
+                # Train
                 training_start = time.time()
                 try:
-                    out = _attempt_train(item, real_clean, metadata, SAMPLE_MULTIPLIER, MAX_SYNTH_ROWS, synthcity_loader)
+                    # Construct item for _attempt_train
+                    train_item = {
+                        "method": current_method_info.get("method"),
+                        "hyperparams": current_params
+                    }
+                    
+                    out = _attempt_train(train_item, real_clean, metadata, SAMPLE_MULTIPLIER, MAX_SYNTH_ROWS, synthcity_loader)
                     training_elapsed = time.time() - training_start
-                    try:
-                        print(f"[worker][training] {item.get('method')} training completed in {training_elapsed:.1f}s")
-                    except Exception:
-                        pass
-                except (TimeoutError, RuntimeError) as timeout_err:
-                    # Training timed out or failed due to high cardinality
-                    training_elapsed = time.time() - training_start
-                    error_msg = str(timeout_err)
-                    try:
-                        print(f"[worker][training] {item.get('method')} training failed after {training_elapsed:.1f}s: {error_msg}")
-                    except Exception:
-                        pass
-                    # Re-raise as a regular exception to be caught by outer handler
-                    raise Exception(f"Training timeout: {error_msg}")
-                
-                synth = _enforce_schema_dtypes(real_clean, out["synth"])  # align dtypes
+                    print(f"[worker][training] Completed in {training_elapsed:.1f}s")
+                    
+                except Exception as train_err:
+                    print(f"[worker][training] Failed: {train_err}")
+                    _log_step(i, "error", str(train_err), {})
+                    
+                    # If training failed, switch method if possible
+                    if i < len(attempts_list):
+                        current_method_info = attempts_list[i] # Warning: simplistic method switching
+                        current_params = current_method_info.get("hyperparams", {})
+                        continue
+                    else:
+                        raise train_err
+
+                # Analyze Metrics
+                synth = _enforce_schema_dtypes(real_clean, out["synth"])
                 met = out["metrics"]
-                # thresholds
                 ok, reasons = _thresholds_status({**met, "privacy": met.get("privacy", {})})
-                # score for fallback selection
-                sc = _score_metrics(met)
-                if sc < best_score:
-                    best_score = sc
-                    best = {"synth": synth, "metrics": met, "method": out.get("method"), "attempt": i, "n": out.get("n")}
-                try:
-                    metrics_detail = "; ".join(reasons)[:500]
-                    print(f"[worker][step] INSERTING step {i}: metrics - {metrics_detail}")
-                    # Safe formatting - handle None values
-                    ks_val = met.get('utility', {}).get('ks_mean')
-                    corr_val = met.get('utility', {}).get('corr_delta')
-                    mia_val = met.get('privacy', {}).get('mia_auc')
-                    ks_str = f"{ks_val:.3f}" if ks_val is not None else "N/A"
-                    corr_str = f"{corr_val:.3f}" if corr_val is not None else "N/A"
-                    mia_str = f"{mia_val:.3f}" if mia_val is not None else "N/A"
-                    print(f"[worker][metrics] Run {run['id']} attempt {i}: KS={ks_str}, Corr={corr_str}, MIA={mia_str}")
-                    supabase.table("run_steps").insert({
-                        "run_id": run["id"],
-                        "step_no": i,
-                        "title": "metrics",
-                        "detail": metrics_detail,
-                        "metrics_json": met,
-                    }).execute()
-                    print(f"[worker][step] SUCCESS: metrics step {i} inserted")
-                except Exception as e:
-                    print(f"[worker][step] ERROR inserting metrics step {i}: {type(e).__name__}: {e}")
+                score = _score_metrics(met)
+                
+                result = {
+                    "synth": synth,
+                    "metrics": met,
+                    "method": out.get("method"),
+                    "attempt": i,
+                    "n": out.get("n"),
+                    "score": score
+                }
+                
+                # Log outcome
+                metrics_detail = "; ".join(reasons)[:500]
+                _log_step(i, "metrics", metrics_detail, met)
+                
+                # Check for "All Green"
                 if ok:
-                    accepted = {"synth": synth, "metrics": met, "method": out.get("method"), "attempt": i, "n": out.get("n")}
+                    print(f"[worker][GreenGuard] SUCCESS: All metrics green on attempt {i}")
+                    accepted = result
                     break
+                
+                # Track best result even if red
+                if score < best_score_so_far:
+                    best_score_so_far = score
+                    best_green_result = result
+                
+                # If RED, ask Optimizer for help (unless last attempt)
+                if i < MAX_RETRIES and OPTIMIZER_AVAILABLE:
+                    print(f"[worker][GreenGuard] Metrics RED. Consulting Optimizer...")
+                    optimizer = get_optimizer()
+                    
+                    # Analyze failure
+                    failure_type, root_cause, suggestions = optimizer.analyze_failure(
+                        metrics=met,
+                        hyperparams=current_params,
+                        method=current_method_info.get("method"),
+                        dataset_size=(len(real_clean), len(real_clean.columns))
+                    )
+                    
+                    print(f"[worker][GreenGuard] Failure Analysis: {root_cause}")
+                    _log_step(i, "analysis", f"Optimizer: {root_cause}", {})
+                    
+                    # Get NEW parameters
+                    new_params = optimizer.suggest_hyperparameters(
+                        method=current_method_info.get("method"),
+                        dataset_size=(len(real_clean), len(real_clean.columns)),
+                        previous_metrics=met,
+                        retry_count=i # Pass retry count!
+                    )
+                    
+                    print(f"[worker][GreenGuard] New Parameters: {new_params}")
+                    current_params = {**current_params, **new_params}
+                    
+                else:
+                    print(f"[worker][GreenGuard] Max retries reached or optimizer unavailable.")
+            
             except Exception as e:
-                try:
-                    error_detail = f"{type(e).__name__}: {e}"
-                    print(f"[worker][step] INSERTING step {i}: error - {error_detail}")
-                    supabase.table("run_steps").insert({
-                        "run_id": run["id"],
-                        "step_no": i,
-                        "title": "error",
-                        "detail": error_detail,
-                    }).execute()
-                    print(f"[worker][step] SUCCESS: error step {i} inserted")
-                except Exception as insert_err:
-                    print(f"[worker][step] ERROR inserting error step {i}: {type(insert_err).__name__}: {insert_err}")
+                print(f"[worker][GreenGuard] Error in loop: {e}")
+                _log_step(i, "error", str(e), {})
                 continue
 
-        chosen = accepted or best
+        chosen = accepted or best_green_result
         if not chosen:
-            raise RuntimeError("All plan attempts failed")
+            raise RuntimeError("GreenGuard failed to produce any valid result")
 
         # Compose final metrics + fairness + meta
         final_metrics = chosen["metrics"]

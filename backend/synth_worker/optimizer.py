@@ -255,6 +255,7 @@ class SyntheticDataOptimizer:
         previous_metrics: Optional[Dict[str, Any]] = None,
         dp_requested: bool = False,
         dataset_complexity: Optional[Dict[str, Any]] = None,
+        retry_count: int = 0
     ) -> Dict[str, Any]:
         """
         Suggest hyperparameters based on dataset characteristics and previous results.
@@ -265,6 +266,7 @@ class SyntheticDataOptimizer:
             previous_metrics: Previous run metrics (for adaptive tuning)
             dp_requested: Whether DP is requested
             dataset_complexity: Optional complexity analysis (from ClinicalModelSelector)
+            retry_count: Current retry attempt (0-indexed)
         
         Returns:
             Suggested hyperparameters
@@ -283,7 +285,7 @@ class SyntheticDataOptimizer:
                     pass
         
         if method == "ddpm" or method == "tabddpm":
-            return self._suggest_tabddpm_params(n_rows, n_cols, previous_metrics, dataset_complexity)
+            return self._suggest_tabddpm_params(n_rows, n_cols, previous_metrics, dataset_complexity, retry_count)
         elif method == "ctgan":
             return self._suggest_ctgan_params(n_rows, n_cols, previous_metrics, dp_requested, dataset_complexity)
         elif method == "tvae":
@@ -299,6 +301,7 @@ class SyntheticDataOptimizer:
         n_cols: int,
         previous_metrics: Optional[Dict[str, Any]] = None,
         dataset_complexity: Optional[Dict[str, Any]] = None,
+        retry_count: int = 0
     ) -> Dict[str, Any]:
         """Suggest TabDDPM hyperparameters with improved defaults for better quality."""
         # IMPROVED: Higher base n_iter to prevent high KS Mean failures
@@ -307,13 +310,17 @@ class SyntheticDataOptimizer:
         
         # Base n_iter on dataset size - INCREASED for better quality
         if n_rows < 1000:
-            n_iter = 300  # Increased from 200 - better quality for small datasets
+            n_iter = 400 + (retry_count * 200) # Increased base + aggressive retry
         elif n_rows < 5000:
-            n_iter = 400  # Increased from 300 - balanced quality/speed
+            n_iter = 500 + (retry_count * 200)
         elif n_rows < 20000:
-            n_iter = 500  # Increased from 400 - high quality
+            n_iter = 600 + (retry_count * 200)
         else:
-            n_iter = 600  # Increased from 500 - maximum quality
+            n_iter = 800 + (retry_count * 200)
+        
+        # Cap n_iter
+        n_iter = min(2000, n_iter)
+
         
         # IMPROVED: More aggressive adaptive adjustment for critical failures
         if previous_metrics:
