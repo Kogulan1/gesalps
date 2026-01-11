@@ -471,120 +471,97 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
             from synthcity.plugins.core.dataloader import GenericDataLoader
             from synthcity.metrics import eval_privacy, eval_statistical
             
-            # Create wrapper functions to match working script's API
+            # Create wrapper functions to match working script's API (EXACT COPY from standalone_ddpm_test.py)
             # In SynthCity 0.2.12, eval_privacy/eval_statistical are modules, not functions
             # We need to create wrapper functions that match the working script's expected API
             def eval_privacy_wrapper(real_df, synth_df):
-                """Wrapper function to match working script's eval_privacy(df, synthetic_df) API."""
-                try:
-                    # Use Metrics API (same approach as worker.py _privacy_metrics_synthcity)
-                    # This is more reliable than direct DomiasMIABNAF calls
-                    from synthcity.metrics.eval import Metrics
-                    
-                    # Use Metrics().evaluate() API (correct way to call SynthCity evaluators)
-                    metrics_evaluator = Metrics()
-                    metrics_df = metrics_evaluator.evaluate(
-                        real_df,
-                        synth_df,
-                        metrics={
-                            "privacy": ["k-anonymization", "identifiability_score", "delta-presence"]
-                        },
-                        reduction="mean"
-                    )
-                    
-                    # Extract metrics from DataFrame
-                    mia_auc = None
-                    dup_rate = None
-                    
-                    if not metrics_df.empty:
-                        for idx in metrics_df.index:
-                            metric_name = str(idx).lower()
-                            mean_val = metrics_df.loc[idx, "mean"] if "mean" in metrics_df.columns else None
-                            
-                            if "mia" in metric_name or "membership" in metric_name or "inference" in metric_name:
-                                mia_auc = float(mean_val) if mean_val is not None else None
-                            elif "duplicate" in metric_name or "dup" in metric_name:
-                                dup_rate = float(mean_val) if mean_val is not None else None
-                            elif "identifiability" in metric_name:
-                                # Identifiability score can be used as a privacy metric
-                                if mia_auc is None:
+                """Wrapper to handle both function-based and module-based eval_privacy."""
+                if callable(eval_privacy):
+                    # Old API: direct function call
+                    return eval_privacy(real_df, synth_df)
+                else:
+                    # New API (SynthCity 0.2.12): use Metrics class
+                    try:
+                        from synthcity.metrics.eval import Metrics
+                        metrics_evaluator = Metrics()
+                        metrics_df = metrics_evaluator.evaluate(
+                            real_df,
+                            synth_df,
+                            metrics={
+                                "privacy": ["k-anonymization", "identifiability_score", "delta-presence"]
+                            },
+                            reduction="mean"
+                        )
+                        
+                        mia_auc = None
+                        dup_rate = None
+                        
+                        if not metrics_df.empty:
+                            for idx in metrics_df.index:
+                                metric_name = str(idx).lower()
+                                mean_val = metrics_df.loc[idx, "mean"] if "mean" in metrics_df.columns else None
+                                
+                                if "mia" in metric_name or "membership" in metric_name or "inference" in metric_name:
                                     mia_auc = float(mean_val) if mean_val is not None else None
-                    
-                    # Calculate duplicate rate manually if not found
-                    if dup_rate is None:
-                        try:
-                            synth_set = set(tuple(row) for row in synth_df.values)
-                            real_set = set(tuple(row) for row in real_df.values)
-                            duplicates = len(synth_set.intersection(real_set))
-                            dup_rate = duplicates / len(synth_df) if len(synth_df) > 0 else 0.0
-                        except:
-                            dup_rate = None
-                    
-                    return {
-                        'mia_auc': mia_auc,
-                        'duplicate_rate': dup_rate
-                    }
-                except Exception as e:
-                    print_warning(f"eval_privacy_wrapper error: {type(e).__name__}: {e}")
-                    import traceback
-                    print_warning(f"Traceback: {traceback.format_exc()[:200]}")
-                    return {'mia_auc': None, 'duplicate_rate': None}
+                                elif "duplicate" in metric_name or "dup" in metric_name:
+                                    dup_rate = float(mean_val) if mean_val is not None else None
+                                elif "identifiability" in metric_name:
+                                    if mia_auc is None:
+                                        mia_auc = float(mean_val) if mean_val is not None else None
+                        
+                        return {
+                            'mia_auc': mia_auc,
+                            'duplicate_rate': dup_rate,
+                        }
+                    except Exception as e:
+                        print_warning(f"Error in eval_privacy_wrapper: {e}")
+                        return {'mia_auc': None, 'duplicate_rate': None}
             
             def eval_statistical_wrapper(real_df, synth_df):
-                """Wrapper function to match working script's eval_statistical(df, synthetic_df) API."""
-                try:
-                    from synthcity.metrics.eval_statistical import KolmogorovSmirnovTest
-                    from synthcity.plugins.core.dataloader import GenericDataLoader
-                    import numpy as np
-                    
-                    real_loader = GenericDataLoader(real_df)
-                    synth_loader = GenericDataLoader(synth_df)
-                    
-                    # Use KS test for statistical evaluation
-                    ks_test = KolmogorovSmirnovTest()
-                    ks_result = ks_test.evaluate(real_loader, synth_loader)
-                    
-                    # Extract KS value from result
-                    # KS test returns marginal KS statistic (lower is better)
-                    # KS complement = 1 - KS mean (higher is better, closer to 1 = better)
-                    ks_mean = None
-                    if isinstance(ks_result, dict):
-                        # Try different possible keys
-                        for key in ['marginal', 'ks', 'ks_mean', 'value', 'mean']:
-                            if key in ks_result:
-                                val = ks_result[key]
-                                if isinstance(val, (int, float)):
-                                    ks_mean = float(val)
-                                    break
-                        # If not found, try to get first numeric value
-                        if ks_mean is None:
-                            for val in ks_result.values():
-                                if isinstance(val, (int, float)):
-                                    ks_mean = float(val)
-                                    break
-                    
-                    # Calculate KS complement (1 - KS mean)
-                    # Working script expects ks_complement (higher = better, closer to 1 = better)
-                    ks_complement = 1.0 - ks_mean if ks_mean is not None else None
-                    
-                    # Calculate feature coverage (simple version)
-                    feature_coverage = None
+                """Wrapper to handle both function-based and module-based eval_statistical."""
+                if callable(eval_statistical):
+                    # Old API: direct function call
+                    return eval_statistical(real_df, synth_df)
+                else:
+                    # New API (SynthCity 0.2.12): use Metrics class
                     try:
-                        real_cols = set(real_df.columns)
-                        synth_cols = set(synth_df.columns)
-                        feature_coverage = len(synth_cols.intersection(real_cols)) / len(real_cols) if len(real_cols) > 0 else 0.0
-                    except:
-                        pass
-                    
-                    return {
-                        'ks_complement': ks_complement,
-                        'feature_coverage': feature_coverage
-                    }
-                except Exception as e:
-                    print_warning(f"eval_statistical_wrapper error: {type(e).__name__}: {e}")
-                    import traceback
-                    print_warning(f"Traceback: {traceback.format_exc()[:200]}")
-                    return {'ks_complement': None, 'feature_coverage': None}
+                        from synthcity.metrics.eval import Metrics
+                        metrics_evaluator = Metrics()
+                        metrics_df = metrics_evaluator.evaluate(
+                            real_df,
+                            synth_df,
+                            metrics={
+                                "stats": ["ks_test", "feature_corr", "jensenshannon_dist"]
+                            },
+                            reduction="mean"
+                        )
+                        
+                        ks_complement = None
+                        feature_coverage = None
+                        
+                        if not metrics_df.empty:
+                            for idx in metrics_df.index:
+                                metric_name = str(idx).lower()
+                                mean_val = metrics_df.loc[idx, "mean"] if "mean" in metrics_df.columns else None
+                                
+                                if "ks" in metric_name or "kolmogorov" in metric_name:
+                                    # KS test returns the statistic (lower is better)
+                                    # KS complement = 1 - KS statistic (higher is better)
+                                    ks_stat = float(mean_val) if mean_val is not None else None
+                                    if ks_stat is not None:
+                                        ks_complement = 1.0 - ks_stat
+                                elif "feature" in metric_name and "coverage" in metric_name:
+                                    feature_coverage = float(mean_val) if mean_val is not None else None
+                        
+                        return {
+                            'ks_complement': ks_complement,
+                            'feature_coverage': feature_coverage,
+                        }
+                    except Exception as e:
+                        print_warning(f"Error in eval_statistical_wrapper: {e}")
+                        import traceback
+                        print_warning(f"Traceback: {traceback.format_exc()[:200]}")
+                        return {'ks_complement': None, 'feature_coverage': None}
             
             # Replace module imports with wrapper functions
             eval_privacy = eval_privacy_wrapper
