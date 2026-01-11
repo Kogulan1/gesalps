@@ -408,8 +408,10 @@ class SyntheticDataOptimizer:
                 epochs = min(500, epochs + 100)
                 embedding_dim = min(512, embedding_dim + 64)
         
+        # CRITICAL FIX: SynthCity CTGAN uses 'n_iter' (not 'num_epochs' or 'epochs')
+        # The factory tries SynthCity first, so we use 'n_iter' for compatibility
         params = {
-            "num_epochs": epochs,
+            "n_iter": epochs,  # SynthCity CTGAN uses n_iter (like TabDDPM)
             "batch_size": batch_size,
             "embedding_dim": embedding_dim,
             "pac": 10,
