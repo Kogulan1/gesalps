@@ -48,10 +48,12 @@ CTO has provided a comprehensive, research-backed action plan to achieve consist
 
 ## Immediate Actions (Phase 1 - Starting Now)
 
+## Next Steps / Handoff
+
 ### → **BackendAgent**: 
 **PRIORITY: P0 - CRITICAL - Blocker #1**
 
-**Task**: Fix Preprocessing Agent Integration (ModuleNotFoundError)
+**Action**: Fix Preprocessing Agent Integration (ModuleNotFoundError)
 
 **Why Critical**: Preprocessing agent not in Docker container → never called → persistent high KS (no renaming of numeric columns like '233.0', no transforms for skewed features). Research confirms: Numeric column names cause parsing/normalization errors in TabDDPM.
 
@@ -78,7 +80,7 @@ CTO has provided a comprehensive, research-backed action plan to achieve consist
 ### → **DevOpsAgent**: 
 **PRIORITY: P0 - CRITICAL - Blocker #1 Deployment**
 
-**Task**: Deploy Preprocessing Agent Fix to VPS
+**Action**: Deploy Preprocessing Agent Fix to VPS
 
 **Steps**:
 1. SSH to VPS: `ssh root@194.34.232.76`
@@ -101,7 +103,7 @@ CTO has provided a comprehensive, research-backed action plan to achieve consist
 ### → **SyntheticDataSpecialist**: 
 **PRIORITY: P0 - CRITICAL - Blocker #2 & #3**
 
-**Task 1**: Fix CTGAN Fallback Parameter Error (epochs → num_epochs)
+**Action**: Fix CTGAN Fallback Parameter Error (epochs → num_epochs) AND Fix Missing Metrics (Corr Delta, Dup Rate = N/A)
 
 **Why**: SynthCity CTGAN uses `num_epochs` (confirmed in docs and GitHub issues); fallback fails, preventing model switch when TabDDPM KS is high.
 
@@ -115,11 +117,11 @@ CTO has provided a comprehensive, research-backed action plan to achieve consist
 - Fallback triggers successfully in test
 - CTGAN runs without assertion error
 
-**Task 2**: Fix Missing Metrics (Corr Delta, Dup Rate = N/A)
+**Task 2 - Fix Missing Metrics**:
 
 **Why**: Likely silent exceptions or data shape mismatches post-generation (e.g., NaNs, mismatched columns). From "FEST: A Unified Framework for Evaluating Synthetic Tabular Data" (ICETE 2025), missing metrics often stem from unhandled NaNs or type errors.
 
-**Steps**:
+**Additional Steps**:
 1. In metric functions (`_utility_metrics()`, `_privacy_metrics()`): Wrap in try/except:
    ```python
    try:
@@ -143,7 +145,7 @@ CTO has provided a comprehensive, research-backed action plan to achieve consist
 ### → **DevOpsAgent**: 
 **PRIORITY: P0 - CRITICAL - Initial Re-Test**
 
-**Task**: Deploy All Fixes and Run Initial Re-Test
+**Action**: Deploy All Fixes and Run Initial Re-Test
 
 **Steps**:
 1. Deploy all Phase 1 fixes (preprocessing, CTGAN, metrics)
@@ -162,12 +164,14 @@ CTO has provided a comprehensive, research-backed action plan to achieve consist
 
 ---
 
+---
+
 ## Phase 2 Tasks (Jan 11–12)
 
 ### → **SyntheticDataSpecialist**: 
 **PRIORITY: High - Preprocessing Enhancement**
 
-**Task**: Enhance Preprocessing Agent (OpenRouter LLM)
+**Action**: Enhance Preprocessing Agent (OpenRouter LLM)
 
 **Research Basis**: 30–50% KS reduction via targeted transforms for skewed data (arXiv 2504.16506, 2025). Binary transformation (NeurIPS 2024) avoids collapse.
 
@@ -190,7 +194,7 @@ CTO has provided a comprehensive, research-backed action plan to achieve consist
 ### → **SyntheticDataSpecialist**: 
 **PRIORITY: High - Hyperparam Optimization**
 
-**Task**: Hyperparam & Model Tweaks
+**Action**: Hyperparam & Model Tweaks
 
 **Steps**:
 1. Increase n_iter to 50,000 (from ICML 2023 TabDDPM paper) in retries
@@ -206,12 +210,14 @@ CTO has provided a comprehensive, research-backed action plan to achieve consist
 
 ---
 
+---
+
 ## Phase 3 Tasks (Jan 12–13)
 
 ### → **MainAgent**: 
 **PRIORITY: Medium - Onboard ML/DL Specialist (If Needed)**
 
-**Task**: Onboard ML/DL Specialist Agent (If KS >0.3 after Phase 2)
+**Action**: Onboard ML/DL Specialist Agent (If KS >0.3 after Phase 2)
 
 **Steps**:
 1. Create new chat with prompt: "You are ML/DL Specialist. Debug TabDDPM collapse; suggest custom layers/transforms from research."
@@ -226,7 +232,7 @@ CTO has provided a comprehensive, research-backed action plan to achieve consist
 ### → **DevOpsAgent**: 
 **PRIORITY: Medium - AWS Migration (If Needed)**
 
-**Task**: Migrate Heavy Tuning to AWS (If VPS Insufficient)
+**Action**: Migrate Heavy Tuning to AWS (If VPS Insufficient)
 
 **Why**: VPS CPU-only; high n_iter or CTAB-GAN+ training could be slow (>10 min/run). AWS EC2 with GPU speeds 20–50x.
 
@@ -250,10 +256,10 @@ CTO has provided a comprehensive, research-backed action plan to achieve consist
 
 ---
 
-### → **QA Tester + EndUserTester**: 
+### → **QATester**: 
 **PRIORITY: High - Full QA & User Validation**
 
-**Task**: Full QA & User Validation
+**Action**: Full QA & User Validation (with EndUserTester)
 
 **Steps**:
 1. Run E2E on 5 datasets
@@ -268,12 +274,14 @@ CTO has provided a comprehensive, research-backed action plan to achieve consist
 
 ---
 
+---
+
 ## Phase 4 Tasks (Jan 14)
 
-### → **CTO + MainAgent**: 
+### → **MainAgent**: 
 **PRIORITY: High - Final Sign-Off**
 
-**Task**: Review logs; approve if KS ≤0.10, all metrics green
+**Action**: Review logs; coordinate with CTO for approval if KS ≤0.10, all metrics green
 
 **Check your tasks**: `python3 scripts/agent_handoff_parser.py --agent MainAgent`
 
@@ -282,7 +290,7 @@ CTO has provided a comprehensive, research-backed action plan to achieve consist
 ### → **DeploymentCoordinator**: 
 **PRIORITY: High - Deploy to Live**
 
-**Task**: Zero-downtime rollout; add monitoring (e.g., Sentry for errors)
+**Action**: Zero-downtime rollout; add monitoring (e.g., Sentry for errors)
 
 **Check your tasks**: `python3 scripts/agent_handoff_parser.py --agent DeploymentCoordinator`
 
