@@ -80,7 +80,14 @@ def create_synthesizer(
     
     if method in {"ctgan", "ct", "ctgansynthesizer"}:
         logger.info(f"[factory] Using SDV backend for method '{method}' (CTGAN)")
-        return CTGANSynthesizer(metadata, hyperparams), False
+        # CRITICAL FIX: SDV CTGAN uses 'epochs' (not 'n_iter' or 'num_epochs')
+        # Convert n_iter to epochs if present (from SynthCity compatibility)
+        sdv_hparams = hyperparams.copy() if hyperparams else {}
+        if "n_iter" in sdv_hparams and "epochs" not in sdv_hparams:
+            sdv_hparams["epochs"] = sdv_hparams.pop("n_iter")
+        if "num_epochs" in sdv_hparams and "epochs" not in sdv_hparams:
+            sdv_hparams["epochs"] = sdv_hparams.pop("num_epochs")
+        return CTGANSynthesizer(metadata, sdv_hparams), False
     
     if method in {"tvae", "tv", "tvaesynthesizer"}:
         logger.info(f"[factory] Using SDV backend for method '{method}' (TVAE)")
