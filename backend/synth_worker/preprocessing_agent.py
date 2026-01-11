@@ -500,7 +500,8 @@ def apply_preprocessing_plan(df: pd.DataFrame, plan: Dict[str, Any]) -> Tuple[pd
                 if col in result_df.columns:
                     try:
                         if dtype == "int64":
-                            result_df[col] = pd.to_numeric(result_df[col], errors='coerce').astype('Int64')
+                            # CRITICAL FIX: Use regular int64 (not nullable Int64) for SynthCity compatibility
+                            result_df[col] = pd.to_numeric(result_df[col], errors='coerce').fillna(0).astype('int64')
                         elif dtype == "float64":
                             result_df[col] = pd.to_numeric(result_df[col], errors='coerce').astype(float)
                         elif dtype == "category":
@@ -699,13 +700,15 @@ def apply_preprocessing_plan(df: pd.DataFrame, plan: Dict[str, Any]) -> Tuple[pd
                 result_df[col] = col_data.astype('int64') / 1e9
                 applied_steps.append(f"Final conversion: '{col}' datetime → numeric timestamp")
             elif pd.api.types.is_bool_dtype(col_data):
-                # Convert boolean to int
-                result_df[col] = col_data.astype(int).astype('Int64')
+                # Convert boolean to int (use regular int64, not nullable Int64 for SynthCity compatibility)
+                result_df[col] = col_data.astype(int).astype('int64')
                 applied_steps.append(f"Final conversion: '{col}' boolean → int")
             elif pd.api.types.is_numeric_dtype(col_data):
-                # Ensure numeric columns are float or Int64 (nullable int)
-                if col_data.dtype in ['int64', 'int32', 'int16', 'int8']:
-                    result_df[col] = col_data.astype('Int64')  # Nullable int
+                # CRITICAL FIX: Use regular int64 (not nullable Int64) for SynthCity compatibility
+                # SynthCity encoders cannot handle pandas nullable integer dtypes (Int64)
+                if col_data.dtype in ['int64', 'int32', 'int16', 'int8', 'Int64', 'Int32', 'Int16', 'Int8']:
+                    # Convert nullable int to regular int64, filling NaN with 0
+                    result_df[col] = pd.to_numeric(col_data, errors='coerce').fillna(0).astype('int64')
                 elif col_data.dtype not in ['float64', 'float32']:
                     result_df[col] = pd.to_numeric(col_data, errors='coerce').astype(float)
             else:
