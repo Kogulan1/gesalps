@@ -452,10 +452,22 @@ def _filter_hparams(method: str, cfg: Dict[str, Any]) -> Dict[str, Any]:
     return out
 
 def _sanitize_hparams(method: str, hp: Dict[str, Any]) -> Dict[str, Any]:
-    """Cast common knobs to safe ints; drop invalid or non-positive values."""
+    """Cast common knobs to safe ints; drop invalid or non-positive values.
+    
+    PHASE 1 BLOCKER FIX: For CTGAN/TVAE, convert 'epochs' to 'num_epochs' for SynthCity compatibility.
+    """
     out: Dict[str, Any] = {}
+    m = method.lower()
+    
+    # PHASE 1 BLOCKER FIX: Convert 'epochs' to 'num_epochs' for SynthCity CTGAN/TVAE
+    if m in ("ctgan", "tvae", "ct", "tv"):
+        if "epochs" in hp and "num_epochs" not in hp:
+            hp = {**hp, "num_epochs": hp["epochs"]}
+        # Remove 'epochs' to avoid confusion
+        hp = {k: v for k, v in hp.items() if k != "epochs"}
+    
     for k, v in (hp or {}).items():
-        if k in {"epochs", "batch_size", "embedding_dim", "pac"}:
+        if k in {"num_epochs", "epochs", "batch_size", "embedding_dim", "pac", "n_iter"}:
             try:
                 iv = int(float(v))
                 if iv > 0:
