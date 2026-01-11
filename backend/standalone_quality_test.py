@@ -632,11 +632,14 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
             print_info(f"Data types: {real_clean.dtypes.to_dict()}")
             loader = GenericDataLoader(real_clean)  # Use real_clean (raw or preprocessed based on flag)
             
-            # Use n_iter=500 (EXACT match to working script that achieved 0.0650)
-            # The working script uses n_iter=500: syn_model = Plugins().get("ddpm", n_iter=500)
-            n_iter = 500  # EXACT match to working script
-            print_info(f"Training TabDDPM with n_iter={n_iter} (EXACT match to working script)...")
-            print_info("This EXACTLY matches standalone_ddpm_test.py that achieved KS Mean 0.0650")
+            # PHASE 2: Increase n_iter significantly for better quality (from CTO plan)
+            # Research shows: n_iter=50,000 with DDIM sampling achieves best results
+            # But for practical testing, use 800-1000 iterations (balance quality/speed)
+            # The working script used n_iter=500 and achieved 0.0650, but that was WITHOUT preprocessing
+            # With preprocessing, we may need more iterations to learn the transformed distribution
+            n_iter = 1000  # PHASE 2: Increased from 500 to 1000 for better quality
+            print_info(f"Training TabDDPM with n_iter={n_iter} (PHASE 2: increased for better quality)...")
+            print_info("Note: Working script used n_iter=500 WITHOUT preprocessing. With preprocessing, more iterations may be needed.")
             
             start_time = time.time()
             syn_model = Plugins().get("ddpm", n_iter=n_iter)
@@ -692,32 +695,36 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                 print_info(f"  Duplicate Rate: {privacy.get('dup_rate')}")
                 print_info(f"  Correlation Delta: {utility.get('corr_delta')}")
                 
-                # PHASE 1 FIX: Calculate missing metrics using worker functions as fallback
-                if utility.get('corr_delta') is None:
-                    try:
-                        if CONTAINER_MODE:
-                            from worker import _utility_metrics
-                        else:
-                            from synth_worker.worker import _utility_metrics
-                        worker_utility = _utility_metrics(real_clean, synth)
-                        if worker_utility.get('corr_delta') is not None:
-                            utility['corr_delta'] = worker_utility['corr_delta']
-                            print_info(f"  Corr Delta (from worker fallback): {utility.get('corr_delta'):.4f}")
-                    except Exception as e:
-                        print_warning(f"Failed to calculate Corr Delta fallback: {type(e).__name__}: {e}")
-                
-                if privacy.get('dup_rate') is None:
-                    try:
-                        if CONTAINER_MODE:
-                            from worker import _privacy_metrics
-                        else:
-                            from synth_worker.worker import _privacy_metrics
-                        worker_privacy = _privacy_metrics(real_clean, synth)
-                        if worker_privacy.get('dup_rate') is not None:
-                            privacy['dup_rate'] = worker_privacy['dup_rate']
-                            print_info(f"  Dup Rate (from worker fallback): {privacy.get('dup_rate'):.4f}")
-                    except Exception as e:
-                        print_warning(f"Failed to calculate Dup Rate fallback: {type(e).__name__}: {e}")
+                # PHASE 1 FIX: ALWAYS calculate corr_delta and dup_rate using worker functions
+                # SynthCity eval_privacy/eval_statistical don't reliably return these metrics
+                print_info("Calculating Corr Delta and Dup Rate using worker functions...")
+                try:
+                    if CONTAINER_MODE:
+                        from worker import _utility_metrics, _privacy_metrics
+                    else:
+                        from synth_worker.worker import _utility_metrics, _privacy_metrics
+                    
+                    # Always use worker functions for corr_delta and dup_rate
+                    worker_utility = _utility_metrics(real_clean, synth)
+                    worker_privacy = _privacy_metrics(real_clean, synth)
+                    
+                    # Override with worker-calculated values (more reliable)
+                    if worker_utility.get('corr_delta') is not None:
+                        utility['corr_delta'] = worker_utility['corr_delta']
+                        print_success(f"  Corr Delta (worker): {utility.get('corr_delta'):.4f}")
+                    else:
+                        print_warning("  Corr Delta: Could not calculate (worker returned None)")
+                    
+                    if worker_privacy.get('dup_rate') is not None:
+                        privacy['dup_rate'] = worker_privacy['dup_rate']
+                        print_success(f"  Dup Rate (worker): {privacy.get('dup_rate'):.4f}")
+                    else:
+                        print_warning("  Dup Rate: Could not calculate (worker returned None)")
+                        
+                except Exception as e:
+                    print_error(f"Failed to calculate metrics using worker functions: {type(e).__name__}: {e}")
+                    import traceback
+                    print_error(f"Traceback: {traceback.format_exc()[:300]}")
                 
                 # Update metrics dict with calculated values
                 metrics = {"utility": utility, "privacy": privacy}

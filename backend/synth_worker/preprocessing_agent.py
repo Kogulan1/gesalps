@@ -253,6 +253,13 @@ def generate_preprocessing_prompt(dataset_analysis: Dict[str, Any], previous_ks:
     
     prompt = f"""You are a data preprocessing expert for synthetic data generation. Your task is to analyze a dataset and create a preprocessing plan that will help a diffusion model (TabDDPM) learn the data distribution effectively and achieve "all green" metrics (KS Mean ≤ 0.10).
 
+RESEARCH-BASED PREPROCESSING STRATEGIES (from arXiv 2504.16506, NeurIPS 2024, ICLR 2023):
+- **Quantile Transformation**: For highly skewed distributions (skew > 2), use quantile transform to normal distribution (30-50% KS reduction)
+- **Winsorization (1%/99%)**: Clip extreme outliers to 1st and 99th percentiles (prevents distribution collapse)
+- **Binary Discretization**: For multimodal distributions, consider discretizing into bins (256 bins) then one-hot encoding (from NeurIPS 2024)
+- **Log/Sqrt Transform**: For right-skewed data (skew > 1), apply log1p or sqrt transform
+- **Standardization**: For columns with large value ranges, standardize to mean=0, std=1
+
 DATASET INFORMATION:
 - Rows: {n_rows}
 - Columns: {n_cols}
@@ -265,7 +272,7 @@ DETECTED ISSUES:
 {issues_text}
 {ks_context}
 
-YOUR TASK (UNIVERSAL HANDLER):
+YOUR TASK (UNIVERSAL HANDLER + RESEARCH-BASED):
 Generate a JSON preprocessing plan that handles ANY data type and delivers SynthCity-compatible format for "all green" metrics:
 1. **Column Renaming**: Rename numeric column names (e.g., '233.0', '2.3') to descriptive names (e.g., 'feature_233', 'measurement_2_3')
 2. **Data Type Conversions (UNIVERSAL)**:
@@ -273,8 +280,12 @@ Generate a JSON preprocessing plan that handles ANY data type and delivers Synth
    - Boolean → int (0/1) for model compatibility
    - Numeric strings → numeric (convert string numbers to int/float)
    - Ensure categorical columns are properly typed (category dtype)
-3. **Outlier Handling**: Clip or transform extreme values that may confuse the model
-4. **Distribution Normalization**: Apply transformations (quantile, log, sqrt, standardize, minmax) for highly skewed columns
+3. **Outlier Handling (WINSORIZATION)**: Clip extreme values to 1st and 99th percentiles (winsorize_1_99 method) - CRITICAL for preventing distribution collapse
+4. **Distribution Normalization (RESEARCH-BASED)**:
+   - For highly skewed columns (skew > 2): Use QUANTILE transform (30-50% KS reduction per research)
+   - For right-skewed (skew > 1): Use LOG transform (log1p for safety)
+   - For multimodal distributions: Consider BINARY DISCRETIZATION (256 bins) then one-hot
+   - For large ranges: Use STANDARDIZATION (mean=0, std=1)
 5. **Missing Value Handling**: Fill or drop missing values appropriately (mean/median/mode for numeric, mode for categorical)
 6. **Categorical Encoding**: Handle high-cardinality categoricals (label encoding, one-hot, or group rare categories)
 7. **Feature Engineering**: Any transformations that will help the model learn better
