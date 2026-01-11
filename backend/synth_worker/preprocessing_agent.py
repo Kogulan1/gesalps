@@ -364,20 +364,26 @@ You MUST output ONLY valid JSON, no markdown, no explanations, no code blocks. T
     
     user_prompt = generate_preprocessing_prompt(dataset_analysis, previous_ks)
     
+    # PHASE 1 FIX: gemma-3-27b-it doesn't support system prompts OR response_format
+    is_gemma = "gemma" in OPENROUTER_MODEL.lower()
+    
     payload = {
         "model": OPENROUTER_MODEL,
         "messages": [
             # Some models (e.g., gemma-3-27b-it) don't support system prompts
             # Merge system prompt into user prompt for compatibility
             {"role": "user", "content": f"{system_prompt}\n\n{user_prompt}"}
-        ] if "gemma" in OPENROUTER_MODEL.lower() else [
+        ] if is_gemma else [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
         ],
         "temperature": 0.3,  # Lower temperature for more consistent JSON
         "max_tokens": 2000,
-        "response_format": {"type": "json_object"},  # Request JSON format
     }
+    
+    # PHASE 1 FIX: Don't use response_format for gemma models (not supported)
+    if not is_gemma:
+        payload["response_format"] = {"type": "json_object"}  # Request JSON format
     
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
@@ -393,6 +399,36 @@ You MUST output ONLY valid JSON, no markdown, no explanations, no code blocks. T
                 json=payload,
                 headers=headers
             )
+            
+            # PHASE 1 FIX: Handle 400 errors before raise_for_status()
+            if response.status_code == 400:
+                try:
+                    error_data = response.json()
+                    error_msg = error_data.get("error", {}).get("message", "Unknown error")
+                    logger.warning(f"OpenRouter API 400 error: {error_msg}")
+                    
+                    # If it's a response_format or system prompt issue, try without those
+                    if "instruction" in error_msg.lower() or "response_format" in error_msg.lower() or "developer instruction" in error_msg.lower():
+                        logger.info("Retrying OpenRouter call without response_format and with merged prompts...")
+                        # Retry with minimal payload (no response_format, merged prompts)
+                        retry_payload = {
+                            "model": OPENROUTER_MODEL,
+                            "messages": [{"role": "user", "content": f"{system_prompt}\n\n{user_prompt}"}],
+                            "temperature": 0.3,
+                            "max_tokens": 2000,
+                        }
+                        response = client.post(
+                            f"{OPENROUTER_BASE}/chat/completions",
+                            json=retry_payload,
+                            headers=headers
+                        )
+                        if response.status_code != 200:
+                            logger.error(f"OpenRouter retry also failed with status {response.status_code}")
+                            return None
+                except Exception as retry_error:
+                    logger.error(f"Failed to handle 400 error or retry: {type(retry_error).__name__}: {retry_error}")
+                    return None
+            
             response.raise_for_status()
             output = response.json()
             
@@ -414,8 +450,14 @@ You MUST output ONLY valid JSON, no markdown, no explanations, no code blocks. T
             
             return plan
             
+    except httpx.HTTPStatusError as e:
+        # PHASE 1 FIX: Handle HTTP status errors
+        logger.error(f"OpenRouter HTTP error {e.response.status_code}: {e.response.text[:200] if hasattr(e.response, 'text') else str(e)}")
+        return None
     except Exception as e:
         logger.error(f"OpenRouter preprocessing call failed: {type(e).__name__}: {e}")
+        import traceback
+        logger.debug(f"OpenRouter traceback: {traceback.format_exc()[:300]}")
         return None
 
 
