@@ -471,14 +471,18 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
             from synthcity.plugins.core.dataloader import GenericDataLoader
             from synthcity.metrics import eval_privacy, eval_statistical
             
+            # Save original imports before replacing them (to avoid recursion)
+            eval_privacy_original = eval_privacy
+            eval_statistical_original = eval_statistical
+            
             # Create wrapper functions to match working script's API (EXACT COPY from standalone_ddpm_test.py)
             # In SynthCity 0.2.12, eval_privacy/eval_statistical are modules, not functions
             # We need to create wrapper functions that match the working script's expected API
             def eval_privacy_wrapper(real_df, synth_df):
                 """Wrapper to handle both function-based and module-based eval_privacy."""
-                if callable(eval_privacy):
+                if callable(eval_privacy_original):
                     # Old API: direct function call
-                    return eval_privacy(real_df, synth_df)
+                    return eval_privacy_original(real_df, synth_df)
                 else:
                     # New API (SynthCity 0.2.12): use Metrics class
                     try:
@@ -519,9 +523,9 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
             
             def eval_statistical_wrapper(real_df, synth_df):
                 """Wrapper to handle both function-based and module-based eval_statistical."""
-                if callable(eval_statistical):
+                if callable(eval_statistical_original):
                     # Old API: direct function call
-                    return eval_statistical(real_df, synth_df)
+                    return eval_statistical_original(real_df, synth_df)
                 else:
                     # New API (SynthCity 0.2.12): use Metrics class
                     try:
