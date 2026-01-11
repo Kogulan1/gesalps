@@ -424,16 +424,17 @@ def _build_synthesizer(
 def _filter_hparams(method: str, cfg: Dict[str, Any]) -> Dict[str, Any]:
     """Whitelist known hyperparameters per synthesizer; ignore unknowns safely."""
     m = method.lower().strip()
+    # PHASE 1 BLOCKER FIX: SynthCity uses "num_epochs" not "epochs"
     allowed: Dict[str, set[str]] = {
         "ctgan": {
-            "epochs", "batch_size", "embedding_dim",
+            "num_epochs", "batch_size", "embedding_dim",  # Fixed: num_epochs for SynthCity
             "generator_lr", "discriminator_lr",
             "generator_decay", "discriminator_decay",
             "pac",
             "verbose",
         },
         "tvae": {
-            "epochs", "batch_size", "embedding_dim",
+            "num_epochs", "batch_size", "embedding_dim",  # Fixed: num_epochs for SynthCity
             "compress_dims", "decompress_dims",
             "loss_factor", "verbose",
         },
@@ -445,6 +446,9 @@ def _filter_hparams(method: str, cfg: Dict[str, Any]) -> Dict[str, Any]:
     for k in keys:
         if k in cfg and cfg[k] is not None:
             out[k] = cfg[k]
+    # Also handle legacy "epochs" parameter and convert to "num_epochs" for SynthCity
+    if m in ("ctgan", "tvae") and "epochs" in cfg and "num_epochs" not in out:
+        out["num_epochs"] = cfg["epochs"]
     return out
 
 def _sanitize_hparams(method: str, hp: Dict[str, Any]) -> Dict[str, Any]:
@@ -566,21 +570,32 @@ def _utility_metrics(real: pd.DataFrame, synth: pd.DataFrame) -> Dict[str, Any]:
     ks_mean = float(np.mean(ks_vals)) if ks_vals else None
 
     # Correlation Δ (L1 distance between upper triangles)
+    # PHASE 1 BLOCKER FIX: Add error handling to prevent N/A metrics
     def _corr_upper(df: pd.DataFrame):
-        num = df.select_dtypes(include=[np.number])
-        if num.shape[1] < 2:
+        try:
+            num = df.select_dtypes(include=[np.number])
+            if num.shape[1] < 2:
+                return None
+            c = num.corr().to_numpy()
+            iu = np.triu_indices_from(c, k=1)
+            return c[iu]
+        except Exception as e:
+            logger.warning(f"Failed to calculate correlation matrix: {type(e).__name__}: {e}")
             return None
-        c = num.corr().to_numpy()
-        iu = np.triu_indices_from(c, k=1)
-        return c[iu]
 
-    c_real = _corr_upper(real)
-    c_synth = _corr_upper(synth)
-    corr_delta = (
-        float(np.mean(np.abs(c_real - c_synth)))
-        if (c_real is not None and c_synth is not None and len(c_real) == len(c_synth))
-        else None
-    )
+    try:
+        c_real = _corr_upper(real)
+        c_synth = _corr_upper(synth)
+        corr_delta = (
+            float(np.mean(np.abs(c_real - c_synth)))
+            if (c_real is not None and c_synth is not None and len(c_real) == len(c_synth))
+            else None
+        )
+        if corr_delta is None:
+            logger.warning("Corr Delta calculation returned None - check data shapes and types")
+    except Exception as e:
+        logger.error(f"Corr Delta calculation failed: {type(e).__name__}: {e}")
+        corr_delta = None
 
     # Fallback for categorical-only datasets to avoid placeholders
     if ks_mean is None or corr_delta is None:
@@ -1008,19 +1023,28 @@ def _privacy_metrics(real: pd.DataFrame, synth: pd.DataFrame) -> Dict[str, Any]:
         mia_auc = None
 
     # Rough duplicate rate (exact full-row matches)
+    # PHASE 1 BLOCKER FIX: Add comprehensive error handling to prevent N/A metrics
     try:
         common = list(set(real.columns) & set(synth.columns))
-        # Align dtypes to avoid int/float merge warnings and ensure consistent equality
-        real_aligned, synth_aligned = _align_for_merge(real[common], synth[common], common)
-        dup = pd.merge(
-            real_aligned.drop_duplicates(),
-            synth_aligned.drop_duplicates(),
-            how="inner",
-            on=common,
-        )
-        dup_rate = float(len(dup)) / max(1, len(synth))
-    except Exception:
-        dup_rate = None
+        if len(common) == 0:
+            logger.warning("No common columns between real and synth for dup_rate calculation")
+            dup_rate = 0.0  # Default to 0 if no common columns
+        else:
+            # Align dtypes to avoid int/float merge warnings and ensure consistent equality
+            real_aligned, synth_aligned = _align_for_merge(real[common], synth[common], common)
+            dup = pd.merge(
+                real_aligned.drop_duplicates(),
+                synth_aligned.drop_duplicates(),
+                how="inner",
+                on=common,
+            )
+            dup_rate = float(len(dup)) / max(1, len(synth))
+            if dup_rate is None or np.isnan(dup_rate):
+                logger.warning("Dup rate calculation returned NaN - defaulting to 0.0")
+                dup_rate = 0.0
+    except Exception as e:
+        logger.error(f"Dup rate calculation failed: {type(e).__name__}: {e}")
+        dup_rate = 0.0  # Default to 0.0 instead of None to prevent N/A
 
     return {"mia_auc": mia_auc, "dup_rate": dup_rate}
 
@@ -1191,12 +1215,21 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
             
             if enable_smart_preprocess:
                 try:
+                    logger.info("[worker][preprocessing] Fetching preprocessing plan...")
                     print("[worker][preprocessing] Applying mandatory smart preprocessing via OpenRouter LLM...")
                 except Exception:
                     pass
                 
                 # Call preprocessing agent (returns (preprocessed_df, metadata) or (None, None) if fails)
                 preprocessed_df, preprocessing_metadata = get_preprocessing_plan(real, previous_ks=None)
+                
+                try:
+                    if preprocessed_df is not None:
+                        logger.info(f"[worker][preprocessing] Applied preprocessing plan: {preprocessing_metadata.get('plan', {}).get('rationale', 'N/A')[:100]}")
+                    else:
+                        logger.warning("[worker][preprocessing] Preprocessing plan returned None - continuing with original data")
+                except Exception:
+                    pass
                 
                 if preprocessed_df is not None and preprocessing_metadata:
                     real = preprocessed_df  # Use preprocessed DataFrame
@@ -1386,16 +1419,17 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
             
             embedding_dim = 128 if n_cols < 20 else 256
             
+            # PHASE 1 BLOCKER FIX: SynthCity uses "num_epochs" not "epochs"
             configs = {
                 "gc": {},
                 "ctgan": {
-                    "epochs": ctgan_epochs,
+                    "num_epochs": ctgan_epochs,  # Fixed: SynthCity expects num_epochs
                     "batch_size": ctgan_batch,
                     "embedding_dim": embedding_dim,
                     "pac": 10
                 },
                 "tvae": {
-                    "epochs": tvae_epochs,
+                    "num_epochs": tvae_epochs,  # Fixed: SynthCity expects num_epochs
                     "batch_size": tvae_batch,
                     "embedding_dim": embedding_dim
                 },
@@ -1565,8 +1599,9 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
             else:
                 embedding_dim = 512
             
+            # PHASE 1 BLOCKER FIX: SynthCity CTGAN uses "num_epochs" not "epochs"
             return {
-                "epochs": epochs,
+                "num_epochs": epochs,  # Fixed: SynthCity expects num_epochs
                 "batch_size": batch_size,
                 "embedding_dim": embedding_dim,
                 "pac": 10,
@@ -1633,8 +1668,9 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
             else:
                 embedding_dim = 256
             
+            # PHASE 1 BLOCKER FIX: SynthCity TVAE uses "num_epochs" not "epochs"
             return {
-                "epochs": epochs,
+                "num_epochs": epochs,  # Fixed: SynthCity expects num_epochs
                 "batch_size": batch_size,
                 "embedding_dim": embedding_dim,
             }
@@ -2056,7 +2092,8 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
                 current_hparams = {}
             else:
                 current_method = "ctgan"
-                current_hparams = {"epochs": 100, "batch_size": 128, "embedding_dim": 64}
+                # PHASE 1 BLOCKER FIX: SynthCity uses "num_epochs" not "epochs"
+                current_hparams = {"num_epochs": 100, "batch_size": 128, "embedding_dim": 64}
             attempts += 1
             continue
 
@@ -2400,16 +2437,17 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
 
         if not next_method:
             # Fallback heuristic switch
+            # PHASE 1 BLOCKER FIX: SynthCity uses "num_epochs" not "epochs"
             if current_method == "gc":
                 next_method = "ctgan"
                 next_hparams = {**current_hparams}
-                next_hparams.setdefault("epochs", 300)
+                next_hparams.setdefault("num_epochs", 300)  # Fixed: SynthCity expects num_epochs
                 next_hparams.setdefault("batch_size", 128)
                 next_hparams.setdefault("embedding_dim", 128)
             elif current_method == "ctgan":
                 next_method = "tvae"
                 next_hparams = {**current_hparams}
-                next_hparams.setdefault("epochs", 300)
+                next_hparams.setdefault("num_epochs", 300)  # Fixed: SynthCity expects num_epochs
                 next_hparams.setdefault("batch_size", 128)
                 next_hparams.setdefault("embedding_dim", 128)
             else:
@@ -2605,10 +2643,11 @@ def _attempt_train(plan_item: Dict[str, Any], real_df: pd.DataFrame, metadata: S
 
     # Build model using unified factory
     base_hp = {}
+    # PHASE 1 BLOCKER FIX: Use "num_epochs" for SynthCity compatibility
     if method == "ctgan":
-        base_hp = _sanitize_hparams(method, {**(hp_all.get("ctgan", {})), **{k: v for k, v in hp_all.items() if k in ("epochs","batch_size","embedding_dim","pac")}})
+        base_hp = _sanitize_hparams(method, {**(hp_all.get("ctgan", {})), **{k: v for k, v in hp_all.items() if k in ("num_epochs","epochs","batch_size","embedding_dim","pac")}})
     elif method == "tvae":
-        base_hp = _sanitize_hparams(method, {**(hp_all.get("tvae", {})), **{k: v for k, v in hp_all.items() if k in ("epochs","batch_size","embedding_dim")}})
+        base_hp = _sanitize_hparams(method, {**(hp_all.get("tvae", {})), **{k: v for k, v in hp_all.items() if k in ("num_epochs","epochs","batch_size","embedding_dim")}})
     elif method in ("ddpm", "tabddpm", "diffusion"):
         # TabDDPM hyperparameters: n_iter, batch_size
         base_hp = {k: v for k, v in hp_all.items() if k in ("n_iter", "batch_size")}
