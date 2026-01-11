@@ -344,23 +344,23 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
             # This is critical for achieving "all green" metrics
             try:
                 print_info("[PREPROCESSING] Step 1: Attempting to import preprocessing_agent...")
-            # Try to import preprocessing agent
-            try:
-                from preprocessing_agent import get_preprocessing_plan
-                PREPROCESSING_AVAILABLE = True
+                # Try to import preprocessing agent
+                try:
+                    from preprocessing_agent import get_preprocessing_plan
+                    PREPROCESSING_AVAILABLE = True
                     get_preprocessing_plan_func = get_preprocessing_plan
                     print_success("[PREPROCESSING] ✅ Successfully imported preprocessing_agent.get_preprocessing_plan")
                 except ImportError as e1:
                     print_warning(f"[PREPROCESSING] ⚠️  Failed to import preprocessing_agent: {type(e1).__name__}: {e1}")
-                try:
+                    try:
                         print_info("[PREPROCESSING] Step 2: Attempting to import preprocessing (fallback)...")
-                    from preprocessing import smart_preprocess
-                    PREPROCESSING_AVAILABLE = True
+                        from preprocessing import smart_preprocess
+                        PREPROCESSING_AVAILABLE = True
                         get_preprocessing_plan_func = None
                         smart_preprocess_func = smart_preprocess
                         print_success("[PREPROCESSING] ✅ Successfully imported preprocessing.smart_preprocess")
                     except ImportError as e2:
-                    PREPROCESSING_AVAILABLE = False
+                        PREPROCESSING_AVAILABLE = False
                         get_preprocessing_plan_func = None
                         smart_preprocess_func = None
                         print_error(f"[PREPROCESSING] ❌ Failed to import preprocessing: {type(e2).__name__}: {e2}")
@@ -369,10 +369,10 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                 print_info(f"[PREPROCESSING] PREPROCESSING_AVAILABLE = {PREPROCESSING_AVAILABLE}")
                 print_info(f"[PREPROCESSING] get_preprocessing_plan_func = {get_preprocessing_plan_func is not None}")
                 print_info(f"[PREPROCESSING] smart_preprocess_func = {smart_preprocess_func is not None if 'smart_preprocess_func' in locals() else 'N/A'}")
-            
-            if PREPROCESSING_AVAILABLE:
+                
+                if PREPROCESSING_AVAILABLE:
                     if get_preprocessing_plan_func:
-                    # Use preprocessing_agent.py (SyntheticDataSpecialist's implementation)
+                        # Use preprocessing_agent.py (SyntheticDataSpecialist's implementation)
                         print_info("[PREPROCESSING] Step 3: Calling get_preprocessing_plan()...")
                         print_info(f"[PREPROCESSING] Input DataFrame shape: {df.shape}")
                         print_info(f"[PREPROCESSING] Input DataFrame columns: {list(df.columns)[:5]}...")
@@ -392,16 +392,16 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                                 if "metadata" in preprocessing_metadata:
                                     print_info(f"[PREPROCESSING] metadata.applied_steps: {preprocessing_metadata.get('metadata', {}).get('applied_steps', 'N/A')}")
                             
-                    if preprocessed_df is not None and preprocessing_metadata:
-                        df = preprocessed_df  # Use preprocessed DataFrame
-                        applied_steps = preprocessing_metadata.get("metadata", {}).get("applied_steps", [])
+                            if preprocessed_df is not None and preprocessing_metadata:
+                                df = preprocessed_df  # Use preprocessed DataFrame
+                                applied_steps = preprocessing_metadata.get("metadata", {}).get("applied_steps", [])
                                 print_success(f"[PREPROCESSING] ✅ Preprocessing applied: {len(applied_steps)} steps")
                                 print_info(f"[PREPROCESSING] Applied steps: {applied_steps[:5] if applied_steps else 'None'}")
-                        if preprocessing_metadata.get("metadata", {}).get("rationale"):
-                            rationale = preprocessing_metadata.get("metadata", {}).get("rationale", "")[:200]
+                                if preprocessing_metadata.get("metadata", {}).get("rationale"):
+                                    rationale = preprocessing_metadata.get("metadata", {}).get("rationale", "")[:200]
                                     print_info(f"[PREPROCESSING] Rationale: {rationale}...")
                                 print_info(f"[PREPROCESSING] Final DataFrame shape after preprocessing: {df.shape}")
-                    else:
+                            else:
                                 print_warning("[PREPROCESSING] ⚠️  Preprocessing agent returned no plan (OpenRouter may be unavailable)")
                                 print_warning(f"[PREPROCESSING] preprocessed_df: {preprocessed_df}, metadata: {preprocessing_metadata}")
                         except Exception as e3:
@@ -410,16 +410,16 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                             print_error(f"[PREPROCESSING] Traceback:\n{traceback.format_exc()}")
                             raise
                     elif 'smart_preprocess_func' in locals() and smart_preprocess_func:
-                    # Use preprocessing.py (BackendAgent's wrapper)
+                        # Use preprocessing.py (BackendAgent's wrapper)
                         print_info("[PREPROCESSING] Step 3: Calling smart_preprocess()...")
                         try:
                             df, preprocessing_metadata = smart_preprocess_func(
-                        df=df,
-                        dataset_name="heart",
-                        enable_smart_preprocess=True,
-                        fallback_on_error=True
-                    )
-                    applied_ops = preprocessing_metadata.get("applied_operations", [])
+                                df=df,
+                                dataset_name="heart",
+                                enable_smart_preprocess=True,
+                                fallback_on_error=True
+                            )
+                            applied_ops = preprocessing_metadata.get("applied_operations", [])
                             print_success(f"[PREPROCESSING] ✅ Preprocessing applied: {len(applied_ops)} operations")
                             print_info(f"[PREPROCESSING] Final DataFrame shape after preprocessing: {df.shape}")
                         except Exception as e4:
@@ -427,11 +427,11 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                             import traceback
                             print_error(f"[PREPROCESSING] Traceback:\n{traceback.format_exc()}")
                             raise
-                else:
+                    else:
                         print_warning("[PREPROCESSING] ⚠️  Preprocessing functions not available")
                         print_warning(f"[PREPROCESSING] get_preprocessing_plan_func: {get_preprocessing_plan_func is not None if 'get_preprocessing_plan_func' in locals() else 'N/A'}")
                         print_warning(f"[PREPROCESSING] smart_preprocess_func: {smart_preprocess_func is not None if 'smart_preprocess_func' in locals() else 'N/A'}")
-            else:
+                else:
                     print_warning("[PREPROCESSING] ⚠️  Preprocessing module not available - skipping preprocessing step")
         except Exception as e:
             print_error(f"[PREPROCESSING] ❌ CRITICAL: Preprocessing failed with exception")
