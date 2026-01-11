@@ -307,7 +307,7 @@ OUTPUT FORMAT (JSON only, no markdown, no explanations):
   }},
   "transformations": {{
     "column_name": {{
-      "method": "quantile" | "log" | "sqrt" | "standardize" | "minmax",
+      "method": "quantile" | "log" | "sqrt" | "standardize" | "minmax" | "winsorize_1_99" | "binary_discretize",
       "params": {{}}
     }},
     ...
