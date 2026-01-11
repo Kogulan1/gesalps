@@ -568,6 +568,7 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                         
                         ks_complement = None
                         feature_coverage = None
+                        corr_delta = None
                         
                         if not metrics_df.empty:
                             for idx in metrics_df.index:
@@ -582,10 +583,15 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                                         ks_complement = 1.0 - ks_stat
                                 elif "feature" in metric_name and "coverage" in metric_name:
                                     feature_coverage = float(mean_val) if mean_val is not None else None
+                                elif "corr" in metric_name or "correlation" in metric_name:
+                                    # Feature correlation delta - lower is better
+                                    # This is the correlation difference metric
+                                    corr_delta = float(mean_val) if mean_val is not None else None
                         
                         return {
                             'ks_complement': ks_complement,
                             'feature_coverage': feature_coverage,
+                            'correlation_difference': corr_delta,  # Add for compatibility
                         }
                     except Exception as e:
                         print_warning(f"Error in eval_statistical_wrapper: {e}")
@@ -671,11 +677,11 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                 
                 utility = {
                     "ks_mean": ks_mean,
-                    "corr_delta": utility_result.get('correlation_difference', None),
+                    "corr_delta": utility_result.get('correlation_difference', None) or utility_result.get('corr_delta', None),
                 }
                 privacy = {
                     "mia_auc": privacy_result.get('mia_auc', None),
-                    "dup_rate": privacy_result.get('duplicate_rate', None),
+                    "dup_rate": privacy_result.get('duplicate_rate', None) or privacy_result.get('dup_rate', None),
                 }
                 metrics = {"utility": utility, "privacy": privacy}
                 
@@ -685,6 +691,37 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                 print_info(f"  MIA AUC: {privacy.get('mia_auc')}")
                 print_info(f"  Duplicate Rate: {privacy.get('dup_rate')}")
                 print_info(f"  Correlation Delta: {utility.get('corr_delta')}")
+                
+                # PHASE 1 FIX: Calculate missing metrics using worker functions as fallback
+                if utility.get('corr_delta') is None:
+                    try:
+                        if CONTAINER_MODE:
+                            from worker import _utility_metrics
+                        else:
+                            from synth_worker.worker import _utility_metrics
+                        worker_utility = _utility_metrics(real_clean, synth)
+                        if worker_utility.get('corr_delta') is not None:
+                            utility['corr_delta'] = worker_utility['corr_delta']
+                            print_info(f"  Corr Delta (from worker fallback): {utility.get('corr_delta'):.4f}")
+                    except Exception as e:
+                        print_warning(f"Failed to calculate Corr Delta fallback: {type(e).__name__}: {e}")
+                
+                if privacy.get('dup_rate') is None:
+                    try:
+                        if CONTAINER_MODE:
+                            from worker import _privacy_metrics
+                        else:
+                            from synth_worker.worker import _privacy_metrics
+                        worker_privacy = _privacy_metrics(real_clean, synth)
+                        if worker_privacy.get('dup_rate') is not None:
+                            privacy['dup_rate'] = worker_privacy['dup_rate']
+                            print_info(f"  Dup Rate (from worker fallback): {privacy.get('dup_rate'):.4f}")
+                    except Exception as e:
+                        print_warning(f"Failed to calculate Dup Rate fallback: {type(e).__name__}: {e}")
+                
+                # Update metrics dict with calculated values
+                metrics = {"utility": utility, "privacy": privacy}
+                
             except (TypeError, AttributeError) as e:
                 # If eval_privacy/eval_statistical are modules, fall back to custom functions
                 print_warning(f"eval_privacy/eval_statistical are modules, not functions: {type(e).__name__}: {e}")
