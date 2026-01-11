@@ -650,6 +650,34 @@ def apply_preprocessing_plan(df: pd.DataFrame, plan: Dict[str, Any]) -> Tuple[pd
                                 applied_steps.append(f"Applied min-max scaling to '{col}'")
                             else:
                                 logger.warning(f"Cannot apply min-max scaling to '{col}': no valid values")
+                        elif method == "winsorize_1_99":
+                            # PHASE 2: Winsorization (1%/99%) - Research-based outlier handling
+                            # Clip extreme values to 1st and 99th percentiles (prevents distribution collapse)
+                            valid_values = result_df[col].dropna()
+                            if len(valid_values) > 0:
+                                lower_bound = float(valid_values.quantile(0.01))
+                                upper_bound = float(valid_values.quantile(0.99))
+                                result_df[col] = result_df[col].clip(lower=lower_bound, upper=upper_bound)
+                                applied_steps.append(f"Applied winsorization (1%/99%) to '{col}' - clipped to [{lower_bound:.2f}, {upper_bound:.2f}]")
+                            else:
+                                logger.warning(f"Cannot apply winsorization to '{col}': no valid values")
+                        elif method == "binary_discretize":
+                            # PHASE 2: Binary discretization (from NeurIPS 2024) - for multimodal distributions
+                            # Discretize into 256 bins, then one-hot encode
+                            valid_values = result_df[col].dropna()
+                            if len(valid_values) > 0:
+                                try:
+                                    # Discretize into 256 bins
+                                    bins = pd.qcut(valid_values, q=min(256, len(valid_values.unique())), duplicates='drop', retbins=True)[1]
+                                    result_df[col + '_binned'] = pd.cut(result_df[col], bins=bins, include_lowest=True)
+                                    # One-hot encode
+                                    dummies = pd.get_dummies(result_df[col + '_binned'], prefix=col)
+                                    result_df = pd.concat([result_df.drop(columns=[col, col + '_binned']), dummies], axis=1)
+                                    applied_steps.append(f"Applied binary discretization to '{col}' ({len(dummies.columns)} bins)")
+                                except Exception as e:
+                                    logger.warning(f"Failed to apply binary discretization to '{col}': {type(e).__name__}: {e}")
+                            else:
+                                logger.warning(f"Cannot apply binary discretization to '{col}': no valid values")
                     except Exception as e:
                         logger.warning(f"Failed to apply transformation '{method}' to '{col}': {type(e).__name__}: {e}")
         
