@@ -312,6 +312,9 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
         print_info(f"Original raw data shape: {original_raw_df.shape[0]} rows, {original_raw_df.shape[1]} columns")
         print_info("=" * 80)
         
+        # FLAG: Enable/disable preprocessing (set to False to match working script)
+        ENABLE_PREPROCESSING = False  # MUTED: Disabled to test without preprocessing
+        
         # Check if we should use SYNTHCITY_DIRECT approach (matches working script exactly)
         # CRITICAL: Even though working script doesn't show preprocessing, production pipeline uses it
         # The working script may have been run with preprocessing applied, or preprocessing is needed for quality
@@ -327,36 +330,37 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
         # This matches the production worker pipeline and is critical for achieving "all green" metrics
         # The production pipeline ALWAYS uses preprocessing (worker.py lines 1179-1222)
         # Even for SYNTHCITY_DIRECT path, we should use preprocessing to match production quality
-        print_info("=" * 80)
-        print_info("PREPROCESSING STEP - Starting preprocessing execution")
-        print_info(f"Original data shape: {df.shape[0]} rows, {df.shape[1]} columns")
-        print_info("NOTE: Production pipeline uses preprocessing (mandatory per worker.py)")
-        print_info("=" * 80)
-        
         preprocessing_metadata = {}
         original_df_shape = df.shape
         
-        # Apply preprocessing for all paths (production pipeline always uses it)
-        # This is critical for achieving "all green" metrics
-        try:
+        if ENABLE_PREPROCESSING:
+            print_info("=" * 80)
+            print_info("PREPROCESSING STEP - Starting preprocessing execution")
+            print_info(f"Original data shape: {df.shape[0]} rows, {df.shape[1]} columns")
+            print_info("NOTE: Production pipeline uses preprocessing (mandatory per worker.py)")
+            print_info("=" * 80)
+            
+            # Apply preprocessing for all paths (production pipeline always uses it)
+            # This is critical for achieving "all green" metrics
+            try:
                 print_info("[PREPROCESSING] Step 1: Attempting to import preprocessing_agent...")
-                # Try to import preprocessing agent
-                try:
-                    from preprocessing_agent import get_preprocessing_plan
-                    PREPROCESSING_AVAILABLE = True
+            # Try to import preprocessing agent
+            try:
+                from preprocessing_agent import get_preprocessing_plan
+                PREPROCESSING_AVAILABLE = True
                     get_preprocessing_plan_func = get_preprocessing_plan
                     print_success("[PREPROCESSING] ✅ Successfully imported preprocessing_agent.get_preprocessing_plan")
                 except ImportError as e1:
                     print_warning(f"[PREPROCESSING] ⚠️  Failed to import preprocessing_agent: {type(e1).__name__}: {e1}")
-                    try:
+                try:
                         print_info("[PREPROCESSING] Step 2: Attempting to import preprocessing (fallback)...")
-                        from preprocessing import smart_preprocess
-                        PREPROCESSING_AVAILABLE = True
+                    from preprocessing import smart_preprocess
+                    PREPROCESSING_AVAILABLE = True
                         get_preprocessing_plan_func = None
                         smart_preprocess_func = smart_preprocess
                         print_success("[PREPROCESSING] ✅ Successfully imported preprocessing.smart_preprocess")
                     except ImportError as e2:
-                        PREPROCESSING_AVAILABLE = False
+                    PREPROCESSING_AVAILABLE = False
                         get_preprocessing_plan_func = None
                         smart_preprocess_func = None
                         print_error(f"[PREPROCESSING] ❌ Failed to import preprocessing: {type(e2).__name__}: {e2}")
@@ -365,10 +369,10 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                 print_info(f"[PREPROCESSING] PREPROCESSING_AVAILABLE = {PREPROCESSING_AVAILABLE}")
                 print_info(f"[PREPROCESSING] get_preprocessing_plan_func = {get_preprocessing_plan_func is not None}")
                 print_info(f"[PREPROCESSING] smart_preprocess_func = {smart_preprocess_func is not None if 'smart_preprocess_func' in locals() else 'N/A'}")
-                
-                if PREPROCESSING_AVAILABLE:
+            
+            if PREPROCESSING_AVAILABLE:
                     if get_preprocessing_plan_func:
-                        # Use preprocessing_agent.py (SyntheticDataSpecialist's implementation)
+                    # Use preprocessing_agent.py (SyntheticDataSpecialist's implementation)
                         print_info("[PREPROCESSING] Step 3: Calling get_preprocessing_plan()...")
                         print_info(f"[PREPROCESSING] Input DataFrame shape: {df.shape}")
                         print_info(f"[PREPROCESSING] Input DataFrame columns: {list(df.columns)[:5]}...")
@@ -388,16 +392,16 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                                 if "metadata" in preprocessing_metadata:
                                     print_info(f"[PREPROCESSING] metadata.applied_steps: {preprocessing_metadata.get('metadata', {}).get('applied_steps', 'N/A')}")
                             
-                            if preprocessed_df is not None and preprocessing_metadata:
-                                df = preprocessed_df  # Use preprocessed DataFrame
-                                applied_steps = preprocessing_metadata.get("metadata", {}).get("applied_steps", [])
+                    if preprocessed_df is not None and preprocessing_metadata:
+                        df = preprocessed_df  # Use preprocessed DataFrame
+                        applied_steps = preprocessing_metadata.get("metadata", {}).get("applied_steps", [])
                                 print_success(f"[PREPROCESSING] ✅ Preprocessing applied: {len(applied_steps)} steps")
                                 print_info(f"[PREPROCESSING] Applied steps: {applied_steps[:5] if applied_steps else 'None'}")
-                                if preprocessing_metadata.get("metadata", {}).get("rationale"):
-                                    rationale = preprocessing_metadata.get("metadata", {}).get("rationale", "")[:200]
+                        if preprocessing_metadata.get("metadata", {}).get("rationale"):
+                            rationale = preprocessing_metadata.get("metadata", {}).get("rationale", "")[:200]
                                     print_info(f"[PREPROCESSING] Rationale: {rationale}...")
                                 print_info(f"[PREPROCESSING] Final DataFrame shape after preprocessing: {df.shape}")
-                            else:
+                    else:
                                 print_warning("[PREPROCESSING] ⚠️  Preprocessing agent returned no plan (OpenRouter may be unavailable)")
                                 print_warning(f"[PREPROCESSING] preprocessed_df: {preprocessed_df}, metadata: {preprocessing_metadata}")
                         except Exception as e3:
@@ -406,16 +410,16 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                             print_error(f"[PREPROCESSING] Traceback:\n{traceback.format_exc()}")
                             raise
                     elif 'smart_preprocess_func' in locals() and smart_preprocess_func:
-                        # Use preprocessing.py (BackendAgent's wrapper)
+                    # Use preprocessing.py (BackendAgent's wrapper)
                         print_info("[PREPROCESSING] Step 3: Calling smart_preprocess()...")
                         try:
                             df, preprocessing_metadata = smart_preprocess_func(
-                                df=df,
-                                dataset_name="heart",
-                                enable_smart_preprocess=True,
-                                fallback_on_error=True
-                            )
-                            applied_ops = preprocessing_metadata.get("applied_operations", [])
+                        df=df,
+                        dataset_name="heart",
+                        enable_smart_preprocess=True,
+                        fallback_on_error=True
+                    )
+                    applied_ops = preprocessing_metadata.get("applied_operations", [])
                             print_success(f"[PREPROCESSING] ✅ Preprocessing applied: {len(applied_ops)} operations")
                             print_info(f"[PREPROCESSING] Final DataFrame shape after preprocessing: {df.shape}")
                         except Exception as e4:
@@ -423,11 +427,11 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
                             import traceback
                             print_error(f"[PREPROCESSING] Traceback:\n{traceback.format_exc()}")
                             raise
-                    else:
+                else:
                         print_warning("[PREPROCESSING] ⚠️  Preprocessing functions not available")
                         print_warning(f"[PREPROCESSING] get_preprocessing_plan_func: {get_preprocessing_plan_func is not None if 'get_preprocessing_plan_func' in locals() else 'N/A'}")
                         print_warning(f"[PREPROCESSING] smart_preprocess_func: {smart_preprocess_func is not None if 'smart_preprocess_func' in locals() else 'N/A'}")
-                else:
+            else:
                     print_warning("[PREPROCESSING] ⚠️  Preprocessing module not available - skipping preprocessing step")
         except Exception as e:
             print_error(f"[PREPROCESSING] ❌ CRITICAL: Preprocessing failed with exception")
@@ -437,11 +441,18 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
             print_error(f"[PREPROCESSING] Full traceback:\n{traceback.format_exc()}")
             print_warning("[PREPROCESSING] ⚠️  Continuing with original data (no preprocessing applied)")
             preprocessing_metadata = {"error": str(e), "preprocessing_method": "failed", "exception_type": type(e).__name__}
-        
-        print_info("=" * 80)
-        print_info("PREPROCESSING STEP - Completed")
-        print_info(f"Final data shape: {df.shape[0]} rows, {df.shape[1]} columns")
-        print_info("=" * 80)
+            
+            print_info("=" * 80)
+            print_info("PREPROCESSING STEP - Completed")
+            print_info(f"Final data shape: {df.shape[0]} rows, {df.shape[1]} columns")
+            print_info("=" * 80)
+        else:
+            print_info("=" * 80)
+            print_info("PREPROCESSING STEP - DISABLED (ENABLE_PREPROCESSING = False)")
+            print_info("Using raw data directly (matching standalone_ddpm_test.py)")
+            print_info(f"Data shape: {df.shape[0]} rows, {df.shape[1]} columns")
+            print_info("=" * 80)
+            preprocessing_metadata = {"preprocessing_method": "disabled", "enabled": False}
         
         # CRITICAL FIX: Use raw data directly with SynthCity (like standalone_ddpm_test.py)
         # The working script achieved KS Mean 0.0650 by using raw data, not _clean_df_for_sdv()
@@ -452,11 +463,6 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
         print_info("USING RAW DATA APPROACH (matching standalone_ddpm_test.py)")
         print_info("This matches the working script that achieved KS Mean 0.0650")
         print_info("=" * 80)
-        
-        # Use raw data directly (no _clean_df_for_sdv() - that was corrupting the data!)
-        real_clean = df.copy()
-        print_info(f"Using raw data: {real_clean.shape[0]} rows, {real_clean.shape[1]} columns")
-        print_info(f"Data types: {real_clean.dtypes.to_dict()}")
         
         # Use SynthCity directly (like the working script)
         # This avoids the factory wrapper and SDV metadata issues
@@ -595,13 +601,23 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
             # Use the EXACT approach from standalone_ddpm_test.py that achieved KS Mean 0.0650
             method = "ddpm"  # Set method for fallback logic
             print_info("Creating SynthCity GenericDataLoader (raw data, no cleaning)...")
-            # CRITICAL: Use preprocessed df (after preprocessing), NOT original_raw_df
-            # Production pipeline ALWAYS uses preprocessing (worker.py lines 1179-1222)
-            # Preprocessing fixes issues like numeric column names, outliers, skewed distributions
-            # This is essential for achieving "all green" metrics (KS Mean ≤ 0.10)
-            print_info("Using preprocessed df (after preprocessing) to match production pipeline")
-            print_info("Preprocessing is mandatory in production and fixes data quality issues")
-            loader = GenericDataLoader(df)  # Use preprocessed df, not original_raw_df
+            
+            # Use original_raw_df if preprocessing is disabled, otherwise use preprocessed df
+            if not ENABLE_PREPROCESSING:
+                print_info("Using original_raw_df (preprocessing disabled - matching working script)")
+                real_clean = original_raw_df.copy()
+            else:
+                # CRITICAL: Use preprocessed df (after preprocessing), NOT original_raw_df
+                # Production pipeline ALWAYS uses preprocessing (worker.py lines 1179-1222)
+                # Preprocessing fixes issues like numeric column names, outliers, skewed distributions
+                # This is essential for achieving "all green" metrics (KS Mean ≤ 0.10)
+                print_info("Using preprocessed df (after preprocessing) to match production pipeline")
+                print_info("Preprocessing is mandatory in production and fixes data quality issues")
+                real_clean = df.copy()
+            
+            print_info(f"Using data: {real_clean.shape[0]} rows, {real_clean.shape[1]} columns")
+            print_info(f"Data types: {real_clean.dtypes.to_dict()}")
+            loader = GenericDataLoader(real_clean)  # Use real_clean (raw or preprocessed based on flag)
             
             # Use n_iter=500 (EXACT match to working script that achieved 0.0650)
             # The working script uses n_iter=500: syn_model = Plugins().get("ddpm", n_iter=500)
@@ -624,13 +640,16 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
             # CRITICAL: Use SynthCity eval_privacy and eval_statistical DIRECTLY (EXACT match to working script)
             # The working script uses: privacy = eval_privacy(df, synthetic_df)
             #                          utility = eval_statistical(df, synthetic_df)
-            # Use preprocessed df (matches production pipeline which always preprocesses)
+            # Use real_clean (raw or preprocessed based on ENABLE_PREPROCESSING flag)
             print_info("Evaluating metrics with SynthCity eval_privacy/eval_statistical...")
-            print_info("Using preprocessed df (matches production pipeline)")
+            if not ENABLE_PREPROCESSING:
+                print_info("Using original_raw_df (preprocessing disabled - matching working script)")
+            else:
+                print_info("Using preprocessed df (matches production pipeline)")
             try:
                 # Try to use eval_privacy and eval_statistical as functions (like working script)
-                privacy_result = eval_privacy(df, synth)
-                utility_result = eval_statistical(df, synth)
+                privacy_result = eval_privacy(real_clean, synth)
+                utility_result = eval_statistical(real_clean, synth)
                 
                 # Convert SynthCity format to our format
                 # SynthCity returns ks_complement (higher = better, closer to 1 = better)
@@ -676,122 +695,122 @@ def run_full_pipeline_test(df: pd.DataFrame, use_openrouter: bool = True) -> Dic
         else:
             # Fallback to factory wrapper approach (if SynthCity direct import fails)
             print_warning("⚠️  Using factory wrapper approach (may not match working script)")
+        
+        # Prepare data (same as worker does) - AFTER preprocessing
+        real_clean = _clean_df_for_sdv(df)
+        print_info(f"Prepared data: {real_clean.shape[0]} rows, {real_clean.shape[1]} columns")
+        
+        # Prepare metadata
+        metadata = SingleTableMetadata()
+        metadata.detect_from_dataframe(real_clean)
+        
+        # Test with TabDDPM (best for clinical data)
+        # If TabDDPM fails repeatedly, try CTGAN as alternative
+        print_info("Testing with TabDDPM (recommended for clinical data)...")
+        
+        # IMPROVED: Try ClinicalModelSelector first to trigger OpenRouter and get optimized hyperparameters
+        hparams = {}
+        method = "ddpm"  # Default method - will try CTGAN if TabDDPM fails
+        
+        try:
+            if CONTAINER_MODE:
+                from libs.model_selector import select_model_for_dataset
+            else:
+                from libs.model_selector import select_model_for_dataset
             
-            # Prepare data (same as worker does) - AFTER preprocessing
-            real_clean = _clean_df_for_sdv(df)
-            print_info(f"Prepared data: {real_clean.shape[0]} rows, {real_clean.shape[1]} columns")
+            print_info("Calling ClinicalModelSelector (OpenRouter) for optimized hyperparameters...")
+            plan = select_model_for_dataset(
+                df=real_clean,
+                schema=None,
+                preference=None,
+                goal=None,
+                user_prompt=None,
+                compliance_level="hipaa_like",
+            )
             
-            # Prepare metadata
-            metadata = SingleTableMetadata()
-            metadata.detect_from_dataframe(real_clean)
-            
-            # Test with TabDDPM (best for clinical data)
-            # If TabDDPM fails repeatedly, try CTGAN as alternative
-            print_info("Testing with TabDDPM (recommended for clinical data)...")
-            
-            # IMPROVED: Try ClinicalModelSelector first to trigger OpenRouter and get optimized hyperparameters
-            hparams = {}
-            method = "ddpm"  # Default method - will try CTGAN if TabDDPM fails
-            
+            if plan and isinstance(plan, dict):
+                # Extract method and hyperparameters from plan
+                choice = plan.get("choice") or {}
+                plan_method = choice.get("method") or plan.get("method")
+                if plan_method:
+                    method = str(plan_method).lower()
+                    print_success(f"ClinicalModelSelector selected method: {method}")
+                
+                # Extract hyperparameters
+                plan_hparams = plan.get("hyperparams", {})
+                if plan_hparams:
+                    # Get method-specific hyperparameters
+                    method_hparams = (
+                        plan_hparams.get(method) or 
+                        (plan_hparams.get("ddpm") if method in ("ddpm", "tabddpm") else None) or
+                        (plan_hparams.get("ctgan") if method == "ctgan" else None) or
+                        (plan_hparams.get("tvae") if method == "tvae" else None) or
+                        {}
+                    )
+                    if method_hparams:
+                        hparams = method_hparams
+                        print_success(f"OpenRouter provided hyperparameters: {json.dumps(hparams, indent=2)}")
+                    else:
+                        print_warning("OpenRouter plan didn't include method-specific hyperparameters")
+                else:
+                    print_warning("OpenRouter plan didn't include hyperparameters")
+            else:
+                print_warning("ClinicalModelSelector returned invalid plan, using optimizer defaults")
+        except Exception as e:
+            print_warning(f"ClinicalModelSelector (OpenRouter) failed: {type(e).__name__}: {e}")
+            print_info("Falling back to optimizer suggestions...")
+        
+        # Fallback to optimizer if ClinicalModelSelector didn't provide hyperparameters
+        if not hparams:
             try:
                 if CONTAINER_MODE:
-                    from libs.model_selector import select_model_for_dataset
+                    from optimizer import get_optimizer
                 else:
-                    from libs.model_selector import select_model_for_dataset
-                
-                print_info("Calling ClinicalModelSelector (OpenRouter) for optimized hyperparameters...")
-                plan = select_model_for_dataset(
-                    df=real_clean,
-                    schema=None,
-                    preference=None,
-                    goal=None,
-                    user_prompt=None,
-                    compliance_level="hipaa_like",
+                    from synth_worker.optimizer import get_optimizer
+                optimizer = get_optimizer()
+                hparams = optimizer.suggest_hyperparameters(
+                    method=method,
+                    dataset_size=(len(real_clean), len(real_clean.columns)),
+                    previous_metrics=None,
+                    dp_requested=False,
                 )
-                
-                if plan and isinstance(plan, dict):
-                    # Extract method and hyperparameters from plan
-                    choice = plan.get("choice") or {}
-                    plan_method = choice.get("method") or plan.get("method")
-                    if plan_method:
-                        method = str(plan_method).lower()
-                        print_success(f"ClinicalModelSelector selected method: {method}")
-                    
-                    # Extract hyperparameters
-                    plan_hparams = plan.get("hyperparams", {})
-                    if plan_hparams:
-                        # Get method-specific hyperparameters
-                        method_hparams = (
-                            plan_hparams.get(method) or 
-                            (plan_hparams.get("ddpm") if method in ("ddpm", "tabddpm") else None) or
-                            (plan_hparams.get("ctgan") if method == "ctgan" else None) or
-                            (plan_hparams.get("tvae") if method == "tvae" else None) or
-                            {}
-                        )
-                        if method_hparams:
-                            hparams = method_hparams
-                            print_success(f"OpenRouter provided hyperparameters: {json.dumps(hparams, indent=2)}")
-                        else:
-                            print_warning("OpenRouter plan didn't include method-specific hyperparameters")
-                    else:
-                        print_warning("OpenRouter plan didn't include hyperparameters")
-                else:
-                    print_warning("ClinicalModelSelector returned invalid plan, using optimizer defaults")
+                print_info(f"Optimizer suggested hyperparameters: {json.dumps(hparams, indent=2)}")
             except Exception as e:
-                print_warning(f"ClinicalModelSelector (OpenRouter) failed: {type(e).__name__}: {e}")
-                print_info("Falling back to optimizer suggestions...")
-            
-            # Fallback to optimizer if ClinicalModelSelector didn't provide hyperparameters
-            if not hparams:
-                try:
-                    if CONTAINER_MODE:
-                        from optimizer import get_optimizer
-                    else:
-                        from synth_worker.optimizer import get_optimizer
-                    optimizer = get_optimizer()
-                    hparams = optimizer.suggest_hyperparameters(
-                        method=method,
-                        dataset_size=(len(real_clean), len(real_clean.columns)),
-                        previous_metrics=None,
-                        dp_requested=False,
-                    )
-                    print_info(f"Optimizer suggested hyperparameters: {json.dumps(hparams, indent=2)}")
-                except Exception as e:
-                    print_warning(f"Optimizer not available: {type(e).__name__}")
-            
+                print_warning(f"Optimizer not available: {type(e).__name__}")
+        
             # Use n_iter=300 to match working script (not 800!)
             # The working script achieved KS Mean 0.0650 with n_iter=300
             hparams["n_iter"] = 300
             if "batch_size" not in hparams:
                 hparams["batch_size"] = 32  # Default batch size
-            
-            print_info(f"Final hyperparameters for {method}: {json.dumps(hparams, indent=2)}")
-            
-            # Create synthesizer with method from ClinicalModelSelector or default
-            print_info(f"Creating synthesizer with method='{method}' and hyperparams={json.dumps(hparams)}")
-            synthesizer, _ = create_synthesizer(
-                method=method,
-                metadata=metadata,
-                hyperparams=hparams,
-            )
-            
-            # Train
-            print_info("Training TabDDPM (this may take a few minutes)...")
-            start_time = time.time()
-            synthesizer.fit(real_clean)
-            training_time = time.time() - start_time
-            print_success(f"Training completed in {training_time:.1f} seconds")
-            
-            # Generate
-            print_info("Generating synthetic data...")
-            synth = synthesizer.sample(num_rows=len(real_clean))
-            print_success(f"Generated {len(synth)} synthetic rows")
-            
-            # Evaluate metrics
-            print_info("Evaluating metrics...")
-            utility = _utility_metrics(real_clean, synth)
-            privacy = _privacy_metrics(real_clean, synth)
-            metrics = {"utility": utility, "privacy": privacy}
+        
+        print_info(f"Final hyperparameters for {method}: {json.dumps(hparams, indent=2)}")
+        
+        # Create synthesizer with method from ClinicalModelSelector or default
+        print_info(f"Creating synthesizer with method='{method}' and hyperparams={json.dumps(hparams)}")
+        synthesizer, _ = create_synthesizer(
+            method=method,
+            metadata=metadata,
+            hyperparams=hparams,
+        )
+        
+        # Train
+        print_info("Training TabDDPM (this may take a few minutes)...")
+        start_time = time.time()
+        synthesizer.fit(real_clean)
+        training_time = time.time() - start_time
+        print_success(f"Training completed in {training_time:.1f} seconds")
+        
+        # Generate
+        print_info("Generating synthetic data...")
+        synth = synthesizer.sample(num_rows=len(real_clean))
+        print_success(f"Generated {len(synth)} synthetic rows")
+        
+        # Evaluate metrics
+        print_info("Evaluating metrics...")
+        utility = _utility_metrics(real_clean, synth)
+        privacy = _privacy_metrics(real_clean, synth)
+        metrics = {"utility": utility, "privacy": privacy}
         
         # Check thresholds (using our own function)
         all_green, passed, failed = check_all_green(metrics)
