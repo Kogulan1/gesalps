@@ -510,6 +510,17 @@ def _utility_metrics_synthcity(real: pd.DataFrame, synth: pd.DataFrame) -> Optio
         if not isinstance(Metrics, type):
             return None
         
+        try:
+            col_to_check = real.columns[0]
+            print(f"[debug-ks] Real column '{col_to_check}' distribution:\n{real[col_to_check].describe()}")
+            print(f"[debug-ks] Synth column '{col_to_check}' distribution:\n{synth[col_to_check].describe()}")
+            print(f"[debug-ks] dtypes: real={real[col_to_check].dtype}, synth={synth[col_to_check].dtype}")
+            if 'target' in real.columns:
+                print(f"[debug-ks] Real target counts:\n{real['target'].value_counts().to_dict()}")
+                print(f"[debug-ks] Synth target counts:\n{synth['target'].value_counts().to_dict()}")
+        except Exception as e:
+            print(f"[debug-ks] Failed to print distribution debug: {e}")
+
         # Use Metrics().evaluate() API (correct way to call SynthCity evaluators)
         metrics_evaluator = Metrics()
         metrics_df = metrics_evaluator.evaluate(
@@ -1287,7 +1298,9 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
     # This automatically detects/fixes issues like numeric column names, skewed distributions, feature collapse
     # Uses SyntheticDataSpecialist's preprocessing_agent.py implementation
     preprocessing_metadata = {}
-    if PREPROCESSING_AVAILABLE and get_preprocessing_plan:
+    # Use a local reference to avoid UnboundLocalError if get_preprocessing_plan is imported later in function
+    _preprocessing_func = get_preprocessing_plan if PREPROCESSING_AVAILABLE else None
+    if PREPROCESSING_AVAILABLE and _preprocessing_func:
         try:
             # Check if smart preprocessing is enabled (default: True - mandatory per CTO directive)
             cfg = run.get("config_json") or {}
@@ -1304,7 +1317,7 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
                     pass
                 
                 # Call preprocessing agent (returns (preprocessed_df, metadata) or (None, None) if fails)
-                preprocessed_df, preprocessing_metadata = get_preprocessing_plan(real, previous_ks=None)
+                preprocessed_df, preprocessing_metadata = _preprocessing_func(real, previous_ks=None)
                 
                 try:
                     if preprocessed_df is not None:
@@ -2471,9 +2484,10 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
             if current_ks and current_ks > 0.5:  # High KS Mean - try adaptive preprocessing
                 try:
                     # Use module-level get_preprocessing_plan (already imported at top)
-                    if PREPROCESSING_AVAILABLE and get_preprocessing_plan:
+                    _preprocessing_func_retry = get_preprocessing_plan if PREPROCESSING_AVAILABLE else None
+                    if PREPROCESSING_AVAILABLE and _preprocessing_func_retry:
                         # Re-apply preprocessing with knowledge of previous failure
-                        preprocessed_df, new_preprocessing_metadata = get_preprocessing_plan(real, previous_ks=current_ks)
+                        preprocessed_df, new_preprocessing_metadata = _preprocessing_func_retry(real, previous_ks=current_ks)
                     else:
                         preprocessed_df, new_preprocessing_metadata = None, None
                     if preprocessed_df is not None and new_preprocessing_metadata:
