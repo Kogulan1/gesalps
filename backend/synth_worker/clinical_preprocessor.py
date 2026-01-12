@@ -41,11 +41,17 @@ class ClinicalPreprocessor:
 
         # 2. Iterate through numerical columns
         for col in self.numerical_cols:
-            # Store original bounds for safety clipping
-            self.column_bounds[col] = (df[col].min(), df[col].max())
+            # Handle missing values and non-numeric strings (e.g., '?')
+            col_data = pd.to_numeric(df[col], errors='coerce')
+            if col_data.isna().all():
+                # Skip columns that can't be converted to numeric
+                continue
             
-            # Calculate Skew
-            skew = df[col].skew()
+            # Store original bounds for safety clipping (use numeric data)
+            self.column_bounds[col] = (col_data.min(), col_data.max())
+            
+            # Calculate Skew on numeric data
+            skew = col_data.skew()
             
             # Condition A: High Skew (> 1.0 or < -1.0)
             if abs(skew) > 1.0:
