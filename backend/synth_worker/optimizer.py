@@ -473,13 +473,15 @@ class SyntheticDataOptimizer:
         else:
             batch_size = 128
         
-        # Higher Embedding Dimension for complex clinical correlations
+        # Scale embedding dimension based on number of columns
         if n_cols < 10:
             embedding_dim = 128
-        elif n_cols < 30:
+        elif n_cols < 25:
             embedding_dim = 256
+        elif n_cols < 50:
+            embedding_dim = 1024  # Scaling to 1024 for high-dimensional feature support
         else:
-            embedding_dim = 512
+            embedding_dim = 2048
         
         # Adaptive boost based on previous failures
         if previous_metrics:

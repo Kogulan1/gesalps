@@ -1,0 +1,556 @@
+
+======================================================================
+🚀 RUNNING PIPELINE: Breast Cancer
+======================================================================
+INFO:sdv.metadata.single_table:Detected metadata:
+INFO:sdv.metadata.single_table:{
+    "METADATA_SPEC_VERSION": "SINGLE_TABLE_V1",
+    "columns": {
+        "mean radius": {
+            "sdtype": "numerical"
+        },
+        "mean texture": {
+            "sdtype": "numerical"
+        },
+        "mean perimeter": {
+            "sdtype": "numerical"
+        },
+        "mean area": {
+            "sdtype": "numerical"
+        },
+        "mean smoothness": {
+            "sdtype": "numerical"
+        },
+        "mean compactness": {
+            "sdtype": "numerical"
+        },
+        "mean concavity": {
+            "sdtype": "numerical"
+        },
+        "mean concave points": {
+            "sdtype": "numerical"
+        },
+        "mean symmetry": {
+            "sdtype": "numerical"
+        },
+        "mean fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "radius error": {
+            "sdtype": "numerical"
+        },
+        "texture error": {
+            "sdtype": "numerical"
+        },
+        "perimeter error": {
+            "sdtype": "numerical"
+        },
+        "area error": {
+            "sdtype": "numerical"
+        },
+        "smoothness error": {
+            "sdtype": "numerical"
+        },
+        "compactness error": {
+            "sdtype": "numerical"
+        },
+        "concavity error": {
+            "sdtype": "numerical"
+        },
+        "concave points error": {
+            "sdtype": "numerical"
+        },
+        "symmetry error": {
+            "sdtype": "numerical"
+        },
+        "fractal dimension error": {
+            "sdtype": "numerical"
+        },
+        "worst radius": {
+            "sdtype": "numerical"
+        },
+        "worst texture": {
+            "sdtype": "numerical"
+        },
+        "worst perimeter": {
+            "sdtype": "numerical"
+        },
+        "worst area": {
+            "sdtype": "numerical"
+        },
+        "worst smoothness": {
+            "sdtype": "numerical"
+        },
+        "worst compactness": {
+            "sdtype": "numerical"
+        },
+        "worst concavity": {
+            "sdtype": "numerical"
+        },
+        "worst concave points": {
+            "sdtype": "numerical"
+        },
+        "worst symmetry": {
+            "sdtype": "numerical"
+        },
+        "worst fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "target": {
+            "sdtype": "categorical"
+        }
+    }
+}
+[Breast Cancer] Phase 1: Fitting ClinicalPreprocessor...
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but QuantileTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but QuantileTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but QuantileTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but QuantileTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but QuantileTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but QuantileTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but QuantileTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but QuantileTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+[Breast Cancer] Phase 2: Training TVAE for 2000 epochs...
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sdv/single_table/base.py:168: FutureWarning: The 'SingleTableMetadata' is deprecated. Please use the new 'Metadata' class for synthesizers.
+  warnings.warn(DEPRECATION_MSG, FutureWarning)
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sdv/single_table/base.py:134: UserWarning: We strongly recommend saving the metadata using 'save_to_json' for replicability in future SDV versions.
+  warnings.warn(
+INFO:SingleTableSynthesizer:{'EVENT': 'Instance', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 17, 33, 15, 553210), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_d734f4b36b0c4d738530c549c46a5bc9'}
+[sdv-debug] Fitting TVAE on data head:
+   mean radius  mean texture  mean perimeter  mean area  mean smoothness
+0     0.594915      0.255708        0.606266   0.742563         0.655667
+1     0.657544      0.473141        0.641417   0.827003         0.425105
+2     0.630473      0.549593        0.628399   0.798336         0.594996
+INFO:SingleTableSynthesizer:{'EVENT': 'Fit', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 17, 33, 15, 555203), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_d734f4b36b0c4d738530c549c46a5bc9', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 569, 'TOTAL NUMBER OF COLUMNS': 31}
+INFO:sdv.data_processing.data_processor:Fitting table  metadata
+INFO:sdv.data_processing.data_processor:Fitting formatters for table 
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean radius'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean texture'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean perimeter'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean area'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean smoothness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean compactness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean concavity'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean concave points'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean symmetry'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean fractal dimension'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'radius error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'texture error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'perimeter error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'area error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'smoothness error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'compactness error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'concavity error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'concave points error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'symmetry error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'fractal dimension error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst radius'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst texture'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst perimeter'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst area'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst smoothness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst compactness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst concavity'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst concave points'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst symmetry'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst fractal dimension'. Data will not be rounded.
+INFO:sdv.data_processing.data_processor:Setting the configuration for the ``HyperTransformer`` for table 
+INFO:sdv.data_processing.data_processor:Fitting HyperTransformer for table 
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean radius'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean texture'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean perimeter'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean area'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean smoothness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean compactness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean concavity'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean concave points'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean symmetry'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean fractal dimension'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'radius error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'texture error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'perimeter error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'area error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'smoothness error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'compactness error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'concavity error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'concave points error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'symmetry error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'fractal dimension error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst radius'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst texture'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst perimeter'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst area'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst smoothness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst compactness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst concavity'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst concave points'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst symmetry'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst fractal dimension'. Data will not be rounded.
+INFO:SingleTableSynthesizer:{'EVENT': 'Fit processed data', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 17, 33, 15, 630784), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_d734f4b36b0c4d738530c549c46a5bc9', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 569, 'TOTAL NUMBER OF COLUMNS': 31}
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean radius. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean texture. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean perimeter. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean area. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean smoothness. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean compactness. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean concavity. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean concave points. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean symmetry. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean fractal dimension. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column radius error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column texture error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column perimeter error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column area error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column smoothness error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column compactness error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column concavity error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column concave points error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column symmetry error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column fractal dimension error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst radius. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst texture. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst perimeter. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst area. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst smoothness. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst compactness. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst concavity. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst concave points. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst symmetry. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst fractal dimension. Extra column not created.
+[Breast Cancer] Phase 3: Sampling & Inverse Transform...
+INFO:SingleTableSynthesizer:{'EVENT': 'Sample', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 17, 53, 48, 591270), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_d734f4b36b0c4d738530c549c46a5bc9', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 569, 'TOTAL NUMBER OF COLUMNS': 31}
+[sdv-debug] Sampled TVAE head:
+   mean radius  mean texture  mean perimeter  mean area  mean smoothness
+0     0.589902      0.591841        0.634477   0.768795         0.547841
+1     0.591712      0.653705        0.580839   0.777687         0.458675
+2     0.373900      0.489031        0.362256   0.171005         0.618295
+[sdv-debug] Sampled target distribution (post-threshold):
+target
+1    0.659051
+0    0.340949
+Name: proportion, dtype: float64
+[sdv-debug] Sampled columns: ['mean radius', 'mean texture', 'mean perimeter', 'mean area', 'mean smoothness', 'mean compactness', 'mean concavity', 'mean concave points', 'mean symmetry', 'mean fractal dimension', 'radius error', 'texture error', 'perimeter error', 'area error', 'smoothness error', 'compactness error', 'concavity error', 'concave points error', 'symmetry error', 'fractal dimension error', 'worst radius', 'worst texture', 'worst perimeter', 'worst area', 'worst smoothness', 'worst compactness', 'worst concavity', 'worst concave points', 'worst symmetry', 'worst fractal dimension', 'target']
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but QuantileTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but QuantileTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but QuantileTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but QuantileTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but QuantileTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but QuantileTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but QuantileTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but QuantileTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/sklearn/utils/validation.py:2691: UserWarning: X does not have valid feature names, but PowerTransformer was fitted with feature names
+  warnings.warn(
+[Breast Cancer] Phase 4: Evaluating Metrics...
+[KeOps] Warning : CUDA libraries not found or could not be loaded; Switching to CPU only.
+INFO:worker:Corr Delta calculated: 0.0998
+INFO:worker:Dup rate calculated: 0.0000 (0 duplicates out of 569 synthetic rows)
+Results for Breast Cancer:
+  KS Mean:    0.0733
+  Corr Delta: 0.0998
+  MIA AUC:    0.8619
+
+📦 Serializing Breast Cancer Artifacts...
+✅ Breast Cancer artifacts saved.
+
+======================================================================
+🚀 RUNNING PIPELINE: Pima Diabetes
+======================================================================
+INFO:sdv.metadata.single_table:Detected metadata:
+INFO:sdv.metadata.single_table:{
+    "METADATA_SPEC_VERSION": "SINGLE_TABLE_V1",
+    "columns": {
+        "Pregnancies": {
+            "sdtype": "numerical"
+        },
+        "Glucose": {
+            "sdtype": "numerical"
+        },
+        "BloodPressure": {
+            "sdtype": "numerical"
+        },
+        "SkinThickness": {
+            "sdtype": "numerical"
+        },
+        "Insulin": {
+            "sdtype": "numerical"
+        },
+        "BMI": {
+            "sdtype": "numerical"
+        },
+        "DiabetesPedigreeFunction": {
+            "sdtype": "numerical"
+        },
+        "Age": {
+            "sdtype": "numerical"
+        },
+        "Outcome": {
+            "sdtype": "categorical"
+        }
+    }
+}
+[Pima Diabetes] Phase 1: Fitting ClinicalPreprocessor...
+[Pima Diabetes] Phase 2: Training TVAE for 2000 epochs...
+INFO:SingleTableSynthesizer:{'EVENT': 'Instance', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 17, 53, 49, 503855), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_8512ad785e3a484fa72444e7b79ae7ca'}
+[sdv-debug] Fitting TVAE on data head:
+   Pregnancies   Glucose  BloodPressure  SkinThickness  Insulin
+0     0.564101  0.584008       0.432231       0.581981      0.0
+1     0.429682  0.377310       0.376536       0.534835      0.0
+2     0.605475  0.664301       0.358621       0.000000      0.0
+INFO:SingleTableSynthesizer:{'EVENT': 'Fit', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 17, 53, 49, 505630), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_8512ad785e3a484fa72444e7b79ae7ca', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 768, 'TOTAL NUMBER OF COLUMNS': 9}
+INFO:sdv.data_processing.data_processor:Fitting table  metadata
+INFO:sdv.data_processing.data_processor:Fitting formatters for table 
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'Pregnancies'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'Glucose'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'BloodPressure'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'SkinThickness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'Insulin'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'BMI'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'DiabetesPedigreeFunction'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'Age'. Data will not be rounded.
+INFO:sdv.data_processing.data_processor:Setting the configuration for the ``HyperTransformer`` for table 
+INFO:sdv.data_processing.data_processor:Fitting HyperTransformer for table 
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'Pregnancies'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'Glucose'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'BloodPressure'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'SkinThickness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'Insulin'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'BMI'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'DiabetesPedigreeFunction'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'Age'. Data will not be rounded.
+INFO:SingleTableSynthesizer:{'EVENT': 'Fit processed data', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 17, 53, 49, 528181), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_8512ad785e3a484fa72444e7b79ae7ca', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 768, 'TOTAL NUMBER OF COLUMNS': 9}
+INFO:rdt.transformers.null:Guidance: There are no missing values in column Pregnancies. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column Glucose. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column BloodPressure. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column SkinThickness. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column Insulin. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column BMI. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column DiabetesPedigreeFunction. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column Age. Extra column not created.
+[Pima Diabetes] Phase 3: Sampling & Inverse Transform...
+INFO:SingleTableSynthesizer:{'EVENT': 'Sample', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 18, 4, 16, 532428), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_8512ad785e3a484fa72444e7b79ae7ca', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 768, 'TOTAL NUMBER OF COLUMNS': 9}
+[sdv-debug] Sampled TVAE head:
+   Pregnancies   Glucose  BloodPressure  SkinThickness   Insulin
+0     0.507324  0.515609       0.416115       0.002144  0.004673
+1     0.672332  0.588553       0.640768       0.000000  0.001052
+2     0.458635  0.482913       0.480156       0.477685  0.663989
+[sdv-debug] Sampled columns: ['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI', 'DiabetesPedigreeFunction', 'Age', 'Outcome']
+[Pima Diabetes] Phase 4: Evaluating Metrics...
+INFO:worker:Corr Delta calculated: 0.0519
+INFO:worker:Dup rate calculated: 0.0000 (0 duplicates out of 768 synthetic rows)
+Results for Pima Diabetes:
+  KS Mean:    0.0521
+  Corr Delta: 0.0519
+  MIA AUC:    0.5985
+
+======================================================================
+🩺 RUNNING MIXED-TYPE STRESS TEST: Heart Disease
+======================================================================
+INFO:sdv.metadata.single_table:Detected metadata:
+INFO:sdv.metadata.single_table:{
+    "METADATA_SPEC_VERSION": "SINGLE_TABLE_V1",
+    "columns": {
+        "age": {
+            "sdtype": "numerical"
+        },
+        "sex": {
+            "sdtype": "categorical"
+        },
+        "cp": {
+            "sdtype": "categorical"
+        },
+        "trestbps": {
+            "sdtype": "numerical"
+        },
+        "chol": {
+            "sdtype": "numerical"
+        },
+        "fbs": {
+            "sdtype": "categorical"
+        },
+        "restecg": {
+            "sdtype": "categorical"
+        },
+        "thalach": {
+            "sdtype": "numerical"
+        },
+        "exang": {
+            "sdtype": "categorical"
+        },
+        "oldpeak": {
+            "sdtype": "numerical"
+        },
+        "slope": {
+            "sdtype": "categorical"
+        },
+        "ca": {
+            "sdtype": "categorical"
+        },
+        "thal": {
+            "sdtype": "categorical"
+        },
+        "target": {
+            "sdtype": "categorical"
+        }
+    }
+}
+[Heart Disease] Phase 1: Fitting ClinicalPreprocessor...
+[Verification] Numerical columns identified: ['age', 'trestbps', 'chol', 'thalach', 'oldpeak']
+[Verification] Categorical columns identified: ['sex', 'cp', 'fbs', 'restecg', 'exang', 'slope', 'ca', 'thal', 'target']
+✅ Verification Passed: Categorical columns correctly isolated.
+[Heart Disease] Phase 2: Training TVAE for 2000 epochs...
+INFO:SingleTableSynthesizer:{'EVENT': 'Instance', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 18, 4, 16, 685403), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_8e21c124313644279df4c032d62e94ea'}
+[sdv-debug] Fitting TVAE on data head:
+        age  sex   cp  trestbps      chol
+0  0.585539  1.0  1.0  0.581981  0.422944
+1  0.641417  1.0  4.0  0.641417  0.559992
+2  0.641417  1.0  4.0  0.440391  0.411275
+INFO:SingleTableSynthesizer:{'EVENT': 'Fit', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 18, 4, 16, 686877), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_8e21c124313644279df4c032d62e94ea', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 297, 'TOTAL NUMBER OF COLUMNS': 14}
+INFO:sdv.data_processing.data_processor:Fitting table  metadata
+INFO:sdv.data_processing.data_processor:Fitting formatters for table 
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'age'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'trestbps'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'chol'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'thalach'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'oldpeak'. Data will not be rounded.
+INFO:sdv.data_processing.data_processor:Setting the configuration for the ``HyperTransformer`` for table 
+INFO:sdv.data_processing.data_processor:Fitting HyperTransformer for table 
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'age'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'trestbps'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'chol'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'thalach'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'oldpeak'. Data will not be rounded.
+INFO:SingleTableSynthesizer:{'EVENT': 'Fit processed data', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 18, 4, 16, 700069), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_8e21c124313644279df4c032d62e94ea', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 297, 'TOTAL NUMBER OF COLUMNS': 14}
+INFO:rdt.transformers.null:Guidance: There are no missing values in column age. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column trestbps. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column chol. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column thalach. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column oldpeak. Extra column not created.
+[Heart Disease] Phase 3: Sampling & Inverse Transform...
+INFO:SingleTableSynthesizer:{'EVENT': 'Sample', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 18, 8, 24, 127739), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_8e21c124313644279df4c032d62e94ea', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 297, 'TOTAL NUMBER OF COLUMNS': 14}
+[sdv-debug] Sampled TVAE head:
+        age  sex   cp  trestbps      chol
+0  0.385687  1.0  3.0  0.516785  0.450911
+1  0.503167  1.0  3.0  0.516722  0.360303
+2  0.460708  0.0  3.0  0.490775  0.464468
+[sdv-debug] Sampled target distribution (post-threshold):
+target
+0    0.538721
+1    0.461279
+Name: proportion, dtype: float64
+[sdv-debug] Sampled columns: ['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal', 'target']
+[Heart Disease] Phase 4: Evaluating Metrics...
+INFO:worker:Corr Delta calculated: 0.1008
+INFO:worker:Dup rate calculated: 0.0000 (0 duplicates out of 297 synthetic rows)
+[Heart Disease] Phase 5: Validating Categorical Fidelity...
+✅ Categorical Fidelity Verified: All values are discrete.
+
+======================================================================
+FINAL CONSOLIDATED REPORT
+======================================================================
+Breast Cancer (v18): KS=0.0733, CD=0.0998
+Pima Diabetes (Gen):  KS=0.0521, CD=0.0519
+Heart Disease (Stress): KS=0.0951, CD=0.1008
+
+⚠️ MISSION PARTIAL: Some metrics missed target, but engine is stable.
