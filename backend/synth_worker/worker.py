@@ -2470,9 +2470,12 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
             current_ks = metrics.get("utility", {}).get("ks_mean")
             if current_ks and current_ks > 0.5:  # High KS Mean - try adaptive preprocessing
                 try:
-                    from preprocessing_agent import get_preprocessing_plan
-                    # Re-apply preprocessing with knowledge of previous failure
-                    preprocessed_df, new_preprocessing_metadata = get_preprocessing_plan(real, previous_ks=current_ks)
+                    # Use module-level get_preprocessing_plan (already imported at top)
+                    if PREPROCESSING_AVAILABLE and get_preprocessing_plan:
+                        # Re-apply preprocessing with knowledge of previous failure
+                        preprocessed_df, new_preprocessing_metadata = get_preprocessing_plan(real, previous_ks=current_ks)
+                    else:
+                        preprocessed_df, new_preprocessing_metadata = None, None
                     if preprocessed_df is not None and new_preprocessing_metadata:
                         # Update real_clean with new preprocessing
                         real_clean = _clean_df_for_sdv(preprocessed_df)
