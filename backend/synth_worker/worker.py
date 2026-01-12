@@ -86,6 +86,14 @@ except ImportError:
 # Silence only the deprecation warning coming from old lite API paths (if any)
 warnings.filterwarnings("ignore", category=FutureWarning, module="sdv.lite.single_table")
 
+# Clinical Preprocessor (v18)
+try:
+    from clinical_preprocessor import ClinicalPreprocessor
+    CLINICAL_PREPROCESSOR_AVAILABLE = True
+except ImportError:
+    CLINICAL_PREPROCESSOR_AVAILABLE = False
+    ClinicalPreprocessor = None
+
 # -------------------- Env & Supabase --------------------
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
@@ -2838,6 +2846,22 @@ def _attempt_train(plan_item: Dict[str, Any], real_df: pd.DataFrame, metadata: S
     use_loader_for_train = isinstance(model, SynthcitySynthesizer) and train_loader is not None
     
     # Train with timeout protection
+    # Clinical Preprocessing for TVAE (v18)
+    cp = None
+    real_train = real_df
+    if method == "tvae" and CLINICAL_PREPROCESSOR_AVAILABLE:
+        try:
+            print("[worker][clinical-preprocessor] Initializing ClinicalPreprocessor for TVAE (v18)...")
+            cp = ClinicalPreprocessor()
+            # ClinicalPreprocessor.fit requires dict-style metadata
+            cp.fit(real_df, metadata.to_dict())
+            real_train = cp.transform(real_df)
+            print("[worker][clinical-preprocessor] Data transformed for TVAE training")
+        except Exception as e:
+            print(f"[worker][clinical-preprocessor] Preprocessing failed: {e}. Falling back to default.")
+            real_train = real_df
+            cp = None
+
     try:
         if method == "ctgan" and hasattr(signal, 'SIGALRM'):
             # Use signal-based timeout for CTGAN (Unix only)
@@ -2845,17 +2869,27 @@ def _attempt_train(plan_item: Dict[str, Any], real_df: pd.DataFrame, metadata: S
                 if use_loader_for_train:
                     model.fit(train_loader)
                 else:
-                    model.fit(real_df)
+                    model.fit(real_train)
         else:
             # For other methods or Windows, just train normally
             if use_loader_for_train:
                 model.fit(train_loader)
             else:
-                model.fit(real_df)
+                model.fit(real_train)
     except TimeoutError as e:
         raise RuntimeError(f"CTGAN training timed out after {training_timeout}s. This dataset has high-cardinality columns (max={max_cardinality if 'max_cardinality' in locals() else 'unknown'}) that make CTGAN unsuitable. Try using 'gc' or 'tvae' method instead.")
     
     synth = model.sample(num_rows=n)
+    
+    # Clinical Inverse Transform (v18)
+    if method == "tvae" and cp is not None:
+        try:
+            print("[worker][clinical-preprocessor] Applying inverse transform for TVAE...")
+            synth = cp.inverse_transform(synth)
+            print("[worker][clinical-preprocessor] Data restored to original space")
+        except Exception as e:
+            print(f"[worker][clinical-preprocessor] Inverse transform failed: {e}")
+            # Continue with untransformed synth if inverse fails
 
     util = _utility_metrics(real_df, synth)
     priv = _privacy_metrics(real_df, synth)
