@@ -63,6 +63,21 @@ def print_warning(msg): print(f"{Colors.YELLOW}⚠️  {msg}{Colors.END}")
 def print_info(msg): print(f"{Colors.BLUE}ℹ️  {msg}{Colors.END}")
 def print_header(msg): print(f"\n{Colors.BOLD}{Colors.BLUE}{'='*80}{Colors.END}\n{Colors.BOLD}{msg}{Colors.END}\n{Colors.BOLD}{'='*80}{Colors.END}\n")
 
+# Global tracking variables
+method_history = []
+pivot_detected = False
+original_print = print
+
+def track_print(*args, **kwargs):
+    msg = ' '.join(str(a) for a in args)
+    if "PIVOTING to TVAE" in msg or "PIVOTING" in msg:
+        global pivot_detected
+        pivot_detected = True
+        print_info(f"[DETECTED] {msg}")
+    if "method" in msg.lower() and ("ddpm" in msg.lower() or "tvae" in msg.lower()):
+        method_history.append(msg)
+    original_print(*args, **kwargs)
+
 def load_breast_cancer_dataset() -> pd.DataFrame:
     """Load Breast Cancer dataset."""
     # Try multiple possible locations
@@ -192,22 +207,7 @@ def test_tvae_pivot():
     print_info("2. After 2+ failures with KS > 0.20, system should pivot to TVAE")
     print_info("3. TVAE should use enhanced hyperparameters (epochs 500-2000, batch 32)")
     
-    # Track method switches
-    method_history = []
-    pivot_detected = False
-    
-    # Patch worker's logging to track method switches
-    original_print = print
-    def track_print(*args, **kwargs):
-        msg = ' '.join(str(a) for a in args)
-        if "PIVOTING to TVAE" in msg or "PIVOTING" in msg:
-            nonlocal pivot_detected
-            pivot_detected = True
-            print_info(f"[DETECTED] {msg}")
-        if "method" in msg.lower() and ("ddpm" in msg.lower() or "tvae" in msg.lower()):
-            method_history.append(msg)
-        original_print(*args, **kwargs)
-    
+    # Patch builtins.print to track method switches
     import builtins
     builtins.print = track_print
     
