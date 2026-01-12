@@ -82,13 +82,19 @@ class ClinicalPreprocessor:
         processed = df.copy()
         
         for col in self.numerical_cols:
+            # Handle non-numeric values (e.g., '?' strings) - convert to numeric first
+            col_data = pd.to_numeric(processed[col], errors='coerce')
+            
             # NaN Safety: Check and fill missing values
-            if processed[col].isnull().any():
-                missing_pct = processed[col].isnull().mean()
+            if col_data.isnull().any():
+                missing_pct = col_data.isnull().mean()
                 if missing_pct > 0.05:
                     import warnings
                     warnings.warn(f"Column '{col}' has {missing_pct:.2%} missing values.")
-                processed[col] = processed[col].fillna(processed[col].mean())
+                col_data = col_data.fillna(col_data.mean())
+            
+            # Update processed dataframe with numeric data
+            processed[col] = col_data
             
             # Step 1: Gaussianization (Reshape for sklearn: (N, 1))
             data_col = processed[[col]].values
