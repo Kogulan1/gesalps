@@ -1,0 +1,21 @@
+{
+  "dataset": "Breast Cancer",
+  "version": "v18_green",
+  "timestamp": "2026-01-12T16:53:49Z",
+  "metrics": {
+    "utility": {
+      "ks_mean": 0.07328646748681898,
+      "corr_delta": 0.09983257492398705,
+      "auroc": null,
+      "c_index": null
+    },
+    "privacy": {
+      "mia_auc": 0.8619143277501132,
+      "dup_rate": 0.0
+    },
+    "compliance": {
+      "score": 92.6713532513181
+    }
+  },
+  "status": "APPROVED_GREEN"
+}

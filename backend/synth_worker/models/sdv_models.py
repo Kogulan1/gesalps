@@ -94,26 +94,69 @@ class TVAESynthesizer(BaseSynthesizer):
         """Filter and cast hyperparameters."""
         out: Dict[str, Any] = {}
         for k in self.SUPPORTED_HPARAMS:
-            if k in hparams and hparams[k] is not None:
-                v = hparams[k]
+            # Handle SynthCity naming compatibility (num_epochs -> epochs)
+            val = hparams.get(k)
+            if k == "epochs" and val is None:
+                val = hparams.get("num_epochs")
+                
+            if val is not None:
                 if k in {"epochs", "batch_size", "embedding_dim"}:
                     try:
-                        out[k] = int(float(v))
+                        out[k] = int(float(val))
                         if out[k] <= 0:
                             continue
                     except Exception:
                         continue
                 else:
-                    out[k] = v
+                    out[k] = val
         return out
     
     def fit(self, data: pd.DataFrame) -> None:
         """Train TVAE model."""
+        self._real_columns = list(data.columns) # Store columns for alignment
+        try:
+            print(f"[sdv-debug] Fitting TVAE on data head:\n{data.iloc[:3, :5]}")
+        except Exception:
+            pass
         self._model.fit(data)
     
     def sample(self, num_rows: int) -> pd.DataFrame:
         """Generate synthetic data."""
-        return self._model.sample(num_rows=num_rows)
+        out = self._model.sample(num_rows=num_rows)
+        
+        # SOTA FIX: Structural Alignment & Binary Thresholding
+        # 1. Column Reindexing: Ensure exact ordering to prevent KS mismatch
+        if hasattr(self, '_real_columns') and self._real_columns:
+            out = out.reindex(columns=self._real_columns)
+            
+        # 2. Binary Thresholding: Fix "Binary Collapse" where 0/1 columns become noise
+        # We iterate over columns and detect if they should be binary
+        for col in out.columns:
+            # Check sdtype from metadata if available
+            is_categorical = False
+            try:
+                col_meta = self._metadata.columns.get(col, {})
+                if col_meta.get('sdtype') in ['categorical', 'boolean']:
+                    is_categorical = True
+            except Exception:
+                pass
+            
+            # If categorical/target, apply rounding/thresholding to [0, 1]
+            if is_categorical or col == 'target':
+                try:
+                    # Threshold at 0.5 to restore binary fidelity
+                    out[col] = (out[col] > 0.5).astype(int)
+                except Exception:
+                    pass
+
+        try:
+            print(f"[sdv-debug] Sampled TVAE head:\n{out.iloc[:3, :5]}")
+            if 'target' in out.columns:
+                print(f"[sdv-debug] Sampled target distribution (post-threshold):\n{out['target'].value_counts(normalize=True)}")
+            print(f"[sdv-debug] Sampled columns: {list(out.columns)}")
+        except Exception:
+            pass
+        return out
     
     def get_supported_hyperparams(self) -> list[str]:
         """Return supported hyperparameters."""

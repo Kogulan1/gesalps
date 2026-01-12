@@ -181,6 +181,9 @@ class SynthcitySynthesizer(BaseSynthesizer):
             # It's a DataFrame - use as before
             self._columns = list(data.columns)
             try:
+                # DEBUG: Inspect input scales
+                if isinstance(data, pd.DataFrame):
+                    print(f"[synthcity-debug] Fitting {self.method} on data head:\n{data.iloc[:3, :5]}")
                 self._plugin.fit(data)
             except Exception as e:
                 raise RuntimeError(f"SynthCity plugin fit failed: {e}")
@@ -246,6 +249,13 @@ class SynthcitySynthesizer(BaseSynthesizer):
                     raise ValueError("SynthCity DataLoader returned empty DataFrame")
                 if not isinstance(df, pd.DataFrame):
                     df = pd.DataFrame(df)
+                
+                # DEBUG: Inspect scales
+                try:
+                    print(f"[synthcity-debug] Sampled {self.method} head (DataLoader branch):\n{df.iloc[:3, :5]}")
+                except Exception:
+                    pass
+                    
                 return df.head(num_rows).reset_index(drop=True)
             except Exception as e:
                 raise ValueError(f"Failed to extract DataFrame from SynthCity DataLoader (type: {type(out)}): {e}")
@@ -254,6 +264,13 @@ class SynthcitySynthesizer(BaseSynthesizer):
         if isinstance(out, pd.DataFrame):
             if len(out) == 0:
                 raise ValueError("SynthCity plugin returned empty DataFrame")
+            
+            # DEBUG: Inspect scales
+            try:
+                print(f"[synthcity-debug] Sampled {self.method} head (DataFrame branch):\n{out.iloc[:3, :5]}")
+            except Exception:
+                pass
+                
             return out.head(num_rows).reset_index(drop=True)
         
         # Convert array to DataFrame
