@@ -1,0 +1,760 @@
+INFO:worker:[worker][preprocessing] Fetching preprocessing plan...
+WARNING:worker:[worker][preprocessing] Preprocessing plan returned None - continuing with original data
+INFO:sdv.metadata.multi_table:Detected metadata:
+{
+    "columns": {
+        "age": {
+            "sdtype": "numerical"
+        },
+        "workclass": {
+            "sdtype": "categorical"
+        },
+        "fnlwgt": {
+            "sdtype": "numerical"
+        },
+        "education": {
+            "sdtype": "categorical"
+        },
+        "education-num": {
+            "sdtype": "numerical"
+        },
+        "marital-status": {
+            "sdtype": "categorical"
+        },
+        "occupation": {
+            "sdtype": "categorical"
+        },
+        "relationship": {
+            "sdtype": "categorical"
+        },
+        "race": {
+            "sdtype": "categorical"
+        },
+        "sex": {
+            "sdtype": "categorical"
+        },
+        "capital-gain": {
+            "sdtype": "numerical"
+        },
+        "capital-loss": {
+            "sdtype": "numerical"
+        },
+        "hours-per-week": {
+            "sdtype": "numerical"
+        },
+        "native-country": {
+            "sdtype": "categorical"
+        },
+        "income": {
+            "sdtype": "categorical"
+        }
+    }
+}
+INFO:sdv.metadata.single_table:Detected metadata:
+INFO:sdv.metadata.single_table:{
+    "METADATA_SPEC_VERSION": "SINGLE_TABLE_V1",
+    "columns": {
+        "age": {
+            "sdtype": "numerical"
+        },
+        "workclass": {
+            "sdtype": "categorical"
+        },
+        "fnlwgt": {
+            "sdtype": "numerical"
+        },
+        "education": {
+            "sdtype": "categorical"
+        },
+        "education-num": {
+            "sdtype": "numerical"
+        },
+        "marital-status": {
+            "sdtype": "categorical"
+        },
+        "occupation": {
+            "sdtype": "categorical"
+        },
+        "relationship": {
+            "sdtype": "categorical"
+        },
+        "race": {
+            "sdtype": "categorical"
+        },
+        "sex": {
+            "sdtype": "categorical"
+        },
+        "capital-gain": {
+            "sdtype": "numerical"
+        },
+        "capital-loss": {
+            "sdtype": "numerical"
+        },
+        "hours-per-week": {
+            "sdtype": "numerical"
+        },
+        "native-country": {
+            "sdtype": "categorical"
+        },
+        "income": {
+            "sdtype": "categorical"
+        }
+    }
+}
+Traceback (most recent call last):
+  File "/Users/kogulan/Desktop/gesalps/local_benchmarks/run_benchmark.py", line 108, in run_benchmark
+    result = worker.execute_pipeline(run_obj)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/backend/synth_worker/worker.py", line 1583, in execute_pipeline
+    synth_model, _ = create_synthesizer(
+                     ^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/backend/synth_worker/models/factory.py", line 47, in create_synthesizer
+    synthesizer = SynthcitySynthesizer(
+                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/backend/synth_worker/models/synthcity_models.py", line 68, in __init__
+    Plugins = _try_import_synthcity()
+              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/backend/synth_worker/models/synthcity_models.py", line 13, in _try_import_synthcity
+    from synthcity.plugins import Plugins  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/__init__.py", line 9, in <module>
+    from synthcity.plugins.core.plugin import Plugin, PluginLoader  # noqa: F401,E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/core/plugin.py", line 16, in <module>
+    from synthcity.metrics.plots import plot_marginal_comparison, plot_tsne
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/metrics/__init__.py", line 2, in <module>
+    from .eval import Metrics  # noqa: F401
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/metrics/eval.py", line 10, in <module>
+    from synthcity.plugins.core.dataloader import (
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/core/dataloader.py", line 22, in <module>
+    from synthcity.utils.serialization import dataframe_hash
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/utils/serialization.py", line 9, in <module>
+    from opacus import PrivacyEngine
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/opacus/__init__.py", line 17, in <module>
+    from .grad_sample import GradSampleModule, GradSampleModuleFastGradientClipping
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/opacus/grad_sample/__init__.py", line 32, in <module>
+    from .rms_norm import compute_rms_norm_grad_sample  # noqa
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/opacus/grad_sample/rms_norm.py", line 27, in <module>
+    @register_grad_sampler(nn.RMSNorm)
+                           ^^^^^^^^^^
+AttributeError: module 'torch.nn' has no attribute 'RMSNorm'
+INFO:worker:[worker][preprocessing] Fetching preprocessing plan...
+WARNING:worker:[worker][preprocessing] Preprocessing plan returned None - continuing with original data
+INFO:sdv.metadata.multi_table:Detected metadata:
+{
+    "columns": {
+        "Pregnancies": {
+            "sdtype": "numerical"
+        },
+        "Glucose": {
+            "sdtype": "numerical"
+        },
+        "BloodPressure": {
+            "sdtype": "numerical"
+        },
+        "SkinThickness": {
+            "sdtype": "numerical"
+        },
+        "Insulin": {
+            "sdtype": "numerical"
+        },
+        "BMI": {
+            "sdtype": "numerical"
+        },
+        "DiabetesPedigreeFunction": {
+            "sdtype": "numerical"
+        },
+        "Age": {
+            "sdtype": "numerical"
+        },
+        "Outcome": {
+            "sdtype": "categorical"
+        }
+    }
+}
+INFO:sdv.metadata.single_table:Detected metadata:
+INFO:sdv.metadata.single_table:{
+    "METADATA_SPEC_VERSION": "SINGLE_TABLE_V1",
+    "columns": {
+        "Pregnancies": {
+            "sdtype": "numerical"
+        },
+        "Glucose": {
+            "sdtype": "numerical"
+        },
+        "BloodPressure": {
+            "sdtype": "numerical"
+        },
+        "SkinThickness": {
+            "sdtype": "numerical"
+        },
+        "Insulin": {
+            "sdtype": "numerical"
+        },
+        "BMI": {
+            "sdtype": "numerical"
+        },
+        "DiabetesPedigreeFunction": {
+            "sdtype": "numerical"
+        },
+        "Age": {
+            "sdtype": "numerical"
+        },
+        "Outcome": {
+            "sdtype": "categorical"
+        }
+    }
+}
+Traceback (most recent call last):
+  File "/Users/kogulan/Desktop/gesalps/local_benchmarks/run_benchmark.py", line 108, in run_benchmark
+    result = worker.execute_pipeline(run_obj)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/backend/synth_worker/worker.py", line 1583, in execute_pipeline
+    synth_model, _ = create_synthesizer(
+                     ^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/backend/synth_worker/models/factory.py", line 47, in create_synthesizer
+    synthesizer = SynthcitySynthesizer(
+                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/backend/synth_worker/models/synthcity_models.py", line 68, in __init__
+    Plugins = _try_import_synthcity()
+              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/backend/synth_worker/models/synthcity_models.py", line 13, in _try_import_synthcity
+    from synthcity.plugins import Plugins  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/__init__.py", line 9, in <module>
+    from synthcity.plugins.core.plugin import Plugin, PluginLoader  # noqa: F401,E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/core/plugin.py", line 16, in <module>
+    from synthcity.metrics.plots import plot_marginal_comparison, plot_tsne
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/metrics/__init__.py", line 2, in <module>
+    from .eval import Metrics  # noqa: F401
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/metrics/eval.py", line 10, in <module>
+    from synthcity.plugins.core.dataloader import (
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/core/dataloader.py", line 22, in <module>
+    from synthcity.utils.serialization import dataframe_hash
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/utils/serialization.py", line 9, in <module>
+    from opacus import PrivacyEngine
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/opacus/__init__.py", line 17, in <module>
+    from .grad_sample import GradSampleModule, GradSampleModuleFastGradientClipping
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/opacus/grad_sample/__init__.py", line 32, in <module>
+    from .rms_norm import compute_rms_norm_grad_sample  # noqa
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/opacus/grad_sample/rms_norm.py", line 27, in <module>
+    @register_grad_sampler(nn.RMSNorm)
+                           ^^^^^^^^^^
+AttributeError: module 'torch.nn' has no attribute 'RMSNorm'
+INFO:worker:[worker][preprocessing] Fetching preprocessing plan...
+WARNING:worker:[worker][preprocessing] Preprocessing plan returned None - continuing with original data
+INFO:sdv.metadata.multi_table:Detected metadata:
+{
+    "columns": {
+        "mean radius": {
+            "sdtype": "numerical"
+        },
+        "mean texture": {
+            "sdtype": "numerical"
+        },
+        "mean perimeter": {
+            "sdtype": "numerical"
+        },
+        "mean area": {
+            "sdtype": "numerical"
+        },
+        "mean smoothness": {
+            "sdtype": "numerical"
+        },
+        "mean compactness": {
+            "sdtype": "numerical"
+        },
+        "mean concavity": {
+            "sdtype": "numerical"
+        },
+        "mean concave points": {
+            "sdtype": "numerical"
+        },
+        "mean symmetry": {
+            "sdtype": "numerical"
+        },
+        "mean fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "radius error": {
+            "sdtype": "numerical"
+        },
+        "texture error": {
+            "sdtype": "numerical"
+        },
+        "perimeter error": {
+            "sdtype": "numerical"
+        },
+        "area error": {
+            "sdtype": "numerical"
+        },
+        "smoothness error": {
+            "sdtype": "numerical"
+        },
+        "compactness error": {
+            "sdtype": "numerical"
+        },
+        "concavity error": {
+            "sdtype": "numerical"
+        },
+        "concave points error": {
+            "sdtype": "numerical"
+        },
+        "symmetry error": {
+            "sdtype": "numerical"
+        },
+        "fractal dimension error": {
+            "sdtype": "numerical"
+        },
+        "worst radius": {
+            "sdtype": "numerical"
+        },
+        "worst texture": {
+            "sdtype": "numerical"
+        },
+        "worst perimeter": {
+            "sdtype": "numerical"
+        },
+        "worst area": {
+            "sdtype": "numerical"
+        },
+        "worst smoothness": {
+            "sdtype": "numerical"
+        },
+        "worst compactness": {
+            "sdtype": "numerical"
+        },
+        "worst concavity": {
+            "sdtype": "numerical"
+        },
+        "worst concave points": {
+            "sdtype": "numerical"
+        },
+        "worst symmetry": {
+            "sdtype": "numerical"
+        },
+        "worst fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "target": {
+            "sdtype": "categorical"
+        }
+    }
+}
+INFO:sdv.metadata.single_table:Detected metadata:
+INFO:sdv.metadata.single_table:{
+    "METADATA_SPEC_VERSION": "SINGLE_TABLE_V1",
+    "columns": {
+        "mean radius": {
+            "sdtype": "numerical"
+        },
+        "mean texture": {
+            "sdtype": "numerical"
+        },
+        "mean perimeter": {
+            "sdtype": "numerical"
+        },
+        "mean area": {
+            "sdtype": "numerical"
+        },
+        "mean smoothness": {
+            "sdtype": "numerical"
+        },
+        "mean compactness": {
+            "sdtype": "numerical"
+        },
+        "mean concavity": {
+            "sdtype": "numerical"
+        },
+        "mean concave points": {
+            "sdtype": "numerical"
+        },
+        "mean symmetry": {
+            "sdtype": "numerical"
+        },
+        "mean fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "radius error": {
+            "sdtype": "numerical"
+        },
+        "texture error": {
+            "sdtype": "numerical"
+        },
+        "perimeter error": {
+            "sdtype": "numerical"
+        },
+        "area error": {
+            "sdtype": "numerical"
+        },
+        "smoothness error": {
+            "sdtype": "numerical"
+        },
+        "compactness error": {
+            "sdtype": "numerical"
+        },
+        "concavity error": {
+            "sdtype": "numerical"
+        },
+        "concave points error": {
+            "sdtype": "numerical"
+        },
+        "symmetry error": {
+            "sdtype": "numerical"
+        },
+        "fractal dimension error": {
+            "sdtype": "numerical"
+        },
+        "worst radius": {
+            "sdtype": "numerical"
+        },
+        "worst texture": {
+            "sdtype": "numerical"
+        },
+        "worst perimeter": {
+            "sdtype": "numerical"
+        },
+        "worst area": {
+            "sdtype": "numerical"
+        },
+        "worst smoothness": {
+            "sdtype": "numerical"
+        },
+        "worst compactness": {
+            "sdtype": "numerical"
+        },
+        "worst concavity": {
+            "sdtype": "numerical"
+        },
+        "worst concave points": {
+            "sdtype": "numerical"
+        },
+        "worst symmetry": {
+            "sdtype": "numerical"
+        },
+        "worst fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "target": {
+            "sdtype": "categorical"
+        }
+    }
+}
+Traceback (most recent call last):
+  File "/Users/kogulan/Desktop/gesalps/local_benchmarks/run_benchmark.py", line 108, in run_benchmark
+    result = worker.execute_pipeline(run_obj)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/backend/synth_worker/worker.py", line 1583, in execute_pipeline
+    synth_model, _ = create_synthesizer(
+                     ^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/backend/synth_worker/models/factory.py", line 47, in create_synthesizer
+    synthesizer = SynthcitySynthesizer(
+                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/backend/synth_worker/models/synthcity_models.py", line 68, in __init__
+    Plugins = _try_import_synthcity()
+              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/backend/synth_worker/models/synthcity_models.py", line 13, in _try_import_synthcity
+    from synthcity.plugins import Plugins  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/__init__.py", line 9, in <module>
+    from synthcity.plugins.core.plugin import Plugin, PluginLoader  # noqa: F401,E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/core/plugin.py", line 16, in <module>
+    from synthcity.metrics.plots import plot_marginal_comparison, plot_tsne
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/metrics/__init__.py", line 2, in <module>
+    from .eval import Metrics  # noqa: F401
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/metrics/eval.py", line 10, in <module>
+    from synthcity.plugins.core.dataloader import (
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/core/dataloader.py", line 22, in <module>
+    from synthcity.utils.serialization import dataframe_hash
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/utils/serialization.py", line 9, in <module>
+    from opacus import PrivacyEngine
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/opacus/__init__.py", line 17, in <module>
+    from .grad_sample import GradSampleModule, GradSampleModuleFastGradientClipping
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/opacus/grad_sample/__init__.py", line 32, in <module>
+    from .rms_norm import compute_rms_norm_grad_sample  # noqa
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/opacus/grad_sample/rms_norm.py", line 27, in <module>
+    @register_grad_sampler(nn.RMSNorm)
+                           ^^^^^^^^^^
+AttributeError: module 'torch.nn' has no attribute 'RMSNorm'
+INFO:worker:[worker][preprocessing] Fetching preprocessing plan...
+WARNING:worker:[worker][preprocessing] Preprocessing plan returned None - continuing with original data
+INFO:sdv.metadata.multi_table:Detected metadata:
+{
+    "columns": {
+        "V1": {
+            "sdtype": "numerical"
+        },
+        "V2": {
+            "sdtype": "numerical"
+        },
+        "V3": {
+            "sdtype": "numerical"
+        },
+        "V4": {
+            "sdtype": "numerical"
+        },
+        "V5": {
+            "sdtype": "numerical"
+        },
+        "V6": {
+            "sdtype": "numerical"
+        },
+        "V7": {
+            "sdtype": "numerical"
+        },
+        "V8": {
+            "sdtype": "numerical"
+        },
+        "V9": {
+            "sdtype": "numerical"
+        },
+        "V10": {
+            "sdtype": "numerical"
+        },
+        "V11": {
+            "sdtype": "numerical"
+        },
+        "V12": {
+            "sdtype": "numerical"
+        },
+        "V13": {
+            "sdtype": "numerical"
+        },
+        "V14": {
+            "sdtype": "numerical"
+        },
+        "V15": {
+            "sdtype": "numerical"
+        },
+        "V16": {
+            "sdtype": "numerical"
+        },
+        "V17": {
+            "sdtype": "numerical"
+        },
+        "V18": {
+            "sdtype": "numerical"
+        },
+        "V19": {
+            "sdtype": "numerical"
+        },
+        "V20": {
+            "sdtype": "numerical"
+        },
+        "V21": {
+            "sdtype": "numerical"
+        },
+        "V22": {
+            "sdtype": "numerical"
+        },
+        "V23": {
+            "sdtype": "numerical"
+        },
+        "V24": {
+            "sdtype": "numerical"
+        },
+        "V25": {
+            "sdtype": "numerical"
+        },
+        "V26": {
+            "sdtype": "numerical"
+        },
+        "V27": {
+            "sdtype": "numerical"
+        },
+        "V28": {
+            "sdtype": "numerical"
+        },
+        "Time": {
+            "sdtype": "numerical"
+        },
+        "Amount": {
+            "sdtype": "numerical"
+        },
+        "Class": {
+            "sdtype": "categorical"
+        }
+    }
+}
+INFO:sdv.metadata.single_table:Detected metadata:
+INFO:sdv.metadata.single_table:{
+    "METADATA_SPEC_VERSION": "SINGLE_TABLE_V1",
+    "columns": {
+        "V1": {
+            "sdtype": "numerical"
+        },
+        "V2": {
+            "sdtype": "numerical"
+        },
+        "V3": {
+            "sdtype": "numerical"
+        },
+        "V4": {
+            "sdtype": "numerical"
+        },
+        "V5": {
+            "sdtype": "numerical"
+        },
+        "V6": {
+            "sdtype": "numerical"
+        },
+        "V7": {
+            "sdtype": "numerical"
+        },
+        "V8": {
+            "sdtype": "numerical"
+        },
+        "V9": {
+            "sdtype": "numerical"
+        },
+        "V10": {
+            "sdtype": "numerical"
+        },
+        "V11": {
+            "sdtype": "numerical"
+        },
+        "V12": {
+            "sdtype": "numerical"
+        },
+        "V13": {
+            "sdtype": "numerical"
+        },
+        "V14": {
+            "sdtype": "numerical"
+        },
+        "V15": {
+            "sdtype": "numerical"
+        },
+        "V16": {
+            "sdtype": "numerical"
+        },
+        "V17": {
+            "sdtype": "numerical"
+        },
+        "V18": {
+            "sdtype": "numerical"
+        },
+        "V19": {
+            "sdtype": "numerical"
+        },
+        "V20": {
+            "sdtype": "numerical"
+        },
+        "V21": {
+            "sdtype": "numerical"
+        },
+        "V22": {
+            "sdtype": "numerical"
+        },
+        "V23": {
+            "sdtype": "numerical"
+        },
+        "V24": {
+            "sdtype": "numerical"
+        },
+        "V25": {
+            "sdtype": "numerical"
+        },
+        "V26": {
+            "sdtype": "numerical"
+        },
+        "V27": {
+            "sdtype": "numerical"
+        },
+        "V28": {
+            "sdtype": "numerical"
+        },
+        "Time": {
+            "sdtype": "numerical"
+        },
+        "Amount": {
+            "sdtype": "numerical"
+        },
+        "Class": {
+            "sdtype": "categorical"
+        }
+    }
+}
+Traceback (most recent call last):
+  File "/Users/kogulan/Desktop/gesalps/local_benchmarks/run_benchmark.py", line 108, in run_benchmark
+    result = worker.execute_pipeline(run_obj)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/backend/synth_worker/worker.py", line 1583, in execute_pipeline
+    synth_model, _ = create_synthesizer(
+                     ^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/backend/synth_worker/models/factory.py", line 47, in create_synthesizer
+    synthesizer = SynthcitySynthesizer(
+                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/backend/synth_worker/models/synthcity_models.py", line 68, in __init__
+    Plugins = _try_import_synthcity()
+              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/backend/synth_worker/models/synthcity_models.py", line 13, in _try_import_synthcity
+    from synthcity.plugins import Plugins  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/__init__.py", line 9, in <module>
+    from synthcity.plugins.core.plugin import Plugin, PluginLoader  # noqa: F401,E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/core/plugin.py", line 16, in <module>
+    from synthcity.metrics.plots import plot_marginal_comparison, plot_tsne
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/metrics/__init__.py", line 2, in <module>
+    from .eval import Metrics  # noqa: F401
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/metrics/eval.py", line 10, in <module>
+    from synthcity.plugins.core.dataloader import (
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/core/dataloader.py", line 22, in <module>
+    from synthcity.utils.serialization import dataframe_hash
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/utils/serialization.py", line 9, in <module>
+    from opacus import PrivacyEngine
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/opacus/__init__.py", line 17, in <module>
+    from .grad_sample import GradSampleModule, GradSampleModuleFastGradientClipping
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/opacus/grad_sample/__init__.py", line 32, in <module>
+    from .rms_norm import compute_rms_norm_grad_sample  # noqa
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/opacus/grad_sample/rms_norm.py", line 27, in <module>
+    @register_grad_sampler(nn.RMSNorm)
+                           ^^^^^^^^^^
+AttributeError: module 'torch.nn' has no attribute 'RMSNorm'
+
+==================================================
+BENCHMARKING: Adult (Census)
+==================================================
+[worker][preprocessing] Applying mandatory smart preprocessing via OpenRouter LLM...
+[worker][preprocessing] Preprocessing agent returned no plan (OpenRouter may be unavailable)
+[worker][metadata] SynthCity DataLoader unavailable: AttributeError. Using SDV metadata.
+[worker][method] User explicitly selected method: 'ddpm'
+Benchmark Crushed: module 'torch.nn' has no attribute 'RMSNorm'
+
+==================================================
+BENCHMARKING: Diabetes
+==================================================
+[worker][preprocessing] Applying mandatory smart preprocessing via OpenRouter LLM...
+[worker][preprocessing] Preprocessing agent returned no plan (OpenRouter may be unavailable)
+[worker][metadata] SynthCity DataLoader unavailable: AttributeError. Using SDV metadata.
+[worker][method] User explicitly selected method: 'ddpm'
+Benchmark Crushed: module 'torch.nn' has no attribute 'RMSNorm'
+
+==================================================
+BENCHMARKING: Breast Cancer
+==================================================
+[worker][preprocessing] Applying mandatory smart preprocessing via OpenRouter LLM...
+[worker][preprocessing] Preprocessing agent returned no plan (OpenRouter may be unavailable)
+[worker][metadata] SynthCity DataLoader unavailable: AttributeError. Using SDV metadata.
+[worker][method] User explicitly selected method: 'ddpm'
+Benchmark Crushed: module 'torch.nn' has no attribute 'RMSNorm'
+
+==================================================
+BENCHMARKING: Credit Fraud Proxy
+==================================================
+[worker][preprocessing] Applying mandatory smart preprocessing via OpenRouter LLM...
+[worker][preprocessing] Preprocessing agent returned no plan (OpenRouter may be unavailable)
+[worker][metadata] SynthCity DataLoader unavailable: AttributeError. Using SDV metadata.
+[worker][method] User explicitly selected method: 'ddpm'
+Benchmark Crushed: module 'torch.nn' has no attribute 'RMSNorm'

@@ -128,6 +128,14 @@
         "source_path": "agent-logs/2026-01-10-Quality-Test-Results-and-Blockers-CTO-Report-SyntheticDataSpecialist.md",
         "timestamp": "2026-01-10T12:21:33.292711",
         "status": "pending"
+      },
+      {
+        "agent": "CTO",
+        "task": "Review blockers, approve Phase 3 if needed",
+        "source_log": "2026-01-11-Phase-2-Test-Results-and-Blockers-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-11-Phase-2-Test-Results-and-Blockers-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-11T13:13:03.508446",
+        "status": "pending"
       }
     ],
     "DevOps Agent": [
@@ -786,6 +794,70 @@
         "source_path": "agent-logs/2026-01-10-Quality-Test-Results-and-Blockers-CTO-Report-SyntheticDataSpecialist.md",
         "timestamp": "2026-01-10T12:21:33.292692",
         "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "Deploy latest code (commits `d194692`, `6fa5128`) to VPS and rebuild containers",
+        "source_log": "2026-01-10-Preprocessing-Agent-TypeError-Fixes-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-10-Preprocessing-Agent-TypeError-Fixes-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-10T15:02:01.165936",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "Re-run quality test (`standalone_quality_test.py`) to verify preprocessing fixes",
+        "source_log": "2026-01-10-Preprocessing-Agent-TypeError-Fixes-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-10-Preprocessing-Agent-TypeError-Fixes-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-10T15:02:01.165977",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "PRIORITY: P0 - CRITICAL - Blocks Quality Test",
+        "source_log": "2026-01-10-Eval-Modules-API-Fix-DevOpsAgent-MainAgent.md",
+        "source_path": "agent-logs/2026-01-10-Eval-Modules-API-Fix-DevOpsAgent-MainAgent.md",
+        "timestamp": "2026-01-10T15:02:30.626705",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "Deploy latest code (commits `dab91b6`, `40534b8`) to VPS and rebuild containers",
+        "source_log": "2026-01-10-Universal-Preprocessing-Handler-Complete-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-10-Universal-Preprocessing-Handler-Complete-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-10T15:11:21.456040",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "Re-run quality test (`standalone_quality_test.py`) to verify universal handler",
+        "source_log": "2026-01-10-Universal-Preprocessing-Handler-Complete-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-10-Universal-Preprocessing-Handler-Complete-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-10T15:11:21.456078",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "PRIORITY: P0 - CRITICAL - Blocker #1 Deployment",
+        "source_log": "2026-01-11-CTO-All-Green-Action-Plan-MainAgent.md",
+        "source_path": "agent-logs/2026-01-11-CTO-All-Green-Action-Plan-MainAgent.md",
+        "timestamp": "2026-01-11T12:14:48.637173",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "PRIORITY: P0 - CRITICAL - Initial Re-Test",
+        "source_log": "2026-01-11-CTO-All-Green-Action-Plan-MainAgent.md",
+        "source_path": "agent-logs/2026-01-11-CTO-All-Green-Action-Plan-MainAgent.md",
+        "timestamp": "2026-01-11T12:14:48.637218",
+        "status": "pending"
+      },
+      {
+        "agent": "DevOpsAgent",
+        "task": "Docker Compose integration - Add preprocessing-service to `docker-compose.yml` - Configure port 8001 - Set environment variables (OPENROUTER_API_KEY, OPENROUTER_MODEL, etc.) - Add health check and dependencies - Test service startup and connectivity",
+        "source_log": "2026-01-11-Preprocessing-Service-Initial-Design-PreprocessingAgent.md",
+        "source_path": "agent-logs/2026-01-11-Preprocessing-Service-Initial-Design-PreprocessingAgent.md",
+        "timestamp": "2026-01-11T15:04:08.611807",
+        "status": "pending"
       }
     ],
     "SyntheticDataSpecialist": [
@@ -1027,6 +1099,118 @@
         "source_log": "2026-01-10-Quality-Test-Latest-DevOpsAgent.md",
         "source_path": "agent-logs/2026-01-10-Quality-Test-Latest-DevOpsAgent.md",
         "timestamp": "2026-01-10T12:27:21.303199",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "Investigate KS Mean optimization strategies. Training with n_iter=800 completed successfully, but KS Mean is still 0.7465 (threshold: ≤0.10). May need additional hyperparameter tuning or different optimization approach.",
+        "source_log": "2026-01-10-Quality-Test-Complete-Deployment-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-10-Quality-Test-Complete-Deployment-DevOpsAgent.md",
+        "timestamp": "2026-01-10T12:51:15.907895",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "Fix CTGAN fallback parameter issue. Error: `Plugin.__init__() got an unexpected keyword argument 'num_epochs'`. Verify correct parameter name in SynthCity CTGAN plugin and update code accordingly.",
+        "source_log": "2026-01-10-Quality-Test-Complete-Deployment-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-10-Quality-Test-Complete-Deployment-DevOpsAgent.md",
+        "timestamp": "2026-01-10T12:51:15.907935",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "Debug why preprocessing isn't executing in standalone quality test. Code is present and module can be imported, but no preprocessing messages appear in test output. Need to verify: 1. Why preprocessing code path isn't being executed 2. Why no error/warning messages appear if preprocessing fails 3. Whether OpenRouter is available and responding 4. Whether preprocessing is actually running but output is suppressed",
+        "source_log": "2026-01-10-Preprocessing-Deployment-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-10-Preprocessing-Deployment-DevOpsAgent.md",
+        "timestamp": "2026-01-10T13:30:02.906475",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "INFO: Previous Metrics Reference",
+        "source_log": "2026-01-10-Previous-Standalone-Metrics-Recall-MainAgent.md",
+        "source_path": "agent-logs/2026-01-10-Previous-Standalone-Metrics-Recall-MainAgent.md",
+        "timestamp": "2026-01-10T14:06:40.651969",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "Fix TypeError in `preprocessing_agent.get_preprocessing_plan()`. The error \"TypeError: cannot convert the series to <class 'float'>\" occurs when preprocessing is called. Need to: 1. Debug the TypeError in preprocessing_agent.py 2. Fix the data type conversion issue (likely in column name handling or data type detection) 3. Ensure preprocessing returns proper results instead of (None, None) on error 4. Consider improving error handling to provide more context",
+        "source_log": "2026-01-10-Preprocessing-Debugging-Complete-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-10-Preprocessing-Debugging-Complete-DevOpsAgent.md",
+        "timestamp": "2026-01-10T14:12:02.640270",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "Review why KS Mean is still 0.6712 instead of 0.0650. The raw data approach improved results (0.7465 → 0.6712) but still far from the working script's 0.0650. Need to investigate: 1. Why preprocessing is failing (TypeError: cannot convert the series to <class 'float'>) 2. Whether preprocessing is critical for achieving 0.0650 3. Any other differences between working script and current test 4. Whether duplicate_rate and corr_delta calculation is needed",
+        "source_log": "2026-01-10-Raw-Data-Approach-Deployment-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-10-Raw-Data-Approach-Deployment-DevOpsAgent.md",
+        "timestamp": "2026-01-10T14:27:36.747111",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "Fix `TypeError: cannot convert the series to <class 'float'>` in `preprocessing_agent.py` - The error occurs in `get_preprocessing_plan()` when analyzing the dataset - Preprocessing is critical for achieving \"all green\" metrics (KS Mean ≤ 0.10) - Without preprocessing, KS Mean remains at 0.6852 (11.5x worse than target) - The working script may have been run with preprocessing working, or with preprocessed data",
+        "source_log": "2026-01-10-Preprocessing-TypeError-Blocker-DevOpsAgent.md",
+        "source_path": "agent-logs/2026-01-10-Preprocessing-TypeError-Blocker-DevOpsAgent.md",
+        "timestamp": "2026-01-10T14:55:28.682896",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "Monitor quality test results - verify KS Mean improves with preprocessing",
+        "source_log": "2026-01-10-Preprocessing-Agent-TypeError-Fixes-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-10-Preprocessing-Agent-TypeError-Fixes-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-10T15:02:01.166002",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "INFO: Eval Modules API Issue",
+        "source_log": "2026-01-10-Eval-Modules-API-Fix-DevOpsAgent-MainAgent.md",
+        "source_path": "agent-logs/2026-01-10-Eval-Modules-API-Fix-DevOpsAgent-MainAgent.md",
+        "timestamp": "2026-01-10T15:02:30.626738",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "Monitor quality test results - verify KS Mean improves with universal preprocessing",
+        "source_log": "2026-01-10-Universal-Preprocessing-Handler-Complete-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-10-Universal-Preprocessing-Handler-Complete-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-10T15:11:21.456103",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "PRIORITY: P0 - CRITICAL - Blocker #2 & #3",
+        "source_log": "2026-01-11-CTO-All-Green-Action-Plan-MainAgent.md",
+        "source_path": "agent-logs/2026-01-11-CTO-All-Green-Action-Plan-MainAgent.md",
+        "timestamp": "2026-01-11T12:14:48.637196",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "Fix metrics calculation (Priority 1)",
+        "source_log": "2026-01-11-Phase-2-Test-Results-and-Blockers-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-11-Phase-2-Test-Results-and-Blockers-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-11T13:13:03.508356",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "Rebuild container and retest (Priority 3)",
+        "source_log": "2026-01-11-Phase-2-Test-Results-and-Blockers-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-11-Phase-2-Test-Results-and-Blockers-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-11T13:13:03.508410",
+        "status": "pending"
+      },
+      {
+        "agent": "SyntheticDataSpecialist",
+        "task": "Preprocessing plan optimization - Review preprocessing plan quality - Suggest improvements to OpenRouter prompt - Test with various datasets - Measure KS Mean improvement metrics",
+        "source_log": "2026-01-11-Preprocessing-Service-Initial-Design-PreprocessingAgent.md",
+        "source_path": "agent-logs/2026-01-11-Preprocessing-Service-Initial-Design-PreprocessingAgent.md",
+        "timestamp": "2026-01-11T15:04:08.611835",
         "status": "pending"
       }
     ],
@@ -2068,6 +2252,46 @@
         "source_path": "agent-logs/2026-01-10-Quality-Test-Results-and-Blockers-CTO-Report-SyntheticDataSpecialist.md",
         "timestamp": "2026-01-10T12:21:33.292640",
         "status": "pending"
+      },
+      {
+        "agent": "BackendAgent",
+        "task": "INFO: Previous Metrics Reference",
+        "source_log": "2026-01-10-Previous-Standalone-Metrics-Recall-MainAgent.md",
+        "source_path": "agent-logs/2026-01-10-Previous-Standalone-Metrics-Recall-MainAgent.md",
+        "timestamp": "2026-01-10T14:06:40.652003",
+        "status": "pending"
+      },
+      {
+        "agent": "BackendAgent",
+        "task": "Verify preprocessing integration in production worker pipeline",
+        "source_log": "2026-01-10-Preprocessing-Agent-TypeError-Fixes-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-10-Preprocessing-Agent-TypeError-Fixes-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-10T15:02:01.166024",
+        "status": "pending"
+      },
+      {
+        "agent": "BackendAgent",
+        "task": "Verify universal preprocessing integration in production worker pipeline",
+        "source_log": "2026-01-10-Universal-Preprocessing-Handler-Complete-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-10-Universal-Preprocessing-Handler-Complete-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-10T15:11:21.456125",
+        "status": "pending"
+      },
+      {
+        "agent": "BackendAgent",
+        "task": "PRIORITY: P0 - CRITICAL - Blocker #1",
+        "source_log": "2026-01-11-CTO-All-Green-Action-Plan-MainAgent.md",
+        "source_path": "agent-logs/2026-01-11-CTO-All-Green-Action-Plan-MainAgent.md",
+        "timestamp": "2026-01-11T12:14:48.637141",
+        "status": "pending"
+      },
+      {
+        "agent": "BackendAgent",
+        "task": "Integration with synth-worker - Add HTTP call to preprocessing service in `worker.py` - Integrate preprocessing step before TabDDPM/CTGAN training - Handle preprocessing service failures gracefully (fallback to original data) - Update retry loop to use preprocessing service",
+        "source_log": "2026-01-11-Preprocessing-Service-Initial-Design-PreprocessingAgent.md",
+        "source_path": "agent-logs/2026-01-11-Preprocessing-Service-Initial-Design-PreprocessingAgent.md",
+        "timestamp": "2026-01-11T15:04:08.611767",
+        "status": "pending"
       }
     ],
     "SyntheticDataSpecialist & BackendAgent": [
@@ -2077,6 +2301,26 @@
         "source_log": "2026-01-10-OpenRouter-LLM-Preprocessing-Validation-ClinicalGradeDataScientist-MainAgent.md",
         "source_path": "agent-logs/2026-01-10-OpenRouter-LLM-Preprocessing-Validation-ClinicalGradeDataScientist-MainAgent.md",
         "timestamp": "2026-01-10T12:09:54.031784",
+        "status": "pending"
+      }
+    ],
+    "DevOpsAgent / SyntheticDataSpecialist": [
+      {
+        "agent": "DevOpsAgent / SyntheticDataSpecialist",
+        "task": "Fix VPS disk space (Priority 2)",
+        "source_log": "2026-01-11-Phase-2-Test-Results-and-Blockers-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-11-Phase-2-Test-Results-and-Blockers-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-11T13:13:03.508389",
+        "status": "pending"
+      }
+    ],
+    "SyntheticDataSpecialist + ML/DL Specialist": [
+      {
+        "agent": "SyntheticDataSpecialist + ML/DL Specialist",
+        "task": "Investigate KS Mean issue (Priority 4)",
+        "source_log": "2026-01-11-Phase-2-Test-Results-and-Blockers-SyntheticDataSpecialist.md",
+        "source_path": "agent-logs/2026-01-11-Phase-2-Test-Results-and-Blockers-SyntheticDataSpecialist.md",
+        "timestamp": "2026-01-11T13:13:03.508428",
         "status": "pending"
       }
     ]
@@ -2196,15 +2440,35 @@
     "2026-01-09-VPS-Quality-Test-Results-and-Improvements-SyntheticDataSpecialist.md",
     "2026-01-09-Waiting-for-Retry-Results-SyntheticDataSpecialist.md",
     "2026-01-10-BackendAgent-Integration-Review-and-All-Green-Test-SyntheticDataSpecialist.md",
+    "2026-01-10-CTO-Plan-Phase-1-Execution-SyntheticDataSpecialist.md",
+    "2026-01-10-Deployment-Instructions-for-DevOpsAgent-SyntheticDataSpecialist.md",
+    "2026-01-10-Eval-Modules-API-Fix-DevOpsAgent-MainAgent.md",
     "2026-01-10-OpenRouter-LLM-Preprocessing-Design-SyntheticDataSpecialist-MainAgent.md",
     "2026-01-10-OpenRouter-LLM-Preprocessing-Integration-BackendAgent-MainAgent.md",
     "2026-01-10-OpenRouter-LLM-Preprocessing-Validation-ClinicalGradeDataScientist-MainAgent.md",
+    "2026-01-10-Phase-2-Enhancements-Complete-SyntheticDataSpecialist.md",
+    "2026-01-10-Preprocessing-Agent-TypeError-Fixes-SyntheticDataSpecialist.md",
+    "2026-01-10-Preprocessing-Debugging-Complete-DevOpsAgent.md",
+    "2026-01-10-Preprocessing-Deployment-DevOpsAgent.md",
+    "2026-01-10-Preprocessing-TypeError-Blocker-DevOpsAgent.md",
+    "2026-01-10-Previous-Standalone-Metrics-Recall-MainAgent.md",
+    "2026-01-10-Quality-Test-Complete-Deployment-DevOpsAgent.md",
     "2026-01-10-Quality-Test-Latest-DevOpsAgent.md",
     "2026-01-10-Quality-Test-Results-and-Blockers-CTO-Report-SyntheticDataSpecialist.md",
     "2026-01-10-Quality-Test-Retry-Results-and-Updated-Blockers-SyntheticDataSpecialist.md",
+    "2026-01-10-Raw-Data-Approach-Deployment-DevOpsAgent.md",
     "2026-01-10-Smart-Preprocessing-OpenRouter-Integration-BackendAgent.md",
     "2026-01-10-Smart-Preprocessing-Rollout-Plan-MainAgent.md",
+    "2026-01-10-Universal-Preprocessing-Handler-Complete-SyntheticDataSpecialist.md",
     "2026-01-10-VPS-Update-Script-Created-BackendAgent.md",
+    "2026-01-11-CTO-All-Green-Action-Plan-MainAgent.md",
+    "2026-01-11-Metrics-and-CTGAN-Fixes-Complete-SyntheticDataSpecialist.md",
+    "2026-01-11-OpenRouter-API-Fix-Complete-DevOpsAgent.md",
+    "2026-01-11-Phase-1-Blocker-Fixes-Complete-DevOpsAgent.md",
+    "2026-01-11-Phase-1-Deployment-and-Testing-Complete-DevOpsAgent.md",
+    "2026-01-11-Phase-2-Test-Results-and-Blockers-SyntheticDataSpecialist.md",
+    "2026-01-11-Preprocessing-Service-Initial-Design-PreprocessingAgent.md",
+    "2026-01-11-VPS-Disk-Space-Cleanup-DevOpsAgent.md",
     "AGENT_AUTOMATION_PROPOSAL.md",
     "HOW_IT_WORKS.md",
     "README.md",

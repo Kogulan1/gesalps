@@ -17,6 +17,10 @@ from scipy.stats import ks_2samp
 from supabase import create_client, Client
 import meta  # local meta-learner utilities
 import httpx
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # SDV (modern single-table synthesizers)
 try:
@@ -394,9 +398,6 @@ def _build_synthesizer(
     m = (requested or SDV_METHOD or "gc").lower()
     
     # Handle experimental models that aren't in unified structure yet
-    if m in ("diffusion", "ddpm", "tabddpm"):
-        TabDDPM = _lazy_import_tabddpm()
-        return _ModelAdapter(TabDDPM(metadata=metadata), metadata), False  # type: ignore[call-arg]
     if m in ("transformer", "tabtransformer"):
         TabTransformer = _lazy_import_tabtransformer()
         return _ModelAdapter(TabTransformer(metadata=metadata), metadata), False  # type: ignore[call-arg]
@@ -437,6 +438,15 @@ def _filter_hparams(method: str, cfg: Dict[str, Any]) -> Dict[str, Any]:
             "num_epochs", "batch_size", "embedding_dim",  # Fixed: num_epochs for SynthCity
             "compress_dims", "decompress_dims",
             "loss_factor", "verbose",
+        },
+        "ddpm": {
+            "n_iter", "batch_size",  # TabDDPM hyperparameters
+        },
+        "tabddpm": {
+            "n_iter", "batch_size",  # TabDDPM hyperparameters (alias)
+        },
+        "diffusion": {
+            "n_iter", "batch_size",  # TabDDPM hyperparameters (alias)
         },
         # GC doesn't typically take these; keep empty to avoid passing.
         "gc": set(),
@@ -629,12 +639,12 @@ def _utility_metrics(real: pd.DataFrame, synth: pd.DataFrame) -> Dict[str, Any]:
             corr_delta = float(np.mean(np.abs(c_real - c_synth)))
             logger.info(f"Corr Delta calculated: {corr_delta:.4f}")
         else:
-            logger.warning(f"Corr Delta calculation skipped - c_real: {c_real is not None}, c_synth: {c_synth is not None}, lengths match: {len(c_real) == len(c_synth) if (c_real is not None and c_synth is not None) else False}")
+            print(f"[worker][utility] Corr Delta calculation skipped - c_real: {c_real is not None}, c_synth: {c_synth is not None}")
             corr_delta = None
     except Exception as e:
-        logger.error(f"Corr Delta calculation failed: {type(e).__name__}: {e}")
+        print(f"[worker][utility] Corr Delta calculation failed: {type(e).__name__}: {e}")
         import traceback
-        logger.debug(f"Corr Delta traceback: {traceback.format_exc()[:200]}")
+        print(f"Corr Delta traceback: {traceback.format_exc()[:200]}")
         corr_delta = None
 
     # Fallback for categorical-only datasets to avoid placeholders
@@ -1264,6 +1274,7 @@ def _agent_plan_ollama(dataset_name: str, schema_json: Dict[str, Any], last_metr
 # -------------------- Pipeline --------------------
 
 def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str, Any]:
+    global get_preprocessing_plan
     # Load dataset
     ds = supabase.table("datasets").select("file_url,rows_count,name,schema_json").eq("id", run["dataset_id"]).single().execute()
     file_url = (ds.data or {}).get("file_url")
@@ -1922,27 +1933,52 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
                     print(f"[worker][GreenGuard] Metrics RED. Consulting Optimizer...")
                     optimizer = get_optimizer()
                     
-                    # Analyze failure
-                    failure_type, root_cause, suggestions = optimizer.analyze_failure(
+                    # GREENGUARD RECOMMENDATION: Check if we should pivot to TVAE
+                    # TabDDPM plateaus on small-N clinical data (<1000 rows)
+                    # TVAE handles small-N numeric data with higher stability
+                    dataset_size = (len(real_clean), len(real_clean.columns))
+                    should_pivot = optimizer.should_pivot_to_tvae(
+                        method=current_method_info.get("method"),
+                        dataset_size=dataset_size,
                         metrics=met,
-                        hyperparams=current_params,
-                        method=current_method_info.get("method"),
-                        dataset_size=(len(real_clean), len(real_clean.columns))
+                        retry_count=i
                     )
                     
-                    print(f"[worker][GreenGuard] Failure Analysis: {root_cause}")
-                    _log_step(i, "analysis", f"Optimizer: {root_cause}", {})
-                    
-                    # Get NEW parameters
-                    new_params = optimizer.suggest_hyperparameters(
-                        method=current_method_info.get("method"),
-                        dataset_size=(len(real_clean), len(real_clean.columns)),
-                        previous_metrics=met,
-                        retry_count=i # Pass retry count!
-                    )
-                    
-                    print(f"[worker][GreenGuard] New Parameters: {new_params}")
-                    current_params = {**current_params, **new_params}
+                    if should_pivot:
+                        print(f"[worker][GreenGuard] PIVOTING to TVAE (GreenGuard recommendation for small-N clinical data)")
+                        _log_step(i, "pivot", "Pivoting to TVAE per GreenGuard benchmark findings", {})
+                        
+                        # Switch to TVAE with optimized parameters
+                        current_method_info = {"method": "tvae", "hyperparams": {}}
+                        current_params = optimizer.suggest_hyperparameters(
+                            method="tvae",
+                            dataset_size=dataset_size,
+                            previous_metrics=met,
+                            retry_count=i
+                        )
+                        print(f"[worker][GreenGuard] TVAE Parameters: {current_params}")
+                    else:
+                        # Analyze failure
+                        failure_type, root_cause, suggestions = optimizer.analyze_failure(
+                            metrics=met,
+                            hyperparams=current_params,
+                            method=current_method_info.get("method"),
+                            dataset_size=dataset_size
+                        )
+                        
+                        print(f"[worker][GreenGuard] Failure Analysis: {root_cause}")
+                        _log_step(i, "analysis", f"Optimizer: {root_cause}", {})
+                        
+                        # Get NEW parameters
+                        new_params = optimizer.suggest_hyperparameters(
+                            method=current_method_info.get("method"),
+                            dataset_size=dataset_size,
+                            previous_metrics=met,
+                            retry_count=i # Pass retry count!
+                        )
+                        
+                        print(f"[worker][GreenGuard] New Parameters: {new_params}")
+                        current_params = {**current_params, **new_params}
                     
                 else:
                     print(f"[worker][GreenGuard] Max retries reached or optimizer unavailable.")

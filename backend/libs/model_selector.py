@@ -224,10 +224,12 @@ Guidance:
   * Small datasets (<1000 rows): epochs 300-400, batch 64-128, embedding_dim 128-256
   * Medium (1000-10000): epochs 400-500, batch 128-256, embedding_dim 256-512
   * Large (>10000): epochs 500-600, batch 256-512, embedding_dim 512
-- TVAE for continuous-heavy data:
-  * Small: epochs 250-350, batch 64-128, embedding_dim 64-128
-  * Medium: epochs 350-450, batch 128-256, embedding_dim 128-256
-  * Large: epochs 450-550, batch 256-512, embedding_dim 256
+- TVAE for continuous-heavy data (RECOMMENDED for small-N clinical data when TabDDPM plateaus):
+  * **GREENGUARD BENCHMARK FINDING**: TVAE handles small-N numeric data with higher stability than Diffusion models
+  * Small (<1000 rows): epochs 500-2000 (aggressive scaling for "all green"), batch 32, embedding_dim 128-256
+  * Medium (1000-5000): epochs 400-1200, batch 64, embedding_dim 128-256
+  * Large (>5000): epochs 300-800, batch 128, embedding_dim 256
+  * Use weighted likelihood loss to prioritize feature correlation preservation
 - Pick sample_multiplier in [1.0..3.0] based on rows_count; cap max_synth_rows ≤ 50000.
 - Scale embedding_dim with number of columns: <10 cols use 64-128, 10-30 use 128-256, >30 use 256-512.
 - Always include 2 backups with different methods/hparams.

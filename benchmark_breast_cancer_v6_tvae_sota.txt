@@ -1,0 +1,1499 @@
+INFO:worker:[worker][preprocessing] Fetching preprocessing plan...
+INFO:worker:[worker][preprocessing] Applied preprocessing plan: N/A
+INFO:sdv.metadata.multi_table:Detected metadata:
+{
+    "columns": {
+        "mean radius": {
+            "sdtype": "numerical"
+        },
+        "mean texture": {
+            "sdtype": "numerical"
+        },
+        "mean perimeter": {
+            "sdtype": "numerical"
+        },
+        "mean area": {
+            "sdtype": "numerical"
+        },
+        "mean smoothness": {
+            "sdtype": "numerical"
+        },
+        "mean compactness": {
+            "sdtype": "numerical"
+        },
+        "mean concavity": {
+            "sdtype": "numerical"
+        },
+        "mean concave points": {
+            "sdtype": "numerical"
+        },
+        "mean symmetry": {
+            "sdtype": "numerical"
+        },
+        "mean fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "radius error": {
+            "sdtype": "numerical"
+        },
+        "texture error": {
+            "sdtype": "numerical"
+        },
+        "perimeter error": {
+            "sdtype": "numerical"
+        },
+        "area error": {
+            "sdtype": "numerical"
+        },
+        "smoothness error": {
+            "sdtype": "numerical"
+        },
+        "compactness error": {
+            "sdtype": "numerical"
+        },
+        "concavity error": {
+            "sdtype": "numerical"
+        },
+        "concave points error": {
+            "sdtype": "numerical"
+        },
+        "symmetry error": {
+            "sdtype": "numerical"
+        },
+        "fractal dimension error": {
+            "sdtype": "numerical"
+        },
+        "worst radius": {
+            "sdtype": "numerical"
+        },
+        "worst texture": {
+            "sdtype": "numerical"
+        },
+        "worst perimeter": {
+            "sdtype": "numerical"
+        },
+        "worst area": {
+            "sdtype": "numerical"
+        },
+        "worst smoothness": {
+            "sdtype": "numerical"
+        },
+        "worst compactness": {
+            "sdtype": "numerical"
+        },
+        "worst concavity": {
+            "sdtype": "numerical"
+        },
+        "worst concave points": {
+            "sdtype": "numerical"
+        },
+        "worst symmetry": {
+            "sdtype": "numerical"
+        },
+        "worst fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "target": {
+            "sdtype": "categorical"
+        }
+    }
+}
+INFO:sdv.metadata.single_table:Detected metadata:
+INFO:sdv.metadata.single_table:{
+    "columns": {
+        "mean radius": {
+            "sdtype": "numerical"
+        },
+        "mean texture": {
+            "sdtype": "numerical"
+        },
+        "mean perimeter": {
+            "sdtype": "numerical"
+        },
+        "mean area": {
+            "sdtype": "numerical"
+        },
+        "mean smoothness": {
+            "sdtype": "numerical"
+        },
+        "mean compactness": {
+            "sdtype": "numerical"
+        },
+        "mean concavity": {
+            "sdtype": "numerical"
+        },
+        "mean concave points": {
+            "sdtype": "numerical"
+        },
+        "mean symmetry": {
+            "sdtype": "numerical"
+        },
+        "mean fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "radius error": {
+            "sdtype": "numerical"
+        },
+        "texture error": {
+            "sdtype": "numerical"
+        },
+        "perimeter error": {
+            "sdtype": "numerical"
+        },
+        "area error": {
+            "sdtype": "numerical"
+        },
+        "smoothness error": {
+            "sdtype": "numerical"
+        },
+        "compactness error": {
+            "sdtype": "numerical"
+        },
+        "concavity error": {
+            "sdtype": "numerical"
+        },
+        "concave points error": {
+            "sdtype": "numerical"
+        },
+        "symmetry error": {
+            "sdtype": "numerical"
+        },
+        "fractal dimension error": {
+            "sdtype": "numerical"
+        },
+        "worst radius": {
+            "sdtype": "numerical"
+        },
+        "worst texture": {
+            "sdtype": "numerical"
+        },
+        "worst perimeter": {
+            "sdtype": "numerical"
+        },
+        "worst area": {
+            "sdtype": "numerical"
+        },
+        "worst smoothness": {
+            "sdtype": "numerical"
+        },
+        "worst compactness": {
+            "sdtype": "numerical"
+        },
+        "worst concavity": {
+            "sdtype": "numerical"
+        },
+        "worst concave points": {
+            "sdtype": "numerical"
+        },
+        "worst symmetry": {
+            "sdtype": "numerical"
+        },
+        "worst fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "target": {
+            "sdtype": "categorical"
+        }
+    },
+    "METADATA_SPEC_VERSION": "SINGLE_TABLE_V1"
+}
+[2026-01-12T13:04:50.298945+0100][95576][CRITICAL] Error importing TabularGoggle: No module named 'dgl'
+[2026-01-12T13:04:50.301575+0100][95576][CRITICAL] module disabled: /Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/generic/plugin_goggle.py
+[2026-01-12T13:04:51.380303+0100][95576][CRITICAL] module disabled: /Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/generic/plugin_goggle.py
+WARNING:models.factory:[factory] SynthCity plugin failed for 'tvae': Failed to initialize SynthCity plugin 'tvae': Plugin.__init__() got an unexpected keyword argument 'embedding_dim'. Falling back to SDV.
+INFO:models.factory:[factory] Using SDV backend for method 'tvae' (TVAE)
+INFO:SingleTableSynthesizer:{'EVENT': 'Instance', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 13, 4, 51, 383825), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_18535dc9c3ac48a59c1a2f4f823ce1a0'}
+[2026-01-12T13:04:51.384448+0100][95576][CRITICAL] module disabled: /Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/generic/plugin_goggle.py
+[2026-01-12T13:04:51.384894+0100][95576][CRITICAL] module disabled: /Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/generic/plugin_goggle.py
+WARNING:models.factory:[factory] SynthCity plugin failed for 'tvae': Failed to initialize SynthCity plugin 'tvae': Plugin.__init__() got an unexpected keyword argument 'embedding_dim'. Falling back to SDV.
+INFO:models.factory:[factory] Using SDV backend for method 'tvae' (TVAE)
+INFO:SingleTableSynthesizer:{'EVENT': 'Instance', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 13, 4, 51, 386592), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_b57b9ca1aa2f4018b54fc27654d060b2'}
+INFO:SingleTableSynthesizer:{'EVENT': 'Fit', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 13, 4, 51, 386615), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_b57b9ca1aa2f4018b54fc27654d060b2', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 569, 'TOTAL NUMBER OF COLUMNS': 31}
+INFO:sdv.data_processing.data_processor:Fitting table  metadata
+INFO:sdv.data_processing.data_processor:Fitting formatters for table 
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean radius'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean texture'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean perimeter'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean area'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean smoothness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean compactness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean concavity'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean concave points'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean symmetry'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean fractal dimension'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'radius error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'texture error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'perimeter error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'area error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'smoothness error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'compactness error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'concavity error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'concave points error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'symmetry error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'fractal dimension error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst radius'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst texture'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst perimeter'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst area'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst smoothness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst compactness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst concavity'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst concave points'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst symmetry'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst fractal dimension'. Data will not be rounded.
+INFO:sdv.data_processing.data_processor:Setting the configuration for the ``HyperTransformer`` for table 
+INFO:sdv.data_processing.data_processor:Fitting HyperTransformer for table 
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean radius'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean texture'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean perimeter'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean area'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean smoothness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean compactness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean concavity'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean concave points'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean symmetry'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean fractal dimension'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'radius error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'texture error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'perimeter error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'area error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'smoothness error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'compactness error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'concavity error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'concave points error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'symmetry error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'fractal dimension error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst radius'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst texture'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst perimeter'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst area'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst smoothness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst compactness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst concavity'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst concave points'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst symmetry'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst fractal dimension'. Data will not be rounded.
+INFO:SingleTableSynthesizer:{'EVENT': 'Fit processed data', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 13, 4, 51, 461566), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_b57b9ca1aa2f4018b54fc27654d060b2', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 569, 'TOTAL NUMBER OF COLUMNS': 31}
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean radius. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean texture. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean perimeter. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean area. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean smoothness. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean compactness. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean concavity. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean concave points. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean symmetry. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean fractal dimension. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column radius error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column texture error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column perimeter error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column area error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column smoothness error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column compactness error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column concavity error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column concave points error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column symmetry error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column fractal dimension error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst radius. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst texture. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst perimeter. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst area. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst smoothness. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst compactness. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst concavity. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst concave points. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst symmetry. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst fractal dimension. Extra column not created.
+
+======================================================================
+BENCHMARKING WITH GREENGUARD: Breast Cancer
+======================================================================
+Dataset: 569 rows, 31 columns
+
+──────────────────────────────────────────────────────────────────────
+🔄 ATTEMPT 1/5
+──────────────────────────────────────────────────────────────────────
+[Optimizer] Suggested hyperparameters (retry 0): {'num_epochs': 500, 'batch_size': 32, 'embedding_dim': 512, 'compress_dims': [512, 256], 'decompress_dims': [256, 512]}
+[Training] Starting with hyperparameters: {'num_epochs': 500, 'batch_size': 32, 'embedding_dim': 512, 'compress_dims': [512, 256], 'decompress_dims': [256, 512]}
+[worker][preprocessing] Applying mandatory smart preprocessing via OpenRouter LLM...
+[MockAgent] Applying deterministic research-based preprocessing...
+[worker][preprocessing] Applied 30 preprocessing steps
+[worker][preprocessing] Rationale: Applied research-based Quantile Transformation and Winsorization to improve diffusion model convergence....
+[KeOps] Warning : CUDA libraries not found or could not be loaded; Switching to CPU only.
+[worker][metadata] SynthCity DataLoader unavailable: TypeError. Using SDV metadata.
+[worker][method] User explicitly selected method: 'tvae'
+[worker] attempt=1 method=tvae hparams={"embedding_dim": 512, "decompress_dims": [256, 512], "batch_size": 32, "num_epochs": 500, "compress_dims": [512, 256]}
+[worker][dp] backend=none strict=False epsilon=None method=tvae
+INFO:SingleTableSynthesizer:{'EVENT': 'Sample', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 13, 8, 7, 671388), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_b57b9ca1aa2f4018b54fc27654d060b2', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 569, 'TOTAL NUMBER OF COLUMNS': 31}
+INFO:worker:Corr Delta calculated (custom): 0.1584
+INFO:worker:Dup rate calculated (custom): 0.0000 (0 duplicates out of 569 synthetic rows)
+WARNING:libs.compliance:Unknown compliance level 'medium', defaulting to HIPAA_LIKE
+INFO:worker:[worker][preprocessing] Fetching preprocessing plan...
+INFO:worker:[worker][preprocessing] Applied preprocessing plan: N/A
+INFO:sdv.metadata.multi_table:Detected metadata:
+{
+    "columns": {
+        "mean radius": {
+            "sdtype": "numerical"
+        },
+        "mean texture": {
+            "sdtype": "numerical"
+        },
+        "mean perimeter": {
+            "sdtype": "numerical"
+        },
+        "mean area": {
+            "sdtype": "numerical"
+        },
+        "mean smoothness": {
+            "sdtype": "numerical"
+        },
+        "mean compactness": {
+            "sdtype": "numerical"
+        },
+        "mean concavity": {
+            "sdtype": "numerical"
+        },
+        "mean concave points": {
+            "sdtype": "numerical"
+        },
+        "mean symmetry": {
+            "sdtype": "numerical"
+        },
+        "mean fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "radius error": {
+            "sdtype": "numerical"
+        },
+        "texture error": {
+            "sdtype": "numerical"
+        },
+        "perimeter error": {
+            "sdtype": "numerical"
+        },
+        "area error": {
+            "sdtype": "numerical"
+        },
+        "smoothness error": {
+            "sdtype": "numerical"
+        },
+        "compactness error": {
+            "sdtype": "numerical"
+        },
+        "concavity error": {
+            "sdtype": "numerical"
+        },
+        "concave points error": {
+            "sdtype": "numerical"
+        },
+        "symmetry error": {
+            "sdtype": "numerical"
+        },
+        "fractal dimension error": {
+            "sdtype": "numerical"
+        },
+        "worst radius": {
+            "sdtype": "numerical"
+        },
+        "worst texture": {
+            "sdtype": "numerical"
+        },
+        "worst perimeter": {
+            "sdtype": "numerical"
+        },
+        "worst area": {
+            "sdtype": "numerical"
+        },
+        "worst smoothness": {
+            "sdtype": "numerical"
+        },
+        "worst compactness": {
+            "sdtype": "numerical"
+        },
+        "worst concavity": {
+            "sdtype": "numerical"
+        },
+        "worst concave points": {
+            "sdtype": "numerical"
+        },
+        "worst symmetry": {
+            "sdtype": "numerical"
+        },
+        "worst fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "target": {
+            "sdtype": "categorical"
+        }
+    }
+}
+INFO:sdv.metadata.single_table:Detected metadata:
+INFO:sdv.metadata.single_table:{
+    "columns": {
+        "mean radius": {
+            "sdtype": "numerical"
+        },
+        "mean texture": {
+            "sdtype": "numerical"
+        },
+        "mean perimeter": {
+            "sdtype": "numerical"
+        },
+        "mean area": {
+            "sdtype": "numerical"
+        },
+        "mean smoothness": {
+            "sdtype": "numerical"
+        },
+        "mean compactness": {
+            "sdtype": "numerical"
+        },
+        "mean concavity": {
+            "sdtype": "numerical"
+        },
+        "mean concave points": {
+            "sdtype": "numerical"
+        },
+        "mean symmetry": {
+            "sdtype": "numerical"
+        },
+        "mean fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "radius error": {
+            "sdtype": "numerical"
+        },
+        "texture error": {
+            "sdtype": "numerical"
+        },
+        "perimeter error": {
+            "sdtype": "numerical"
+        },
+        "area error": {
+            "sdtype": "numerical"
+        },
+        "smoothness error": {
+            "sdtype": "numerical"
+        },
+        "compactness error": {
+            "sdtype": "numerical"
+        },
+        "concavity error": {
+            "sdtype": "numerical"
+        },
+        "concave points error": {
+            "sdtype": "numerical"
+        },
+        "symmetry error": {
+            "sdtype": "numerical"
+        },
+        "fractal dimension error": {
+            "sdtype": "numerical"
+        },
+        "worst radius": {
+            "sdtype": "numerical"
+        },
+        "worst texture": {
+            "sdtype": "numerical"
+        },
+        "worst perimeter": {
+            "sdtype": "numerical"
+        },
+        "worst area": {
+            "sdtype": "numerical"
+        },
+        "worst smoothness": {
+            "sdtype": "numerical"
+        },
+        "worst compactness": {
+            "sdtype": "numerical"
+        },
+        "worst concavity": {
+            "sdtype": "numerical"
+        },
+        "worst concave points": {
+            "sdtype": "numerical"
+        },
+        "worst symmetry": {
+            "sdtype": "numerical"
+        },
+        "worst fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "target": {
+            "sdtype": "categorical"
+        }
+    },
+    "METADATA_SPEC_VERSION": "SINGLE_TABLE_V1"
+}
+[2026-01-12T13:08:08.908963+0100][95576][CRITICAL] module disabled: /Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/generic/plugin_goggle.py
+[2026-01-12T13:08:08.910089+0100][95576][CRITICAL] module disabled: /Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/generic/plugin_goggle.py
+WARNING:models.factory:[factory] SynthCity plugin failed for 'tvae': Failed to initialize SynthCity plugin 'tvae': Plugin.__init__() got an unexpected keyword argument 'embedding_dim'. Falling back to SDV.
+INFO:models.factory:[factory] Using SDV backend for method 'tvae' (TVAE)
+INFO:SingleTableSynthesizer:{'EVENT': 'Instance', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 13, 8, 8, 912358), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_988c39140d3d42df8b308d732ea6a047'}
+[2026-01-12T13:08:08.912612+0100][95576][CRITICAL] module disabled: /Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/generic/plugin_goggle.py
+[2026-01-12T13:08:08.913042+0100][95576][CRITICAL] module disabled: /Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/generic/plugin_goggle.py
+WARNING:models.factory:[factory] SynthCity plugin failed for 'tvae': Failed to initialize SynthCity plugin 'tvae': Plugin.__init__() got an unexpected keyword argument 'embedding_dim'. Falling back to SDV.
+INFO:models.factory:[factory] Using SDV backend for method 'tvae' (TVAE)
+INFO:SingleTableSynthesizer:{'EVENT': 'Instance', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 13, 8, 8, 914776), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_3e7aa3bfb6714e769c6a93a34c776a1a'}
+INFO:SingleTableSynthesizer:{'EVENT': 'Fit', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 13, 8, 8, 914797), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_3e7aa3bfb6714e769c6a93a34c776a1a', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 569, 'TOTAL NUMBER OF COLUMNS': 31}
+INFO:sdv.data_processing.data_processor:Fitting table  metadata
+INFO:sdv.data_processing.data_processor:Fitting formatters for table 
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean radius'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean texture'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean perimeter'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean area'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean smoothness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean compactness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean concavity'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean concave points'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean symmetry'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean fractal dimension'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'radius error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'texture error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'perimeter error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'area error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'smoothness error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'compactness error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'concavity error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'concave points error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'symmetry error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'fractal dimension error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst radius'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst texture'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst perimeter'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst area'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst smoothness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst compactness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst concavity'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst concave points'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst symmetry'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst fractal dimension'. Data will not be rounded.
+INFO:sdv.data_processing.data_processor:Setting the configuration for the ``HyperTransformer`` for table 
+INFO:sdv.data_processing.data_processor:Fitting HyperTransformer for table 
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean radius'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean texture'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean perimeter'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean area'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean smoothness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean compactness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean concavity'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean concave points'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean symmetry'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean fractal dimension'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'radius error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'texture error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'perimeter error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'area error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'smoothness error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'compactness error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'concavity error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'concave points error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'symmetry error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'fractal dimension error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst radius'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst texture'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst perimeter'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst area'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst smoothness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst compactness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst concavity'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst concave points'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst symmetry'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst fractal dimension'. Data will not be rounded.
+INFO:SingleTableSynthesizer:{'EVENT': 'Fit processed data', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 13, 8, 8, 993603), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_3e7aa3bfb6714e769c6a93a34c776a1a', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 569, 'TOTAL NUMBER OF COLUMNS': 31}
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean radius. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean texture. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean perimeter. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean area. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean smoothness. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean compactness. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean concavity. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean concave points. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean symmetry. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean fractal dimension. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column radius error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column texture error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column perimeter error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column area error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column smoothness error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column compactness error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column concavity error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column concave points error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column symmetry error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column fractal dimension error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst radius. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst texture. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst perimeter. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst area. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst smoothness. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst compactness. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst concavity. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst concave points. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst symmetry. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst fractal dimension. Extra column not created.
+INFO:SingleTableSynthesizer:{'EVENT': 'Sample', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 13, 11, 19, 172640), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_3e7aa3bfb6714e769c6a93a34c776a1a', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 569, 'TOTAL NUMBER OF COLUMNS': 31}
+INFO:worker:Corr Delta calculated (custom): 0.1678
+INFO:worker:Dup rate calculated (custom): 0.0000 (0 duplicates out of 569 synthetic rows)
+WARNING:libs.compliance:Unknown compliance level 'medium', defaulting to HIPAA_LIKE
+INFO:worker:[worker][preprocessing] Fetching preprocessing plan...
+INFO:worker:[worker][preprocessing] Applied preprocessing plan: N/A
+INFO:sdv.metadata.multi_table:Detected metadata:
+{
+    "columns": {
+        "mean radius": {
+            "sdtype": "numerical"
+        },
+        "mean texture": {
+            "sdtype": "numerical"
+        },
+        "mean perimeter": {
+            "sdtype": "numerical"
+        },
+        "mean area": {
+            "sdtype": "numerical"
+        },
+        "mean smoothness": {
+            "sdtype": "numerical"
+        },
+        "mean compactness": {
+            "sdtype": "numerical"
+        },
+        "mean concavity": {
+            "sdtype": "numerical"
+        },
+        "mean concave points": {
+            "sdtype": "numerical"
+        },
+        "mean symmetry": {
+            "sdtype": "numerical"
+        },
+        "mean fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "radius error": {
+            "sdtype": "numerical"
+        },
+        "texture error": {
+            "sdtype": "numerical"
+        },
+        "perimeter error": {
+            "sdtype": "numerical"
+        },
+        "area error": {
+            "sdtype": "numerical"
+        },
+        "smoothness error": {
+            "sdtype": "numerical"
+        },
+        "compactness error": {
+            "sdtype": "numerical"
+        },
+        "concavity error": {
+            "sdtype": "numerical"
+        },
+        "concave points error": {
+            "sdtype": "numerical"
+        },
+        "symmetry error": {
+            "sdtype": "numerical"
+        },
+        "fractal dimension error": {
+            "sdtype": "numerical"
+        },
+        "worst radius": {
+            "sdtype": "numerical"
+        },
+        "worst texture": {
+            "sdtype": "numerical"
+        },
+        "worst perimeter": {
+            "sdtype": "numerical"
+        },
+        "worst area": {
+            "sdtype": "numerical"
+        },
+        "worst smoothness": {
+            "sdtype": "numerical"
+        },
+        "worst compactness": {
+            "sdtype": "numerical"
+        },
+        "worst concavity": {
+            "sdtype": "numerical"
+        },
+        "worst concave points": {
+            "sdtype": "numerical"
+        },
+        "worst symmetry": {
+            "sdtype": "numerical"
+        },
+        "worst fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "target": {
+            "sdtype": "categorical"
+        }
+    }
+}
+INFO:sdv.metadata.single_table:Detected metadata:
+INFO:sdv.metadata.single_table:{
+    "columns": {
+        "mean radius": {
+            "sdtype": "numerical"
+        },
+        "mean texture": {
+            "sdtype": "numerical"
+        },
+        "mean perimeter": {
+            "sdtype": "numerical"
+        },
+        "mean area": {
+            "sdtype": "numerical"
+        },
+        "mean smoothness": {
+            "sdtype": "numerical"
+        },
+        "mean compactness": {
+            "sdtype": "numerical"
+        },
+        "mean concavity": {
+            "sdtype": "numerical"
+        },
+        "mean concave points": {
+            "sdtype": "numerical"
+        },
+        "mean symmetry": {
+            "sdtype": "numerical"
+        },
+        "mean fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "radius error": {
+            "sdtype": "numerical"
+        },
+        "texture error": {
+            "sdtype": "numerical"
+        },
+        "perimeter error": {
+            "sdtype": "numerical"
+        },
+        "area error": {
+            "sdtype": "numerical"
+        },
+        "smoothness error": {
+            "sdtype": "numerical"
+        },
+        "compactness error": {
+            "sdtype": "numerical"
+        },
+        "concavity error": {
+            "sdtype": "numerical"
+        },
+        "concave points error": {
+            "sdtype": "numerical"
+        },
+        "symmetry error": {
+            "sdtype": "numerical"
+        },
+        "fractal dimension error": {
+            "sdtype": "numerical"
+        },
+        "worst radius": {
+            "sdtype": "numerical"
+        },
+        "worst texture": {
+            "sdtype": "numerical"
+        },
+        "worst perimeter": {
+            "sdtype": "numerical"
+        },
+        "worst area": {
+            "sdtype": "numerical"
+        },
+        "worst smoothness": {
+            "sdtype": "numerical"
+        },
+        "worst compactness": {
+            "sdtype": "numerical"
+        },
+        "worst concavity": {
+            "sdtype": "numerical"
+        },
+        "worst concave points": {
+            "sdtype": "numerical"
+        },
+        "worst symmetry": {
+            "sdtype": "numerical"
+        },
+        "worst fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "target": {
+            "sdtype": "categorical"
+        }
+    },
+    "METADATA_SPEC_VERSION": "SINGLE_TABLE_V1"
+}
+[2026-01-12T13:11:20.724988+0100][95576][CRITICAL] module disabled: /Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/generic/plugin_goggle.py
+[2026-01-12T13:11:20.725513+0100][95576][CRITICAL] module disabled: /Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/generic/plugin_goggle.py
+WARNING:models.factory:[factory] SynthCity plugin failed for 'tvae': Failed to initialize SynthCity plugin 'tvae': Plugin.__init__() got an unexpected keyword argument 'embedding_dim'. Falling back to SDV.
+INFO:models.factory:[factory] Using SDV backend for method 'tvae' (TVAE)
+INFO:SingleTableSynthesizer:{'EVENT': 'Instance', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 13, 11, 20, 727499), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_f60503cbfd224b4e8b5ac7daab72d66e'}
+[2026-01-12T13:11:20.727749+0100][95576][CRITICAL] module disabled: /Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/generic/plugin_goggle.py
+[2026-01-12T13:11:20.728180+0100][95576][CRITICAL] module disabled: /Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/generic/plugin_goggle.py
+WARNING:models.factory:[factory] SynthCity plugin failed for 'tvae': Failed to initialize SynthCity plugin 'tvae': Plugin.__init__() got an unexpected keyword argument 'embedding_dim'. Falling back to SDV.
+INFO:models.factory:[factory] Using SDV backend for method 'tvae' (TVAE)
+INFO:SingleTableSynthesizer:{'EVENT': 'Instance', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 13, 11, 20, 729977), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_9a2803e210cc40a0a4022d20733d050d'}
+INFO:SingleTableSynthesizer:{'EVENT': 'Fit', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 13, 11, 20, 730010), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_9a2803e210cc40a0a4022d20733d050d', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 569, 'TOTAL NUMBER OF COLUMNS': 31}
+INFO:sdv.data_processing.data_processor:Fitting table  metadata
+INFO:sdv.data_processing.data_processor:Fitting formatters for table 
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean radius'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean texture'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean perimeter'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean area'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean smoothness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean compactness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean concavity'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean concave points'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean symmetry'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean fractal dimension'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'radius error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'texture error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'perimeter error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'area error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'smoothness error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'compactness error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'concavity error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'concave points error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'symmetry error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'fractal dimension error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst radius'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst texture'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst perimeter'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst area'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst smoothness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst compactness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst concavity'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst concave points'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst symmetry'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst fractal dimension'. Data will not be rounded.
+INFO:sdv.data_processing.data_processor:Setting the configuration for the ``HyperTransformer`` for table 
+INFO:sdv.data_processing.data_processor:Fitting HyperTransformer for table 
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean radius'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean texture'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean perimeter'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean area'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean smoothness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean compactness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean concavity'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean concave points'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean symmetry'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean fractal dimension'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'radius error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'texture error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'perimeter error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'area error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'smoothness error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'compactness error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'concavity error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'concave points error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'symmetry error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'fractal dimension error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst radius'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst texture'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst perimeter'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst area'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst smoothness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst compactness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst concavity'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst concave points'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst symmetry'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst fractal dimension'. Data will not be rounded.
+INFO:SingleTableSynthesizer:{'EVENT': 'Fit processed data', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 13, 11, 20, 808679), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_9a2803e210cc40a0a4022d20733d050d', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 569, 'TOTAL NUMBER OF COLUMNS': 31}
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean radius. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean texture. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean perimeter. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean area. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean smoothness. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean compactness. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean concavity. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean concave points. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean symmetry. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean fractal dimension. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column radius error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column texture error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column perimeter error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column area error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column smoothness error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column compactness error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column concavity error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column concave points error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column symmetry error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column fractal dimension error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst radius. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst texture. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst perimeter. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst area. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst smoothness. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst compactness. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst concavity. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst concave points. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst symmetry. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst fractal dimension. Extra column not created.
+[worker][metrics] Using SynthCity evaluators for utility metrics
+[worker][metrics] Using SynthCity evaluators for privacy metrics
+[worker][metrics] model=tvae dp_backend=none dp_effective=False ks=0.8695504280287998 cd=0.15844324526142836 mia=0.008787346221441126 evaluator=synthcity
+[worker][compliance] Status: FAILED, Score: 62.90%, Violations: 2
+[worker][compliance] Violations:
+[worker][compliance]   - KS mean 0.870 exceeds threshold 0.1
+[worker][compliance]   - Correlation delta 0.158 exceeds threshold 0.1
+[worker] attempt=1 overall_ok=False reasons=KS mean 0.870 > 0.10 (fail); Corr Δ 0.158 > 0.10 (fail); MIA AUC 0.009 ≤ 0.60 (ok); Dup rate 0.0% ≤ 5% (ok)
+[worker][optimizer] Failure analysis: EXTREME CRITICAL: KS statistic extremely high (0.870). Training almost certainly failed or was incomplete. This is not a normal failure - training likely did not complete.
+[worker][optimizer] Suggestions: EXTREME: Training failed. Switch to TabDDPM (ddpm) with n_iter=600-800 immediately, CRITICAL: Current method is not suitable - TabDDPM is required for this dataset
+[worker] metrics: {
+  "utility": {
+    "ks_mean": 0.8695504280287998,
+    "corr_delta": 0.15844324526142836,
+    "auroc": null,
+    "c_index": null,
+    "fairness": {
+      "rare_coverage": null,
+      "freq_skew": 0.03690685413005276
+    }
+  },
+  "privacy": {
+    "mia_auc": 0.008787346221441126,
+    "dup_rate": 0.0,
+    "dp_requested": false,
+    "dp_effective": false,
+    "dp_epsilon": null,
+    "dp_delta": null
+  },
+  "composite": {
+    "x_mia": 0.8695504280287998,
+    "y_utility": 0.15844324526142836
+  },
+  "meta": {
+    "model": "tvae",
+    "attempt": 1,
+    "dp_backend": "none",
+    "dp_effective": false,
+    "n_real": 569,
+    "n_synth": 569,
+    "evaluator_backend": "synthcity"
+  },
+  "compliance": {
+    "passed": false,
+    "privacy_passed": true,
+    "utility_passed": false,
+    "fairness_passed": true,
+    "violations": [
+      "KS mean 0.870 exceeds threshold 0.1",
+      "Correlation delta 0.158 exceeds threshold 0.1"
+    ],
+    "score": 0.6290329715821477,
+    "level": "hipaa_like",
+    "timestamp": "2026-01-12T12:08:08.808527"
+  }
+}
+
+──────────────────────────────────────────────────────────────────────
+📊 ATTEMPT 1 RESULTS
+──────────────────────────────────────────────────────────────────────
+KS Mean:     0.8696 ❌ (threshold: 0.1)
+Corr Delta:  0.1584 ❌ (threshold: 0.1)
+MIA AUC:     0.0088 ✅ (threshold: 0.6)
+Dup Rate:    0.0000 ✅ (threshold: 0.05)
+Score:       62.9%
+
+⚠️  Failed checks: ks_ok, cd_ok
+🔄 Retrying with optimized hyperparameters...
+
+──────────────────────────────────────────────────────────────────────
+🔄 ATTEMPT 2/5
+──────────────────────────────────────────────────────────────────────
+[Optimizer] Suggested hyperparameters (retry 1): {'num_epochs': 4000, 'batch_size': 32, 'embedding_dim': 512, 'compress_dims': [512, 256], 'decompress_dims': [256, 512]}
+[Training] Starting with hyperparameters: {'num_epochs': 4000, 'batch_size': 32, 'embedding_dim': 512, 'compress_dims': [512, 256], 'decompress_dims': [256, 512]}
+[worker][preprocessing] Applying mandatory smart preprocessing via OpenRouter LLM...
+[MockAgent] Applying deterministic research-based preprocessing...
+[worker][preprocessing] Applied 30 preprocessing steps
+[worker][preprocessing] Rationale: Applied research-based Quantile Transformation and Winsorization to improve diffusion model convergence....
+[worker][metadata] SynthCity DataLoader unavailable: TypeError. Using SDV metadata.
+[worker][method] User explicitly selected method: 'tvae'
+[worker] attempt=1 method=tvae hparams={"embedding_dim": 512, "decompress_dims": [256, 512], "batch_size": 32, "num_epochs": 4000, "compress_dims": [512, 256]}
+[worker][dp] backend=none strict=False epsilon=None method=tvae
+[worker][metrics] Using SynthCity evaluators for utility metrics
+[worker][metrics] Using SynthCity evaluators for privacy metrics
+[worker][metrics] model=tvae dp_backend=none dp_effective=False ks=0.8862180395714043 cd=0.16781034023079353 mia=0.01054481546572935 evaluator=synthcity
+[worker][compliance] Status: FAILED, Score: 62.69%, Violations: 2
+[worker][compliance] Violations:
+[worker][compliance]   - KS mean 0.886 exceeds threshold 0.1
+[worker][compliance]   - Correlation delta 0.168 exceeds threshold 0.1
+[worker] attempt=1 overall_ok=False reasons=KS mean 0.886 > 0.10 (fail); Corr Δ 0.168 > 0.10 (fail); MIA AUC 0.011 ≤ 0.60 (ok); Dup rate 0.0% ≤ 5% (ok)
+[worker][optimizer] Failure analysis: EXTREME CRITICAL: KS statistic extremely high (0.886). Training almost certainly failed or was incomplete. This is not a normal failure - training likely did not complete.
+[worker][optimizer] Suggestions: EXTREME: Training failed. Switch to TabDDPM (ddpm) with n_iter=600-800 immediately, CRITICAL: Current method is not suitable - TabDDPM is required for this dataset
+[worker] metrics: {
+  "utility": {
+    "ks_mean": 0.8862180395714043,
+    "corr_delta": 0.16781034023079353,
+    "auroc": null,
+    "c_index": null,
+    "fairness": {
+      "rare_coverage": null,
+      "freq_skew": 0.01581722319859402
+    }
+  },
+  "privacy": {
+    "mia_auc": 0.01054481546572935,
+    "dup_rate": 0.0,
+    "dp_requested": false,
+    "dp_effective": false,
+    "dp_epsilon": null,
+    "dp_delta": null
+  },
+  "composite": {
+    "x_mia": 0.8862180395714043,
+    "y_utility": 0.16781034023079353
+  },
+  "meta": {
+    "model": "tvae",
+    "attempt": 1,
+    "dp_backend": "none",
+    "dp_effective": false,
+    "n_real": 569,
+    "n_synth": 569,
+    "evaluator_backend": "synthcity"
+  },
+  "compliance": {
+    "passed": false,
+    "privacy_passed": true,
+    "utility_passed": false,
+    "fairness_passed": true,
+    "violations": [
+      "KS mean 0.886 exceeds threshold 0.1",
+      "Correlation delta 0.168 exceeds threshold 0.1"
+    ],
+    "score": 0.6268968045595422,
+    "level": "hipaa_like",
+    "timestamp": "2026-01-12T12:11:20.640744"
+  }
+}
+
+──────────────────────────────────────────────────────────────────────
+📊 ATTEMPT 2 RESULTS
+──────────────────────────────────────────────────────────────────────
+KS Mean:     0.8862 ❌ (threshold: 0.1)
+Corr Delta:  0.1678 ❌ (threshold: 0.1)
+MIA AUC:     0.0105 ✅ (threshold: 0.6)
+Dup Rate:    0.0000 ✅ (threshold: 0.05)
+Score:       62.7%
+
+⚠️  Failed checks: ks_ok, cd_ok
+🔄 Retrying with optimized hyperparameters...
+
+──────────────────────────────────────────────────────────────────────
+🔄 ATTEMPT 3/5
+──────────────────────────────────────────────────────────────────────
+[Optimizer] Suggested hyperparameters (retry 2): {'num_epochs': 7000, 'batch_size': 32, 'embedding_dim': 512, 'compress_dims': [512, 256], 'decompress_dims': [256, 512]}
+[Training] Starting with hyperparameters: {'num_epochs': 7000, 'batch_size': 32, 'embedding_dim': 512, 'compress_dims': [512, 256], 'decompress_dims': [256, 512]}
+[worker][preprocessing] Applying mandatory smart preprocessing via OpenRouter LLM...
+[MockAgent] Applying deterministic research-based preprocessing...
+[worker][preprocessing] Applied 30 preprocessing steps
+[worker][preprocessing] Rationale: Applied research-based Quantile Transformation and Winsorization to improve diffusion model convergence....
+[worker][metadata] SynthCity DataLoader unavailable: TypeError. Using SDV metadata.
+[worker][method] User explicitly selected method: 'tvae'
+[worker] attempt=1 method=tvae hparams={"embedding_dim": 512, "decompress_dims": [256, 512], "batch_size": 32, "num_epochs": 7000, "compress_dims": [512, 256]}
+[worker][dp] backend=none strict=False epsilon=None method=tvae
+INFO:SingleTableSynthesizer:{'EVENT': 'Sample', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 13, 14, 34, 431727), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_9a2803e210cc40a0a4022d20733d050d', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 569, 'TOTAL NUMBER OF COLUMNS': 31}
+INFO:worker:Corr Delta calculated (custom): 0.1556
+INFO:worker:Dup rate calculated (custom): 0.0000 (0 duplicates out of 569 synthetic rows)
+WARNING:libs.compliance:Unknown compliance level 'medium', defaulting to HIPAA_LIKE
+INFO:worker:[worker][preprocessing] Fetching preprocessing plan...
+INFO:worker:[worker][preprocessing] Applied preprocessing plan: N/A
+INFO:sdv.metadata.multi_table:Detected metadata:
+{
+    "columns": {
+        "mean radius": {
+            "sdtype": "numerical"
+        },
+        "mean texture": {
+            "sdtype": "numerical"
+        },
+        "mean perimeter": {
+            "sdtype": "numerical"
+        },
+        "mean area": {
+            "sdtype": "numerical"
+        },
+        "mean smoothness": {
+            "sdtype": "numerical"
+        },
+        "mean compactness": {
+            "sdtype": "numerical"
+        },
+        "mean concavity": {
+            "sdtype": "numerical"
+        },
+        "mean concave points": {
+            "sdtype": "numerical"
+        },
+        "mean symmetry": {
+            "sdtype": "numerical"
+        },
+        "mean fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "radius error": {
+            "sdtype": "numerical"
+        },
+        "texture error": {
+            "sdtype": "numerical"
+        },
+        "perimeter error": {
+            "sdtype": "numerical"
+        },
+        "area error": {
+            "sdtype": "numerical"
+        },
+        "smoothness error": {
+            "sdtype": "numerical"
+        },
+        "compactness error": {
+            "sdtype": "numerical"
+        },
+        "concavity error": {
+            "sdtype": "numerical"
+        },
+        "concave points error": {
+            "sdtype": "numerical"
+        },
+        "symmetry error": {
+            "sdtype": "numerical"
+        },
+        "fractal dimension error": {
+            "sdtype": "numerical"
+        },
+        "worst radius": {
+            "sdtype": "numerical"
+        },
+        "worst texture": {
+            "sdtype": "numerical"
+        },
+        "worst perimeter": {
+            "sdtype": "numerical"
+        },
+        "worst area": {
+            "sdtype": "numerical"
+        },
+        "worst smoothness": {
+            "sdtype": "numerical"
+        },
+        "worst compactness": {
+            "sdtype": "numerical"
+        },
+        "worst concavity": {
+            "sdtype": "numerical"
+        },
+        "worst concave points": {
+            "sdtype": "numerical"
+        },
+        "worst symmetry": {
+            "sdtype": "numerical"
+        },
+        "worst fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "target": {
+            "sdtype": "categorical"
+        }
+    }
+}
+INFO:sdv.metadata.single_table:Detected metadata:
+INFO:sdv.metadata.single_table:{
+    "columns": {
+        "mean radius": {
+            "sdtype": "numerical"
+        },
+        "mean texture": {
+            "sdtype": "numerical"
+        },
+        "mean perimeter": {
+            "sdtype": "numerical"
+        },
+        "mean area": {
+            "sdtype": "numerical"
+        },
+        "mean smoothness": {
+            "sdtype": "numerical"
+        },
+        "mean compactness": {
+            "sdtype": "numerical"
+        },
+        "mean concavity": {
+            "sdtype": "numerical"
+        },
+        "mean concave points": {
+            "sdtype": "numerical"
+        },
+        "mean symmetry": {
+            "sdtype": "numerical"
+        },
+        "mean fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "radius error": {
+            "sdtype": "numerical"
+        },
+        "texture error": {
+            "sdtype": "numerical"
+        },
+        "perimeter error": {
+            "sdtype": "numerical"
+        },
+        "area error": {
+            "sdtype": "numerical"
+        },
+        "smoothness error": {
+            "sdtype": "numerical"
+        },
+        "compactness error": {
+            "sdtype": "numerical"
+        },
+        "concavity error": {
+            "sdtype": "numerical"
+        },
+        "concave points error": {
+            "sdtype": "numerical"
+        },
+        "symmetry error": {
+            "sdtype": "numerical"
+        },
+        "fractal dimension error": {
+            "sdtype": "numerical"
+        },
+        "worst radius": {
+            "sdtype": "numerical"
+        },
+        "worst texture": {
+            "sdtype": "numerical"
+        },
+        "worst perimeter": {
+            "sdtype": "numerical"
+        },
+        "worst area": {
+            "sdtype": "numerical"
+        },
+        "worst smoothness": {
+            "sdtype": "numerical"
+        },
+        "worst compactness": {
+            "sdtype": "numerical"
+        },
+        "worst concavity": {
+            "sdtype": "numerical"
+        },
+        "worst concave points": {
+            "sdtype": "numerical"
+        },
+        "worst symmetry": {
+            "sdtype": "numerical"
+        },
+        "worst fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "target": {
+            "sdtype": "categorical"
+        }
+    },
+    "METADATA_SPEC_VERSION": "SINGLE_TABLE_V1"
+}
+[2026-01-12T13:14:35.927564+0100][95576][CRITICAL] module disabled: /Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/generic/plugin_goggle.py
+[2026-01-12T13:14:35.928318+0100][95576][CRITICAL] module disabled: /Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/generic/plugin_goggle.py
+WARNING:models.factory:[factory] SynthCity plugin failed for 'tvae': Failed to initialize SynthCity plugin 'tvae': Plugin.__init__() got an unexpected keyword argument 'embedding_dim'. Falling back to SDV.
+INFO:models.factory:[factory] Using SDV backend for method 'tvae' (TVAE)
+INFO:SingleTableSynthesizer:{'EVENT': 'Instance', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 13, 14, 35, 930424), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_94543797a80f4537869d5ba07ddab0f0'}
+[2026-01-12T13:14:35.930675+0100][95576][CRITICAL] module disabled: /Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/generic/plugin_goggle.py
+[2026-01-12T13:14:35.931108+0100][95576][CRITICAL] module disabled: /Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/generic/plugin_goggle.py
+WARNING:models.factory:[factory] SynthCity plugin failed for 'tvae': Failed to initialize SynthCity plugin 'tvae': Plugin.__init__() got an unexpected keyword argument 'embedding_dim'. Falling back to SDV.
+INFO:models.factory:[factory] Using SDV backend for method 'tvae' (TVAE)
+INFO:SingleTableSynthesizer:{'EVENT': 'Instance', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 13, 14, 35, 932959), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_a991a75db2534514b0d3efe6d498ae42'}
+INFO:SingleTableSynthesizer:{'EVENT': 'Fit', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 13, 14, 35, 932990), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_a991a75db2534514b0d3efe6d498ae42', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 569, 'TOTAL NUMBER OF COLUMNS': 31}
+INFO:sdv.data_processing.data_processor:Fitting table  metadata
+INFO:sdv.data_processing.data_processor:Fitting formatters for table 
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean radius'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean texture'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean perimeter'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean area'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean smoothness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean compactness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean concavity'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean concave points'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean symmetry'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean fractal dimension'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'radius error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'texture error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'perimeter error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'area error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'smoothness error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'compactness error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'concavity error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'concave points error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'symmetry error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'fractal dimension error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst radius'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst texture'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst perimeter'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst area'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst smoothness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst compactness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst concavity'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst concave points'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst symmetry'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst fractal dimension'. Data will not be rounded.
+INFO:sdv.data_processing.data_processor:Setting the configuration for the ``HyperTransformer`` for table 
+INFO:sdv.data_processing.data_processor:Fitting HyperTransformer for table 
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean radius'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean texture'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean perimeter'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean area'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean smoothness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean compactness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean concavity'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean concave points'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean symmetry'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'mean fractal dimension'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'radius error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'texture error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'perimeter error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'area error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'smoothness error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'compactness error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'concavity error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'concave points error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'symmetry error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'fractal dimension error'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst radius'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst texture'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst perimeter'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst area'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst smoothness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst compactness'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst concavity'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst concave points'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst symmetry'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'worst fractal dimension'. Data will not be rounded.
+INFO:SingleTableSynthesizer:{'EVENT': 'Fit processed data', 'TIMESTAMP': datetime.datetime(2026, 1, 12, 13, 14, 36, 11602), 'SYNTHESIZER CLASS NAME': 'TVAESynthesizer', 'SYNTHESIZER ID': 'TVAESynthesizer_1.32.1_a991a75db2534514b0d3efe6d498ae42', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 569, 'TOTAL NUMBER OF COLUMNS': 31}
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean radius. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean texture. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean perimeter. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean area. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean smoothness. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean compactness. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean concavity. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean concave points. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean symmetry. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column mean fractal dimension. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column radius error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column texture error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column perimeter error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column area error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column smoothness error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column compactness error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column concavity error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column concave points error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column symmetry error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column fractal dimension error. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst radius. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst texture. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst perimeter. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst area. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst smoothness. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst compactness. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst concavity. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst concave points. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst symmetry. Extra column not created.
+INFO:rdt.transformers.null:Guidance: There are no missing values in column worst fractal dimension. Extra column not created.
+[worker][metrics] Using SynthCity evaluators for utility metrics
+[worker][metrics] Using SynthCity evaluators for privacy metrics
+[worker][metrics] model=tvae dp_backend=none dp_effective=False ks=0.8871251204716821 cd=0.15559017881335335 mia=0.012302284710017574 evaluator=synthcity
+[worker][compliance] Status: FAILED, Score: 62.90%, Violations: 2
+[worker][compliance] Violations:
+[worker][compliance]   - KS mean 0.887 exceeds threshold 0.1
+[worker][compliance]   - Correlation delta 0.156 exceeds threshold 0.1
+[worker] attempt=1 overall_ok=False reasons=KS mean 0.887 > 0.10 (fail); Corr Δ 0.156 > 0.10 (fail); MIA AUC 0.012 ≤ 0.60 (ok); Dup rate 0.0% ≤ 5% (ok)
+[worker][optimizer] Failure analysis: EXTREME CRITICAL: KS statistic extremely high (0.887). Training almost certainly failed or was incomplete. This is not a normal failure - training likely did not complete.
+[worker][optimizer] Suggestions: EXTREME: Training failed. Switch to TabDDPM (ddpm) with n_iter=600-800 immediately, CRITICAL: Current method is not suitable - TabDDPM is required for this dataset
+[worker] metrics: {
+  "utility": {
+    "ks_mean": 0.8871251204716821,
+    "corr_delta": 0.15559017881335335,
+    "auroc": null,
+    "c_index": null,
+    "fairness": {
+      "rare_coverage": null,
+      "freq_skew": 0.014059753954305781
+    }
+  },
+  "privacy": {
+    "mia_auc": 0.012302284710017574,
+    "dup_rate": 0.0,
+    "dp_requested": false,
+    "dp_effective": false,
+    "dp_epsilon": null,
+    "dp_delta": null
+  },
+  "composite": {
+    "x_mia": 0.8871251204716821,
+    "y_utility": 0.15559017881335335
+  },
+  "meta": {
+    "model": "tvae",
+    "attempt": 1,
+    "dp_backend": "none",
+    "dp_effective": false,
+    "n_real": 569,
+    "n_synth": 569,
+    "evaluator_backend": "synthcity"
+  },
+  "compliance": {
+    "passed": false,
+    "privacy_passed": true,
+    "utility_passed": false,
+    "fairness_passed": true,
+    "violations": [
+      "KS mean 0.887 exceeds threshold 0.1",
+      "Correlation delta 0.156 exceeds threshold 0.1"
+    ],
+    "score": 0.6289796365339666,
+    "level": "hipaa_like",
+    "timestamp": "2026-01-12T12:14:35.843011"
+  }
+}
+
+──────────────────────────────────────────────────────────────────────
+📊 ATTEMPT 3 RESULTS
+──────────────────────────────────────────────────────────────────────
+KS Mean:     0.8871 ❌ (threshold: 0.1)
+Corr Delta:  0.1556 ❌ (threshold: 0.1)
+MIA AUC:     0.0123 ✅ (threshold: 0.6)
+Dup Rate:    0.0000 ✅ (threshold: 0.05)
+Score:       62.9%
+
+⚠️  Failed checks: ks_ok, cd_ok
+🔄 Retrying with optimized hyperparameters...
+
+──────────────────────────────────────────────────────────────────────
+🔄 ATTEMPT 4/5
+──────────────────────────────────────────────────────────────────────
+[Optimizer] Suggested hyperparameters (retry 3): {'num_epochs': 10000, 'batch_size': 32, 'embedding_dim': 512, 'compress_dims': [512, 256], 'decompress_dims': [256, 512]}
+[Training] Starting with hyperparameters: {'num_epochs': 10000, 'batch_size': 32, 'embedding_dim': 512, 'compress_dims': [512, 256], 'decompress_dims': [256, 512]}
+[worker][preprocessing] Applying mandatory smart preprocessing via OpenRouter LLM...
+[MockAgent] Applying deterministic research-based preprocessing...
+[worker][preprocessing] Applied 30 preprocessing steps
+[worker][preprocessing] Rationale: Applied research-based Quantile Transformation and Winsorization to improve diffusion model convergence....
+[worker][metadata] SynthCity DataLoader unavailable: TypeError. Using SDV metadata.
+[worker][method] User explicitly selected method: 'tvae'
+[worker] attempt=1 method=tvae hparams={"embedding_dim": 512, "decompress_dims": [256, 512], "batch_size": 32, "num_epochs": 10000, "compress_dims": [512, 256]}
+[worker][dp] backend=none strict=False epsilon=None method=tvae
