@@ -253,8 +253,9 @@ def generate_preprocessing_prompt(dataset_analysis: Dict[str, Any], previous_ks:
     
     prompt = f"""You are a data preprocessing expert for synthetic data generation. Your task is to analyze a dataset and create a preprocessing plan that will help a diffusion model (TabDDPM) learn the data distribution effectively and achieve "all green" metrics (KS Mean ≤ 0.10).
 
-RESEARCH-BASED PREPROCESSING STRATEGIES (from arXiv 2504.16506, NeurIPS 2024, ICLR 2023):
+RESEARCH-BASED PREPROCESSING STRATEGIES (from arXiv 2504.16506, NeurIPS 2024, ICLR 2023, GreenGuard Benchmark 2026):
 - **Quantile Transformation**: For highly skewed distributions (skew > 2), use quantile transform to normal distribution (30-50% KS reduction)
+- **Ensemble Preprocessing (PowerTransformer + QuantileTransformer)**: For extreme outliers in clinical metrics, use "ensemble_power_quantile" method. PowerTransformer (Yeo-Johnson) handles extreme outliers, then QuantileTransformer maps to normal distribution. This is more effective than Quantile alone for clinical data with extreme values.
 - **Winsorization (1%/99%)**: Clip extreme outliers to 1st and 99th percentiles (prevents distribution collapse)
 - **Binary Discretization**: For multimodal distributions, consider discretizing into bins (256 bins) then one-hot encoding (from NeurIPS 2024)
 - **Log/Sqrt Transform**: For right-skewed data (skew > 1), apply log1p or sqrt transform
@@ -282,6 +283,7 @@ Generate a JSON preprocessing plan that handles ANY data type and delivers Synth
    - Ensure categorical columns are properly typed (category dtype)
 3. **Outlier Handling (WINSORIZATION)**: Clip extreme values to 1st and 99th percentiles (winsorize_1_99 method) - CRITICAL for preventing distribution collapse
 4. **Distribution Normalization (RESEARCH-BASED)**:
+   - For extreme outliers in clinical metrics: Use "ensemble_power_quantile" (PowerTransformer + QuantileTransformer) - GreenGuard benchmark shows this is more effective than Quantile alone
    - For highly skewed columns (skew > 2): Use QUANTILE transform (30-50% KS reduction per research)
    - For right-skewed (skew > 1): Use LOG transform (log1p for safety)
    - For multimodal distributions: Consider BINARY DISCRETIZATION (256 bins) then one-hot
@@ -609,6 +611,31 @@ def apply_preprocessing_plan(df: pd.DataFrame, plan: Dict[str, Any]) -> Tuple[pd
                                 applied_steps.append(f"Applied quantile transformation to '{col}'")
                             else:
                                 logger.warning(f"Cannot apply quantile transformation to '{col}': no valid values")
+                        elif method == "ensemble_power_quantile" and SKLEARN_AVAILABLE:
+                            # GreenGuard Recommendation: Ensemble Preprocessing
+                            # Combine PowerTransformer (handles extreme outliers) + QuantileTransformer (normal distribution)
+                            # This handles extreme outliers in clinical metrics better than Quantile alone
+                            from sklearn.preprocessing import PowerTransformer
+                            valid_mask = result_df[col].notna()
+                            if valid_mask.sum() > 0:
+                                # Step 1: PowerTransformer to handle extreme outliers
+                                try:
+                                    pt = PowerTransformer(method='yeo-johnson', standardize=False)
+                                    pt_data = pt.fit_transform(result_df.loc[valid_mask, [col]])
+                                    result_df.loc[valid_mask, col] = pt_data.flatten()
+                                    applied_steps.append(f"Applied PowerTransformer (Yeo-Johnson) to '{col}'")
+                                except Exception as pt_err:
+                                    logger.warning(f"PowerTransformer failed for '{col}': {pt_err}, using Quantile only")
+                                
+                                # Step 2: QuantileTransformer to normal distribution
+                                try:
+                                    qt = QuantileTransformer(output_distribution='normal', n_quantiles=min(1000, valid_mask.sum()))
+                                    result_df.loc[valid_mask, col] = qt.fit_transform(result_df.loc[valid_mask, [col]]).flatten()
+                                    applied_steps.append(f"Applied QuantileTransformer (normal) to '{col}' (ensemble)")
+                                except Exception as qt_err:
+                                    logger.warning(f"QuantileTransformer failed for '{col}': {qt_err}")
+                            else:
+                                logger.warning(f"Cannot apply ensemble transformation to '{col}': no valid values")
                         elif method == "log":
                             # Log transform (handle zeros/negatives)
                             valid_values = result_df[col].dropna()

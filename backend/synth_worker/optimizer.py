@@ -98,6 +98,49 @@ class SyntheticDataOptimizer:
             except ImportError:
                 pass
     
+    def should_pivot_to_tvae(
+        self,
+        method: str,
+        dataset_size: Tuple[int, int],
+        metrics: Optional[Dict[str, Any]] = None,
+        retry_count: int = 0
+    ) -> bool:
+        """
+        Determine if we should pivot from TabDDPM to TVAE based on GreenGuard findings.
+        
+        GreenGuard Benchmark Findings:
+        - TabDDPM plateaus on small-N clinical data (<1000 rows)
+        - Utility peaks at ~9,000-10,000 iterations for N=569
+        - Beyond 30,000 iterations, utility degrades (overfitting to Gaussian noise)
+        - TVAE handles small-N numeric data with higher stability
+        
+        Args:
+            method: Current method (ddpm/tabddpm)
+            dataset_size: (n_rows, n_cols)
+            metrics: Current metrics (if available)
+            retry_count: Number of retries already attempted
+            
+        Returns:
+            True if should pivot to TVAE
+        """
+        n_rows, _ = dataset_size
+        
+        # Pivot conditions based on GreenGuard research:
+        # 1. Small-N clinical data (<1000 rows) with TabDDPM
+        if method in ("ddpm", "tabddpm") and n_rows < 1000:
+            # 2. After 2+ retries with TabDDPM (indicates plateau)
+            if retry_count >= 2:
+                return True
+            
+            # 3. If KS Mean is still high (>0.20) after preprocessing
+            if metrics:
+                utility = metrics.get("utility", {})
+                ks_mean = utility.get("ks_mean")
+                if ks_mean and ks_mean > 0.20:
+                    return True
+        
+        return False
+    
     def analyze_failure(
         self,
         metrics: Dict[str, Any],
@@ -289,7 +332,7 @@ class SyntheticDataOptimizer:
         elif method == "ctgan":
             return self._suggest_ctgan_params(n_rows, n_cols, previous_metrics, dp_requested, dataset_complexity)
         elif method == "tvae":
-            return self._suggest_tvae_params(n_rows, n_cols, previous_metrics, dataset_complexity)
+            return self._suggest_tvae_params(n_rows, n_cols, previous_metrics, dataset_complexity, retry_count)
         elif method == "gc":
             return {}  # GC has no hyperparameters
         else:
@@ -304,71 +347,41 @@ class SyntheticDataOptimizer:
         retry_count: int = 0
     ) -> Dict[str, Any]:
         """Suggest TabDDPM hyperparameters with improved defaults for better quality."""
-        # IMPROVED: Higher base n_iter to prevent high KS Mean failures
-        # Previous defaults (200-300) were too low and led to KS Mean = 0.73
-        # New defaults prioritize quality over speed for better "all green" metrics
-        
-        # Base n_iter on dataset size - INCREASED for better quality
+        # Base n_iter on dataset size - DRASTICALLY INCREASED for "All Green" goal
         if n_rows < 1000:
-            n_iter = 400 + (retry_count * 200) # Increased base + aggressive retry
+            # Small datasets train fast - use ultra-aggressive iterations for "All Green" goal
+            n_iter = 5000 + (retry_count * 10000) 
         elif n_rows < 5000:
-            n_iter = 500 + (retry_count * 200)
+            n_iter = 3000 + (retry_count * 5000)
         elif n_rows < 20000:
-            n_iter = 600 + (retry_count * 200)
+            n_iter = 1500 + (retry_count * 2000)
         else:
-            n_iter = 800 + (retry_count * 200)
+            n_iter = 1000 + (retry_count * 1000)
         
-        # Cap n_iter
-        n_iter = min(2000, n_iter)
-
-        
-        # IMPROVED: More aggressive adaptive adjustment for critical failures
+        # Adaptive adjustments based on previous failures
         if previous_metrics:
             utility = previous_metrics.get("utility", {})
-            ks = utility.get("ks_mean")
-            if ks:
-                if ks > 0.7:  # EXTREME failure (like KS = 0.73)
-                    # EXTREME: Very aggressive increase for extreme failures
-                    n_iter = min(800, n_iter + 300)  # Increase by 300, cap at 800
-                elif ks > 0.5:  # Critical failure
-                    # Very aggressive increase for critical failures
-                    n_iter = min(600, n_iter + 200)
-                elif ks > self.KS_MAX:  # Standard failure (KS > 0.10)
-                    # Standard increase for failures
-                    n_iter = min(600, n_iter + 100)
-                elif ks > 0.08:  # Near threshold - slight increase
-                    # Preventive increase when close to threshold
-                    n_iter = min(600, n_iter + 50)
-                elif ks > 0.06:  # Very close to threshold - small preventive increase
-                    # Very small increase to push over the edge
-                    n_iter = min(600, n_iter + 25)
+            ks_mean = utility.get("ks_mean", 1.0)
+            
+            # If utility is still failing the strict threshold (0.1), boost n_iter
+            if ks_mean > 0.4:
+                n_iter = int(n_iter * 3.0)
+            elif ks_mean > 0.2:
+                n_iter = int(n_iter * 2.0)
+            elif ks_mean > 0.1:
+                n_iter = int(n_iter * 1.5)
+
+        # Cap n_iter at 50,000 for small datasets to avoid extreme compute times
+        # but allow enough range to reach "All Green"
+        n_iter = min(50000, n_iter)
         
-        # IMPROVED: Batch size considers both rows and columns for better convergence
-        # More columns = more complex data = may need larger batch for stability
-        # Also consider dataset complexity if available
-        is_clinical = False
-        has_pii = False
-        if dataset_complexity:
-            is_clinical = dataset_complexity.get("is_clinical", False)
-            has_pii = dataset_complexity.get("has_pii", False)
-            # For clinical data with PII, use more conservative (higher quality) settings
-            if is_clinical and has_pii:
-                n_iter = min(600, n_iter + 100)  # Extra quality for sensitive clinical data
-        
-        if n_rows < 500:
-            batch_size = max(32, min(64, n_rows // 10))
+        # Batch size logic
+        if n_rows < 1000:
+            batch_size = 64
         elif n_rows < 5000:
-            # For medium datasets, use larger batch if many columns or clinical data
-            if n_cols > 20 or is_clinical:
-                batch_size = 256  # Larger batch for high-dimensional or clinical data
-            else:
-                batch_size = 128
+            batch_size = 128
         else:
-            # For large datasets, scale batch with both rows and columns
-            if n_cols > 30 or is_clinical:
-                batch_size = min(512, max(256, n_rows // 15))  # Very large batch for complex/clinical data
-            else:
-                batch_size = min(256, max(128, n_rows // 20))
+            batch_size = 256
         
         return {
             "n_iter": n_iter,
@@ -439,42 +452,55 @@ class SyntheticDataOptimizer:
         n_cols: int,
         previous_metrics: Optional[Dict[str, Any]] = None,
         dataset_complexity: Optional[Dict[str, Any]] = None,
+        retry_count: int = 0
     ) -> Dict[str, Any]:
-        """Suggest TVAE hyperparameters."""
-        # Adaptive epochs
+        """Suggest TVAE hyperparameters with SOTA scaling for "All Green" goal."""
+        # Ultra-Aggressive Epoch Scaling
+        # Base epochs increased for small-N clinical data stability
         if n_rows < 1000:
-            epochs = 250
-        elif n_rows < 10000:
-            epochs = 350
-        else:
-            epochs = 450
-        
-        # Adaptive batch size
-        if n_rows < 500:
-            batch_size = max(32, min(64, n_rows // 10))
+            # Small datasets need high density of gradient updates
+            epochs = 500 + (retry_count * 1500) 
         elif n_rows < 5000:
+            epochs = 400 + (retry_count * 800)
+        else:
+            epochs = 300 + (retry_count * 500)
+        
+        # Adaptive batch size - smaller batches provide more regularization for VAEs
+        if n_rows < 1000:
+            batch_size = 32
+        elif n_rows < 5000:
+            batch_size = 64
+        else:
             batch_size = 128
-        else:
-            batch_size = 256
         
-        # Adaptive embedding dimension
+        # Higher Embedding Dimension for complex clinical correlations
         if n_cols < 10:
-            embedding_dim = 64
-        elif n_cols < 30:
             embedding_dim = 128
-        else:
+        elif n_cols < 30:
             embedding_dim = 256
+        else:
+            embedding_dim = 512
         
-        # Adaptive based on previous metrics
+        # Adaptive boost based on previous failures
         if previous_metrics:
             utility = previous_metrics.get("utility", {})
-            if utility.get("ks_mean", 0) > self.KS_MAX:
-                epochs = min(450, epochs + 100)
+            ks_mean = utility.get("ks_mean", 1.0)
+            
+            # If utility is failing thresholds, force deeper training
+            if ks_mean > 0.2:
+                epochs = int(epochs * 2.0)
+            elif ks_mean > 0.1:
+                epochs = int(epochs * 1.5)
+
+        # Cap for safety but allow enough depth for convergence
+        epochs = min(10000, epochs)
         
         return {
             "num_epochs": epochs,
             "batch_size": batch_size,
             "embedding_dim": embedding_dim,
+            "compress_dims": [embedding_dim, embedding_dim // 2],
+            "decompress_dims": [embedding_dim // 2, embedding_dim]
         }
     
     def grid_search_epsilon(

@@ -1,0 +1,1160 @@
+INFO:worker:[worker][preprocessing] Fetching preprocessing plan...
+WARNING:worker:[worker][preprocessing] Preprocessing plan returned None - continuing with original data
+INFO:sdv.metadata.multi_table:Detected metadata:
+{
+    "columns": {
+        "age": {
+            "sdtype": "numerical"
+        },
+        "workclass": {
+            "sdtype": "categorical"
+        },
+        "fnlwgt": {
+            "sdtype": "numerical"
+        },
+        "education": {
+            "sdtype": "categorical"
+        },
+        "education-num": {
+            "sdtype": "numerical"
+        },
+        "marital-status": {
+            "sdtype": "categorical"
+        },
+        "occupation": {
+            "sdtype": "categorical"
+        },
+        "relationship": {
+            "sdtype": "categorical"
+        },
+        "race": {
+            "sdtype": "categorical"
+        },
+        "sex": {
+            "sdtype": "categorical"
+        },
+        "capital-gain": {
+            "sdtype": "numerical"
+        },
+        "capital-loss": {
+            "sdtype": "numerical"
+        },
+        "hours-per-week": {
+            "sdtype": "numerical"
+        },
+        "native-country": {
+            "sdtype": "categorical"
+        },
+        "income": {
+            "sdtype": "categorical"
+        }
+    }
+}
+INFO:sdv.metadata.single_table:Detected metadata:
+INFO:sdv.metadata.single_table:{
+    "METADATA_SPEC_VERSION": "SINGLE_TABLE_V1",
+    "columns": {
+        "age": {
+            "sdtype": "numerical"
+        },
+        "workclass": {
+            "sdtype": "categorical"
+        },
+        "fnlwgt": {
+            "sdtype": "numerical"
+        },
+        "education": {
+            "sdtype": "categorical"
+        },
+        "education-num": {
+            "sdtype": "numerical"
+        },
+        "marital-status": {
+            "sdtype": "categorical"
+        },
+        "occupation": {
+            "sdtype": "categorical"
+        },
+        "relationship": {
+            "sdtype": "categorical"
+        },
+        "race": {
+            "sdtype": "categorical"
+        },
+        "sex": {
+            "sdtype": "categorical"
+        },
+        "capital-gain": {
+            "sdtype": "numerical"
+        },
+        "capital-loss": {
+            "sdtype": "numerical"
+        },
+        "hours-per-week": {
+            "sdtype": "numerical"
+        },
+        "native-country": {
+            "sdtype": "categorical"
+        },
+        "income": {
+            "sdtype": "categorical"
+        }
+    }
+}
+WARNING:models.factory:[factory] SynthCity not available for 'ddpm': synthcity not installed. Install with: pip install synthcity. Falling back to SDV.
+WARNING:models.factory:[factory] Unknown method 'ddpm', defaulting to SDV GaussianCopula
+INFO:SingleTableSynthesizer:{'EVENT': 'Instance', 'TIMESTAMP': datetime.datetime(2026, 1, 11, 21, 33, 26, 574582), 'SYNTHESIZER CLASS NAME': 'GaussianCopulaSynthesizer', 'SYNTHESIZER ID': 'GaussianCopulaSynthesizer_1.32.1_f99474749c5f47f486dfab8ddf76253a'}
+WARNING:models.factory:[factory] SynthCity not available for 'gc': synthcity not installed. Install with: pip install synthcity. Falling back to SDV.
+INFO:models.factory:[factory] Using SDV backend for method 'gc' (GaussianCopula)
+INFO:SingleTableSynthesizer:{'EVENT': 'Instance', 'TIMESTAMP': datetime.datetime(2026, 1, 11, 21, 33, 26, 577263), 'SYNTHESIZER CLASS NAME': 'GaussianCopulaSynthesizer', 'SYNTHESIZER ID': 'GaussianCopulaSynthesizer_1.32.1_2928cfb60b5c4f18b69cda1d21c221d9'}
+INFO:SingleTableSynthesizer:{'EVENT': 'Fit', 'TIMESTAMP': datetime.datetime(2026, 1, 11, 21, 33, 26, 577294), 'SYNTHESIZER CLASS NAME': 'GaussianCopulaSynthesizer', 'SYNTHESIZER ID': 'GaussianCopulaSynthesizer_1.32.1_2928cfb60b5c4f18b69cda1d21c221d9', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 5000, 'TOTAL NUMBER OF COLUMNS': 15}
+INFO:sdv.data_processing.data_processor:Fitting table  metadata
+INFO:sdv.data_processing.data_processor:Fitting formatters for table 
+INFO:sdv.data_processing.data_processor:Setting the configuration for the ``HyperTransformer`` for table 
+INFO:sdv.data_processing.data_processor:Fitting HyperTransformer for table 
+INFO:SingleTableSynthesizer:{'EVENT': 'Fit processed data', 'TIMESTAMP': datetime.datetime(2026, 1, 11, 21, 33, 26, 716296), 'SYNTHESIZER CLASS NAME': 'GaussianCopulaSynthesizer', 'SYNTHESIZER ID': 'GaussianCopulaSynthesizer_1.32.1_2928cfb60b5c4f18b69cda1d21c221d9', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 5000, 'TOTAL NUMBER OF COLUMNS': 15}
+INFO:copulas.multivariate.gaussian:Fitting GaussianMultivariate(distribution="{'age': <class 'copulas.univariate.beta.BetaUnivariate'>, 'workclass': <class 'copulas.univariate.beta.BetaUnivariate'>, 'fnlwgt': <class 'copulas.univariate.beta.BetaUnivariate'>, 'education': <class 'copulas.univariate.beta.BetaUnivariate'>, 'education-num': <class 'copulas.univariate.beta.BetaUnivariate'>, 'marital-status': <class 'copulas.univariate.beta.BetaUnivariate'>, 'occupation': <class 'copulas.univariate.beta.BetaUnivariate'>, 'relationship': <class 'copulas.univariate.beta.BetaUnivariate'>, 'race': <class 'copulas.univariate.beta.BetaUnivariate'>, 'sex': <class 'copulas.univariate.beta.BetaUnivariate'>, 'capital-gain': <class 'copulas.univariate.beta.BetaUnivariate'>, 'capital-loss': <class 'copulas.univariate.beta.BetaUnivariate'>, 'hours-per-week': <class 'copulas.univariate.beta.BetaUnivariate'>, 'native-country': <class 'copulas.univariate.beta.BetaUnivariate'>, 'income': <class 'copulas.univariate.beta.BetaUnivariate'>}")
+INFO:SingleTableSynthesizer:{'EVENT': 'Sample', 'TIMESTAMP': datetime.datetime(2026, 1, 11, 21, 33, 27, 292247), 'SYNTHESIZER CLASS NAME': 'GaussianCopulaSynthesizer', 'SYNTHESIZER ID': 'GaussianCopulaSynthesizer_1.32.1_2928cfb60b5c4f18b69cda1d21c221d9', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 5000, 'TOTAL NUMBER OF COLUMNS': 15}
+INFO:worker:Corr Delta calculated: 0.0211
+INFO:worker:Dup rate calculated: 0.0000 (0 duplicates out of 5000 synthetic rows)
+WARNING:libs.compliance:Unknown compliance level 'medium', defaulting to HIPAA_LIKE
+INFO:worker:[worker][preprocessing] Fetching preprocessing plan...
+WARNING:worker:[worker][preprocessing] Preprocessing plan returned None - continuing with original data
+INFO:sdv.metadata.multi_table:Detected metadata:
+{
+    "columns": {
+        "Pregnancies": {
+            "sdtype": "numerical"
+        },
+        "Glucose": {
+            "sdtype": "numerical"
+        },
+        "BloodPressure": {
+            "sdtype": "numerical"
+        },
+        "SkinThickness": {
+            "sdtype": "numerical"
+        },
+        "Insulin": {
+            "sdtype": "numerical"
+        },
+        "BMI": {
+            "sdtype": "numerical"
+        },
+        "DiabetesPedigreeFunction": {
+            "sdtype": "numerical"
+        },
+        "Age": {
+            "sdtype": "numerical"
+        },
+        "Outcome": {
+            "sdtype": "categorical"
+        }
+    }
+}
+INFO:sdv.metadata.single_table:Detected metadata:
+INFO:sdv.metadata.single_table:{
+    "METADATA_SPEC_VERSION": "SINGLE_TABLE_V1",
+    "columns": {
+        "Pregnancies": {
+            "sdtype": "numerical"
+        },
+        "Glucose": {
+            "sdtype": "numerical"
+        },
+        "BloodPressure": {
+            "sdtype": "numerical"
+        },
+        "SkinThickness": {
+            "sdtype": "numerical"
+        },
+        "Insulin": {
+            "sdtype": "numerical"
+        },
+        "BMI": {
+            "sdtype": "numerical"
+        },
+        "DiabetesPedigreeFunction": {
+            "sdtype": "numerical"
+        },
+        "Age": {
+            "sdtype": "numerical"
+        },
+        "Outcome": {
+            "sdtype": "categorical"
+        }
+    }
+}
+WARNING:models.factory:[factory] SynthCity not available for 'ddpm': synthcity not installed. Install with: pip install synthcity. Falling back to SDV.
+WARNING:models.factory:[factory] Unknown method 'ddpm', defaulting to SDV GaussianCopula
+INFO:SingleTableSynthesizer:{'EVENT': 'Instance', 'TIMESTAMP': datetime.datetime(2026, 1, 11, 21, 33, 27, 614906), 'SYNTHESIZER CLASS NAME': 'GaussianCopulaSynthesizer', 'SYNTHESIZER ID': 'GaussianCopulaSynthesizer_1.32.1_d0c9e8e9980c4a8e879464917a8f1ec4'}
+WARNING:models.factory:[factory] SynthCity not available for 'gc': synthcity not installed. Install with: pip install synthcity. Falling back to SDV.
+INFO:models.factory:[factory] Using SDV backend for method 'gc' (GaussianCopula)
+INFO:SingleTableSynthesizer:{'EVENT': 'Instance', 'TIMESTAMP': datetime.datetime(2026, 1, 11, 21, 33, 27, 617154), 'SYNTHESIZER CLASS NAME': 'GaussianCopulaSynthesizer', 'SYNTHESIZER ID': 'GaussianCopulaSynthesizer_1.32.1_469168b9851040e89a791fd901cbd4cd'}
+INFO:SingleTableSynthesizer:{'EVENT': 'Fit', 'TIMESTAMP': datetime.datetime(2026, 1, 11, 21, 33, 27, 617181), 'SYNTHESIZER CLASS NAME': 'GaussianCopulaSynthesizer', 'SYNTHESIZER ID': 'GaussianCopulaSynthesizer_1.32.1_469168b9851040e89a791fd901cbd4cd', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 768, 'TOTAL NUMBER OF COLUMNS': 9}
+INFO:sdv.data_processing.data_processor:Fitting table  metadata
+INFO:sdv.data_processing.data_processor:Fitting formatters for table 
+INFO:sdv.data_processing.data_processor:Setting the configuration for the ``HyperTransformer`` for table 
+INFO:sdv.data_processing.data_processor:Fitting HyperTransformer for table 
+INFO:SingleTableSynthesizer:{'EVENT': 'Fit processed data', 'TIMESTAMP': datetime.datetime(2026, 1, 11, 21, 33, 27, 642174), 'SYNTHESIZER CLASS NAME': 'GaussianCopulaSynthesizer', 'SYNTHESIZER ID': 'GaussianCopulaSynthesizer_1.32.1_469168b9851040e89a791fd901cbd4cd', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 768, 'TOTAL NUMBER OF COLUMNS': 9}
+INFO:copulas.multivariate.gaussian:Fitting GaussianMultivariate(distribution="{'Pregnancies': <class 'copulas.univariate.beta.BetaUnivariate'>, 'Glucose': <class 'copulas.univariate.beta.BetaUnivariate'>, 'BloodPressure': <class 'copulas.univariate.beta.BetaUnivariate'>, 'SkinThickness': <class 'copulas.univariate.beta.BetaUnivariate'>, 'Insulin': <class 'copulas.univariate.beta.BetaUnivariate'>, 'BMI': <class 'copulas.univariate.beta.BetaUnivariate'>, 'DiabetesPedigreeFunction': <class 'copulas.univariate.beta.BetaUnivariate'>, 'Age': <class 'copulas.univariate.beta.BetaUnivariate'>, 'Outcome': <class 'copulas.univariate.beta.BetaUnivariate'>}")
+INFO:SingleTableSynthesizer:{'EVENT': 'Sample', 'TIMESTAMP': datetime.datetime(2026, 1, 11, 21, 33, 27, 806471), 'SYNTHESIZER CLASS NAME': 'GaussianCopulaSynthesizer', 'SYNTHESIZER ID': 'GaussianCopulaSynthesizer_1.32.1_469168b9851040e89a791fd901cbd4cd', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 768, 'TOTAL NUMBER OF COLUMNS': 9}
+INFO:worker:Corr Delta calculated: 0.0696
+INFO:worker:Dup rate calculated: 0.0000 (0 duplicates out of 768 synthetic rows)
+WARNING:libs.compliance:Unknown compliance level 'medium', defaulting to HIPAA_LIKE
+INFO:worker:[worker][preprocessing] Fetching preprocessing plan...
+WARNING:worker:[worker][preprocessing] Preprocessing plan returned None - continuing with original data
+INFO:sdv.metadata.multi_table:Detected metadata:
+{
+    "columns": {
+        "mean radius": {
+            "sdtype": "numerical"
+        },
+        "mean texture": {
+            "sdtype": "numerical"
+        },
+        "mean perimeter": {
+            "sdtype": "numerical"
+        },
+        "mean area": {
+            "sdtype": "numerical"
+        },
+        "mean smoothness": {
+            "sdtype": "numerical"
+        },
+        "mean compactness": {
+            "sdtype": "numerical"
+        },
+        "mean concavity": {
+            "sdtype": "numerical"
+        },
+        "mean concave points": {
+            "sdtype": "numerical"
+        },
+        "mean symmetry": {
+            "sdtype": "numerical"
+        },
+        "mean fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "radius error": {
+            "sdtype": "numerical"
+        },
+        "texture error": {
+            "sdtype": "numerical"
+        },
+        "perimeter error": {
+            "sdtype": "numerical"
+        },
+        "area error": {
+            "sdtype": "numerical"
+        },
+        "smoothness error": {
+            "sdtype": "numerical"
+        },
+        "compactness error": {
+            "sdtype": "numerical"
+        },
+        "concavity error": {
+            "sdtype": "numerical"
+        },
+        "concave points error": {
+            "sdtype": "numerical"
+        },
+        "symmetry error": {
+            "sdtype": "numerical"
+        },
+        "fractal dimension error": {
+            "sdtype": "numerical"
+        },
+        "worst radius": {
+            "sdtype": "numerical"
+        },
+        "worst texture": {
+            "sdtype": "numerical"
+        },
+        "worst perimeter": {
+            "sdtype": "numerical"
+        },
+        "worst area": {
+            "sdtype": "numerical"
+        },
+        "worst smoothness": {
+            "sdtype": "numerical"
+        },
+        "worst compactness": {
+            "sdtype": "numerical"
+        },
+        "worst concavity": {
+            "sdtype": "numerical"
+        },
+        "worst concave points": {
+            "sdtype": "numerical"
+        },
+        "worst symmetry": {
+            "sdtype": "numerical"
+        },
+        "worst fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "target": {
+            "sdtype": "categorical"
+        }
+    }
+}
+INFO:sdv.metadata.single_table:Detected metadata:
+INFO:sdv.metadata.single_table:{
+    "METADATA_SPEC_VERSION": "SINGLE_TABLE_V1",
+    "columns": {
+        "mean radius": {
+            "sdtype": "numerical"
+        },
+        "mean texture": {
+            "sdtype": "numerical"
+        },
+        "mean perimeter": {
+            "sdtype": "numerical"
+        },
+        "mean area": {
+            "sdtype": "numerical"
+        },
+        "mean smoothness": {
+            "sdtype": "numerical"
+        },
+        "mean compactness": {
+            "sdtype": "numerical"
+        },
+        "mean concavity": {
+            "sdtype": "numerical"
+        },
+        "mean concave points": {
+            "sdtype": "numerical"
+        },
+        "mean symmetry": {
+            "sdtype": "numerical"
+        },
+        "mean fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "radius error": {
+            "sdtype": "numerical"
+        },
+        "texture error": {
+            "sdtype": "numerical"
+        },
+        "perimeter error": {
+            "sdtype": "numerical"
+        },
+        "area error": {
+            "sdtype": "numerical"
+        },
+        "smoothness error": {
+            "sdtype": "numerical"
+        },
+        "compactness error": {
+            "sdtype": "numerical"
+        },
+        "concavity error": {
+            "sdtype": "numerical"
+        },
+        "concave points error": {
+            "sdtype": "numerical"
+        },
+        "symmetry error": {
+            "sdtype": "numerical"
+        },
+        "fractal dimension error": {
+            "sdtype": "numerical"
+        },
+        "worst radius": {
+            "sdtype": "numerical"
+        },
+        "worst texture": {
+            "sdtype": "numerical"
+        },
+        "worst perimeter": {
+            "sdtype": "numerical"
+        },
+        "worst area": {
+            "sdtype": "numerical"
+        },
+        "worst smoothness": {
+            "sdtype": "numerical"
+        },
+        "worst compactness": {
+            "sdtype": "numerical"
+        },
+        "worst concavity": {
+            "sdtype": "numerical"
+        },
+        "worst concave points": {
+            "sdtype": "numerical"
+        },
+        "worst symmetry": {
+            "sdtype": "numerical"
+        },
+        "worst fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "target": {
+            "sdtype": "categorical"
+        }
+    }
+}
+WARNING:models.factory:[factory] SynthCity not available for 'ddpm': synthcity not installed. Install with: pip install synthcity. Falling back to SDV.
+WARNING:models.factory:[factory] Unknown method 'ddpm', defaulting to SDV GaussianCopula
+INFO:SingleTableSynthesizer:{'EVENT': 'Instance', 'TIMESTAMP': datetime.datetime(2026, 1, 11, 21, 33, 27, 929149), 'SYNTHESIZER CLASS NAME': 'GaussianCopulaSynthesizer', 'SYNTHESIZER ID': 'GaussianCopulaSynthesizer_1.32.1_6d4f611899984db29ec3891766bac482'}
+WARNING:models.factory:[factory] SynthCity not available for 'gc': synthcity not installed. Install with: pip install synthcity. Falling back to SDV.
+INFO:models.factory:[factory] Using SDV backend for method 'gc' (GaussianCopula)
+INFO:SingleTableSynthesizer:{'EVENT': 'Instance', 'TIMESTAMP': datetime.datetime(2026, 1, 11, 21, 33, 27, 931421), 'SYNTHESIZER CLASS NAME': 'GaussianCopulaSynthesizer', 'SYNTHESIZER ID': 'GaussianCopulaSynthesizer_1.32.1_e0bb299205c94732aabd11560e783931'}
+INFO:SingleTableSynthesizer:{'EVENT': 'Fit', 'TIMESTAMP': datetime.datetime(2026, 1, 11, 21, 33, 27, 931445), 'SYNTHESIZER CLASS NAME': 'GaussianCopulaSynthesizer', 'SYNTHESIZER ID': 'GaussianCopulaSynthesizer_1.32.1_e0bb299205c94732aabd11560e783931', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 569, 'TOTAL NUMBER OF COLUMNS': 31}
+INFO:sdv.data_processing.data_processor:Fitting table  metadata
+INFO:sdv.data_processing.data_processor:Fitting formatters for table 
+INFO:sdv.data_processing.data_processor:Setting the configuration for the ``HyperTransformer`` for table 
+INFO:sdv.data_processing.data_processor:Fitting HyperTransformer for table 
+INFO:SingleTableSynthesizer:{'EVENT': 'Fit processed data', 'TIMESTAMP': datetime.datetime(2026, 1, 11, 21, 33, 28, 12731), 'SYNTHESIZER CLASS NAME': 'GaussianCopulaSynthesizer', 'SYNTHESIZER ID': 'GaussianCopulaSynthesizer_1.32.1_e0bb299205c94732aabd11560e783931', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 569, 'TOTAL NUMBER OF COLUMNS': 31}
+INFO:copulas.multivariate.gaussian:Fitting GaussianMultivariate(distribution="{'mean radius': <class 'copulas.univariate.beta.BetaUnivariate'>, 'mean texture': <class 'copulas.univariate.beta.BetaUnivariate'>, 'mean perimeter': <class 'copulas.univariate.beta.BetaUnivariate'>, 'mean area': <class 'copulas.univariate.beta.BetaUnivariate'>, 'mean smoothness': <class 'copulas.univariate.beta.BetaUnivariate'>, 'mean compactness': <class 'copulas.univariate.beta.BetaUnivariate'>, 'mean concavity': <class 'copulas.univariate.beta.BetaUnivariate'>, 'mean concave points': <class 'copulas.univariate.beta.BetaUnivariate'>, 'mean symmetry': <class 'copulas.univariate.beta.BetaUnivariate'>, 'mean fractal dimension': <class 'copulas.univariate.beta.BetaUnivariate'>, 'radius error': <class 'copulas.univariate.beta.BetaUnivariate'>, 'texture error': <class 'copulas.univariate.beta.BetaUnivariate'>, 'perimeter error': <class 'copulas.univariate.beta.BetaUnivariate'>, 'area error': <class 'copulas.univariate.beta.BetaUnivariate'>, 'smoothness error': <class 'copulas.univariate.beta.BetaUnivariate'>, 'compactness error': <class 'copulas.univariate.beta.BetaUnivariate'>, 'concavity error': <class 'copulas.univariate.beta.BetaUnivariate'>, 'concave points error': <class 'copulas.univariate.beta.BetaUnivariate'>, 'symmetry error': <class 'copulas.univariate.beta.BetaUnivariate'>, 'fractal dimension error': <class 'copulas.univariate.beta.BetaUnivariate'>, 'worst radius': <class 'copulas.univariate.beta.BetaUnivariate'>, 'worst texture': <class 'copulas.univariate.beta.BetaUnivariate'>, 'worst perimeter': <class 'copulas.univariate.beta.BetaUnivariate'>, 'worst area': <class 'copulas.univariate.beta.BetaUnivariate'>, 'worst smoothness': <class 'copulas.univariate.beta.BetaUnivariate'>, 'worst compactness': <class 'copulas.univariate.beta.BetaUnivariate'>, 'worst concavity': <class 'copulas.univariate.beta.BetaUnivariate'>, 'worst concave points': <class 'copulas.univariate.beta.BetaUnivariate'>, 'worst symmetry': <class 'copulas.univariate.beta.BetaUnivariate'>, 'worst fractal dimension': <class 'copulas.univariate.beta.BetaUnivariate'>, 'target': <class 'copulas.univariate.beta.BetaUnivariate'>}")
+INFO:SingleTableSynthesizer:{'EVENT': 'Sample', 'TIMESTAMP': datetime.datetime(2026, 1, 11, 21, 33, 28, 528506), 'SYNTHESIZER CLASS NAME': 'GaussianCopulaSynthesizer', 'SYNTHESIZER ID': 'GaussianCopulaSynthesizer_1.32.1_e0bb299205c94732aabd11560e783931', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 569, 'TOTAL NUMBER OF COLUMNS': 31}
+INFO:worker:Corr Delta calculated: 0.0688
+INFO:worker:Dup rate calculated: 0.0000 (0 duplicates out of 569 synthetic rows)
+
+==================================================
+BENCHMARKING: Adult (Census)
+==================================================
+[worker][preprocessing] Applying mandatory smart preprocessing via OpenRouter LLM...
+[worker][preprocessing] Preprocessing agent returned no plan (OpenRouter may be unavailable)
+[worker][metadata] SynthCity DataLoader unavailable: ImportError. Using SDV metadata.
+[worker][method] User explicitly selected method: 'ddpm'
+[worker] attempt=1 method=ddpm hparams={}
+[worker][dp] backend=none strict=False epsilon=None method=ddpm
+[worker] error during ddpm fit/sample: ImportError: TabDDPM not available. Install a TabDDPM implementation (e.g., 'pip install tab-ddpm' or via synthcity) to use method='diffusion'.
+[worker] attempt=2 method=gc hparams={}
+[worker][dp] backend=none strict=False epsilon=None method=gc
+[worker][metrics] model=gc dp_backend=none dp_effective=False ks=0.2628333333333333 cd=0.021106021193349412 mia=0.9998411386593204 evaluator=custom
+[worker][compliance] Status: FAILED, Score: 59.22%, Violations: 2
+[worker][compliance] Violations:
+[worker][compliance]   - MIA AUC 1.000 exceeds threshold 0.6
+[worker][compliance]   - KS mean 0.263 exceeds threshold 0.1
+[worker] attempt=2 overall_ok=False reasons=KS mean 0.263 > 0.10 (fail); Corr Δ 0.021 ≤ 0.10 (ok); MIA AUC 1.000 > 0.60 (fail); Dup rate 0.0% ≤ 5% (ok)
+[worker][optimizer] Failure analysis: SEVERE: KS statistic very high (0.263). Model significantly underfitted.
+[worker] metrics: {
+  "utility": {
+    "ks_mean": 0.2628333333333333,
+    "corr_delta": 0.021106021193349412,
+    "auroc": null,
+    "c_index": null,
+    "fairness": {
+      "rare_coverage": 0.8243243243243242,
+      "freq_skew": 0.004044635199108892
+    }
+  },
+  "privacy": {
+    "mia_auc": 0.9998411386593204,
+    "dup_rate": 0.0,
+    "dp_requested": false,
+    "dp_effective": false,
+    "dp_epsilon": null,
+    "dp_delta": null
+  },
+  "composite": {
+    "x_mia": 0.2628333333333333,
+    "y_utility": 0.021106021193349412
+  },
+  "meta": {
+    "model": "gc",
+    "attempt": 2,
+    "dp_backend": "none",
+    "dp_effective": false,
+    "n_real": 5000,
+    "n_synth": 5000,
+    "evaluator_backend": "custom"
+  },
+  "compliance": {
+    "passed": false,
+    "privacy_passed": false,
+    "utility_passed": false,
+    "fairness_passed": true,
+    "violations": [
+      "MIA AUC 1.000 exceeds threshold 0.6",
+      "KS mean 0.263 exceeds threshold 0.1"
+    ],
+    "score": 0.592225830940653,
+    "level": "hipaa_like",
+    "timestamp": "2026-01-11T20:33:27.585416"
+  }
+}
+
+--- Benchmark Result ---
+{
+  "utility": {
+    "ks_mean": 0.2628333333333333,
+    "corr_delta": 0.021106021193349412,
+    "auroc": null,
+    "c_index": null,
+    "fairness": {
+      "rare_coverage": 0.8243243243243242,
+      "freq_skew": 0.004044635199108892
+    }
+  },
+  "privacy": {
+    "mia_auc": 0.9998411386593204,
+    "dup_rate": 0.0,
+    "dp_requested": false,
+    "dp_effective": false,
+    "dp_epsilon": null,
+    "dp_delta": null
+  },
+  "composite": {
+    "x_mia": 0.2628333333333333,
+    "y_utility": 0.021106021193349412
+  },
+  "meta": {
+    "model": "gc",
+    "attempt": 2,
+    "dp_backend": "none",
+    "dp_effective": false,
+    "n_real": 5000,
+    "n_synth": 5000,
+    "evaluator_backend": "custom"
+  },
+  "compliance": {
+    "passed": false,
+    "privacy_passed": false,
+    "utility_passed": false,
+    "fairness_passed": true,
+    "violations": [
+      "MIA AUC 1.000 exceeds threshold 0.6",
+      "KS mean 0.263 exceeds threshold 0.1"
+    ],
+    "score": 0.592225830940653,
+    "level": "hipaa_like",
+    "timestamp": "2026-01-11T20:33:27.585416"
+  }
+}
+❌ Adult (Census) FAILED (KS=0.2628333333333333, MIA=0.9998411386593204)
+
+==================================================
+BENCHMARKING: Diabetes
+==================================================
+[worker][preprocessing] Applying mandatory smart preprocessing via OpenRouter LLM...
+[worker][preprocessing] Preprocessing agent returned no plan (OpenRouter may be unavailable)
+[worker][metadata] SynthCity DataLoader unavailable: TypeError. Using SDV metadata.
+[worker][method] User explicitly selected method: 'ddpm'
+[worker] attempt=1 method=ddpm hparams={}
+[worker][dp] backend=none strict=False epsilon=None method=ddpm
+[worker] error during ddpm fit/sample: ImportError: TabDDPM not available. Install a TabDDPM implementation (e.g., 'pip install tab-ddpm' or via synthcity) to use method='diffusion'.
+[worker] attempt=2 method=gc hparams={}
+[worker][dp] backend=none strict=False epsilon=None method=gc
+[worker][metrics] model=gc dp_backend=none dp_effective=False ks=0.14482060185185186 cd=0.06956057055062503 mia=0.8822943574740905 evaluator=custom
+[worker][compliance] Status: FAILED, Score: 74.82%, Violations: 2
+[worker][compliance] Violations:
+[worker][compliance]   - MIA AUC 0.882 exceeds threshold 0.6
+[worker][compliance]   - KS mean 0.145 exceeds threshold 0.1
+[worker] attempt=2 overall_ok=False reasons=KS mean 0.145 > 0.10 (fail); Corr Δ 0.070 ≤ 0.10 (ok); MIA AUC 0.882 > 0.60 (fail); Dup rate 0.0% ≤ 5% (ok)
+[worker][optimizer] Failure analysis: Utility failure: KS statistic too high (0.145). Model not capturing distribution well.
+[worker] metrics: {
+  "utility": {
+    "ks_mean": 0.14482060185185186,
+    "corr_delta": 0.06956057055062503,
+    "auroc": null,
+    "c_index": null,
+    "fairness": {
+      "rare_coverage": null,
+      "freq_skew": 0.02734375
+    }
+  },
+  "privacy": {
+    "mia_auc": 0.8822943574740905,
+    "dup_rate": 0.0,
+    "dp_requested": false,
+    "dp_effective": false,
+    "dp_epsilon": null,
+    "dp_delta": null
+  },
+  "composite": {
+    "x_mia": 0.14482060185185186,
+    "y_utility": 0.06956057055062503
+  },
+  "meta": {
+    "model": "gc",
+    "attempt": 2,
+    "dp_backend": "none",
+    "dp_effective": false,
+    "n_real": 768,
+    "n_synth": 768,
+    "evaluator_backend": "custom"
+  },
+  "compliance": {
+    "passed": false,
+    "privacy_passed": false,
+    "utility_passed": false,
+    "fairness_passed": true,
+    "violations": [
+      "MIA AUC 0.882 exceeds threshold 0.6",
+      "KS mean 0.145 exceeds threshold 0.1"
+    ],
+    "score": 0.7482218568055812,
+    "level": "hipaa_like",
+    "timestamp": "2026-01-11T20:33:27.908868"
+  }
+}
+
+--- Benchmark Result ---
+{
+  "utility": {
+    "ks_mean": 0.14482060185185186,
+    "corr_delta": 0.06956057055062503,
+    "auroc": null,
+    "c_index": null,
+    "fairness": {
+      "rare_coverage": null,
+      "freq_skew": 0.02734375
+    }
+  },
+  "privacy": {
+    "mia_auc": 0.8822943574740905,
+    "dup_rate": 0.0,
+    "dp_requested": false,
+    "dp_effective": false,
+    "dp_epsilon": null,
+    "dp_delta": null
+  },
+  "composite": {
+    "x_mia": 0.14482060185185186,
+    "y_utility": 0.06956057055062503
+  },
+  "meta": {
+    "model": "gc",
+    "attempt": 2,
+    "dp_backend": "none",
+    "dp_effective": false,
+    "n_real": 768,
+    "n_synth": 768,
+    "evaluator_backend": "custom"
+  },
+  "compliance": {
+    "passed": false,
+    "privacy_passed": false,
+    "utility_passed": false,
+    "fairness_passed": true,
+    "violations": [
+      "MIA AUC 0.882 exceeds threshold 0.6",
+      "KS mean 0.145 exceeds threshold 0.1"
+    ],
+    "score": 0.7482218568055812,
+    "level": "hipaa_like",
+    "timestamp": "2026-01-11T20:33:27.908868"
+  }
+}
+❌ Diabetes FAILED (KS=0.14482060185185186, MIA=0.8822943574740905)
+
+==================================================
+BENCHMARKING: Breast Cancer
+==================================================
+[worker][preprocessing] Applying mandatory smart preprocessing via OpenRouter LLM...
+[worker][preprocessing] Preprocessing agent returned no plan (OpenRouter may be unavailable)
+[worker][metadata] SynthCity DataLoader unavailable: TypeError. Using SDV metadata.
+[worker][method] User explicitly selected method: 'ddpm'
+[worker] attempt=1 method=ddpm hparams={}
+[worker][dp] backend=none strict=False epsilon=None method=ddpm
+[worker] error during ddpm fit/sample: ImportError: TabDDPM not available. Install a TabDDPM implementation (e.g., 'pip install tab-ddpm' or via synthcity) to use method='diffusion'.
+[worker] attempt=2 method=gc hparams={}
+[worker][dp] backend=none strict=False epsilon=None method=gc
+WARNING:libs.compliance:Unknown compliance level 'medium', defaulting to HIPAA_LIKE
+INFO:worker:[worker][preprocessing] Fetching preprocessing plan...
+WARNING:worker:[worker][preprocessing] Preprocessing plan returned None - continuing with original data
+INFO:sdv.metadata.multi_table:Detected metadata:
+{
+    "columns": {
+        "V1": {
+            "sdtype": "numerical"
+        },
+        "V2": {
+            "sdtype": "numerical"
+        },
+        "V3": {
+            "sdtype": "numerical"
+        },
+        "V4": {
+            "sdtype": "numerical"
+        },
+        "V5": {
+            "sdtype": "numerical"
+        },
+        "V6": {
+            "sdtype": "numerical"
+        },
+        "V7": {
+            "sdtype": "numerical"
+        },
+        "V8": {
+            "sdtype": "numerical"
+        },
+        "V9": {
+            "sdtype": "numerical"
+        },
+        "V10": {
+            "sdtype": "numerical"
+        },
+        "V11": {
+            "sdtype": "numerical"
+        },
+        "V12": {
+            "sdtype": "numerical"
+        },
+        "V13": {
+            "sdtype": "numerical"
+        },
+        "V14": {
+            "sdtype": "numerical"
+        },
+        "V15": {
+            "sdtype": "numerical"
+        },
+        "V16": {
+            "sdtype": "numerical"
+        },
+        "V17": {
+            "sdtype": "numerical"
+        },
+        "V18": {
+            "sdtype": "numerical"
+        },
+        "V19": {
+            "sdtype": "numerical"
+        },
+        "V20": {
+            "sdtype": "numerical"
+        },
+        "V21": {
+            "sdtype": "numerical"
+        },
+        "V22": {
+            "sdtype": "numerical"
+        },
+        "V23": {
+            "sdtype": "numerical"
+        },
+        "V24": {
+            "sdtype": "numerical"
+        },
+        "V25": {
+            "sdtype": "numerical"
+        },
+        "V26": {
+            "sdtype": "numerical"
+        },
+        "V27": {
+            "sdtype": "numerical"
+        },
+        "V28": {
+            "sdtype": "numerical"
+        },
+        "Time": {
+            "sdtype": "numerical"
+        },
+        "Amount": {
+            "sdtype": "numerical"
+        },
+        "Class": {
+            "sdtype": "categorical"
+        }
+    }
+}
+INFO:sdv.metadata.single_table:Detected metadata:
+INFO:sdv.metadata.single_table:{
+    "METADATA_SPEC_VERSION": "SINGLE_TABLE_V1",
+    "columns": {
+        "V1": {
+            "sdtype": "numerical"
+        },
+        "V2": {
+            "sdtype": "numerical"
+        },
+        "V3": {
+            "sdtype": "numerical"
+        },
+        "V4": {
+            "sdtype": "numerical"
+        },
+        "V5": {
+            "sdtype": "numerical"
+        },
+        "V6": {
+            "sdtype": "numerical"
+        },
+        "V7": {
+            "sdtype": "numerical"
+        },
+        "V8": {
+            "sdtype": "numerical"
+        },
+        "V9": {
+            "sdtype": "numerical"
+        },
+        "V10": {
+            "sdtype": "numerical"
+        },
+        "V11": {
+            "sdtype": "numerical"
+        },
+        "V12": {
+            "sdtype": "numerical"
+        },
+        "V13": {
+            "sdtype": "numerical"
+        },
+        "V14": {
+            "sdtype": "numerical"
+        },
+        "V15": {
+            "sdtype": "numerical"
+        },
+        "V16": {
+            "sdtype": "numerical"
+        },
+        "V17": {
+            "sdtype": "numerical"
+        },
+        "V18": {
+            "sdtype": "numerical"
+        },
+        "V19": {
+            "sdtype": "numerical"
+        },
+        "V20": {
+            "sdtype": "numerical"
+        },
+        "V21": {
+            "sdtype": "numerical"
+        },
+        "V22": {
+            "sdtype": "numerical"
+        },
+        "V23": {
+            "sdtype": "numerical"
+        },
+        "V24": {
+            "sdtype": "numerical"
+        },
+        "V25": {
+            "sdtype": "numerical"
+        },
+        "V26": {
+            "sdtype": "numerical"
+        },
+        "V27": {
+            "sdtype": "numerical"
+        },
+        "V28": {
+            "sdtype": "numerical"
+        },
+        "Time": {
+            "sdtype": "numerical"
+        },
+        "Amount": {
+            "sdtype": "numerical"
+        },
+        "Class": {
+            "sdtype": "categorical"
+        }
+    }
+}
+WARNING:models.factory:[factory] SynthCity not available for 'ddpm': synthcity not installed. Install with: pip install synthcity. Falling back to SDV.
+WARNING:models.factory:[factory] Unknown method 'ddpm', defaulting to SDV GaussianCopula
+INFO:SingleTableSynthesizer:{'EVENT': 'Instance', 'TIMESTAMP': datetime.datetime(2026, 1, 11, 21, 33, 28, 745805), 'SYNTHESIZER CLASS NAME': 'GaussianCopulaSynthesizer', 'SYNTHESIZER ID': 'GaussianCopulaSynthesizer_1.32.1_ef4012da9ab14b0c8c2094d14e5dc82f'}
+WARNING:models.factory:[factory] SynthCity not available for 'gc': synthcity not installed. Install with: pip install synthcity. Falling back to SDV.
+INFO:models.factory:[factory] Using SDV backend for method 'gc' (GaussianCopula)
+INFO:SingleTableSynthesizer:{'EVENT': 'Instance', 'TIMESTAMP': datetime.datetime(2026, 1, 11, 21, 33, 28, 747995), 'SYNTHESIZER CLASS NAME': 'GaussianCopulaSynthesizer', 'SYNTHESIZER ID': 'GaussianCopulaSynthesizer_1.32.1_be16a36cde204e23b4b5401282a2226b'}
+INFO:SingleTableSynthesizer:{'EVENT': 'Fit', 'TIMESTAMP': datetime.datetime(2026, 1, 11, 21, 33, 28, 748018), 'SYNTHESIZER CLASS NAME': 'GaussianCopulaSynthesizer', 'SYNTHESIZER ID': 'GaussianCopulaSynthesizer_1.32.1_be16a36cde204e23b4b5401282a2226b', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 10000, 'TOTAL NUMBER OF COLUMNS': 31}
+INFO:sdv.data_processing.data_processor:Fitting table  metadata
+INFO:sdv.data_processing.data_processor:Fitting formatters for table 
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V1'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V2'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V3'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V4'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V5'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V6'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V7'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V8'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V9'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V10'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V11'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V12'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V13'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V14'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V15'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V16'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V17'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V18'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V19'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V20'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V21'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V22'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V23'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V24'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V25'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V26'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V27'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V28'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'Time'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'Amount'. Data will not be rounded.
+INFO:sdv.data_processing.data_processor:Setting the configuration for the ``HyperTransformer`` for table 
+INFO:sdv.data_processing.data_processor:Fitting HyperTransformer for table 
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V1'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V2'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V3'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V4'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V5'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V6'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V7'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V8'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V9'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V10'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V11'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V12'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V13'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V14'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V15'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V16'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V17'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V18'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V19'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V20'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V21'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V22'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V23'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V24'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V25'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V26'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V27'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'V28'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'Time'. Data will not be rounded.
+INFO:rdt.transformers.utils:No rounding scheme detected for column 'Amount'. Data will not be rounded.
+INFO:SingleTableSynthesizer:{'EVENT': 'Fit processed data', 'TIMESTAMP': datetime.datetime(2026, 1, 11, 21, 33, 28, 928139), 'SYNTHESIZER CLASS NAME': 'GaussianCopulaSynthesizer', 'SYNTHESIZER ID': 'GaussianCopulaSynthesizer_1.32.1_be16a36cde204e23b4b5401282a2226b', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 10000, 'TOTAL NUMBER OF COLUMNS': 31}
+INFO:copulas.multivariate.gaussian:Fitting GaussianMultivariate(distribution="{'V1': <class 'copulas.univariate.beta.BetaUnivariate'>, 'V2': <class 'copulas.univariate.beta.BetaUnivariate'>, 'V3': <class 'copulas.univariate.beta.BetaUnivariate'>, 'V4': <class 'copulas.univariate.beta.BetaUnivariate'>, 'V5': <class 'copulas.univariate.beta.BetaUnivariate'>, 'V6': <class 'copulas.univariate.beta.BetaUnivariate'>, 'V7': <class 'copulas.univariate.beta.BetaUnivariate'>, 'V8': <class 'copulas.univariate.beta.BetaUnivariate'>, 'V9': <class 'copulas.univariate.beta.BetaUnivariate'>, 'V10': <class 'copulas.univariate.beta.BetaUnivariate'>, 'V11': <class 'copulas.univariate.beta.BetaUnivariate'>, 'V12': <class 'copulas.univariate.beta.BetaUnivariate'>, 'V13': <class 'copulas.univariate.beta.BetaUnivariate'>, 'V14': <class 'copulas.univariate.beta.BetaUnivariate'>, 'V15': <class 'copulas.univariate.beta.BetaUnivariate'>, 'V16': <class 'copulas.univariate.beta.BetaUnivariate'>, 'V17': <class 'copulas.univariate.beta.BetaUnivariate'>, 'V18': <class 'copulas.univariate.beta.BetaUnivariate'>, 'V19': <class 'copulas.univariate.beta.BetaUnivariate'>, 'V20': <class 'copulas.univariate.beta.BetaUnivariate'>, 'V21': <class 'copulas.univariate.beta.BetaUnivariate'>, 'V22': <class 'copulas.univariate.beta.BetaUnivariate'>, 'V23': <class 'copulas.univariate.beta.BetaUnivariate'>, 'V24': <class 'copulas.univariate.beta.BetaUnivariate'>, 'V25': <class 'copulas.univariate.beta.BetaUnivariate'>, 'V26': <class 'copulas.univariate.beta.BetaUnivariate'>, 'V27': <class 'copulas.univariate.beta.BetaUnivariate'>, 'V28': <class 'copulas.univariate.beta.BetaUnivariate'>, 'Time': <class 'copulas.univariate.beta.BetaUnivariate'>, 'Amount': <class 'copulas.univariate.beta.BetaUnivariate'>, 'Class': <class 'copulas.univariate.beta.BetaUnivariate'>}")
+INFO:copulas.multivariate.gaussian:Unable to fit to a <class 'copulas.univariate.beta.BetaUnivariate'> distribution for column V1. Using a Gaussian distribution instead.
+INFO:copulas.multivariate.gaussian:Unable to fit to a <class 'copulas.univariate.beta.BetaUnivariate'> distribution for column V5. Using a Gaussian distribution instead.
+INFO:copulas.multivariate.gaussian:Unable to fit to a <class 'copulas.univariate.beta.BetaUnivariate'> distribution for column V7. Using a Gaussian distribution instead.
+INFO:copulas.multivariate.gaussian:Unable to fit to a <class 'copulas.univariate.beta.BetaUnivariate'> distribution for column V16. Using a Gaussian distribution instead.
+INFO:copulas.multivariate.gaussian:Unable to fit to a <class 'copulas.univariate.beta.BetaUnivariate'> distribution for column V17. Using a Gaussian distribution instead.
+INFO:copulas.multivariate.gaussian:Unable to fit to a <class 'copulas.univariate.beta.BetaUnivariate'> distribution for column V20. Using a Gaussian distribution instead.
+INFO:copulas.multivariate.gaussian:Unable to fit to a <class 'copulas.univariate.beta.BetaUnivariate'> distribution for column V25. Using a Gaussian distribution instead.
+INFO:copulas.multivariate.gaussian:Unable to fit to a <class 'copulas.univariate.beta.BetaUnivariate'> distribution for column Amount. Using a Gaussian distribution instead.
+INFO:SingleTableSynthesizer:{'EVENT': 'Sample', 'TIMESTAMP': datetime.datetime(2026, 1, 11, 21, 33, 30, 817076), 'SYNTHESIZER CLASS NAME': 'GaussianCopulaSynthesizer', 'SYNTHESIZER ID': 'GaussianCopulaSynthesizer_1.32.1_be16a36cde204e23b4b5401282a2226b', 'TOTAL NUMBER OF TABLES': 1, 'TOTAL NUMBER OF ROWS': 5000, 'TOTAL NUMBER OF COLUMNS': 31}
+INFO:worker:Corr Delta calculated: 0.0121
+INFO:worker:Dup rate calculated: 0.0000 (0 duplicates out of 5000 synthetic rows)
+WARNING:libs.compliance:Unknown compliance level 'medium', defaulting to HIPAA_LIKE
+[worker][metrics] model=gc dp_backend=none dp_effective=False ks=0.08073020012472362 cd=0.06882571489709763 mia=0.8854685377999095 evaluator=custom
+[worker][compliance] Status: FAILED, Score: 87.10%, Violations: 1
+[worker][compliance] Violations:
+[worker][compliance]   - MIA AUC 0.885 exceeds threshold 0.6
+[worker] attempt=2 overall_ok=False reasons=KS mean 0.081 ≤ 0.10 (ok); Corr Δ 0.069 ≤ 0.10 (ok); MIA AUC 0.885 > 0.60 (fail); Dup rate 0.0% ≤ 5% (ok)
+[worker][optimizer] Failure analysis: Privacy failure: Membership inference attack too successful.
+[worker][optimizer] Suggestions: Switch to TabDDPM or enable DP for better privacy
+[worker] metrics: {
+  "utility": {
+    "ks_mean": 0.08073020012472362,
+    "corr_delta": 0.06882571489709763,
+    "auroc": null,
+    "c_index": null,
+    "fairness": {
+      "rare_coverage": null,
+      "freq_skew": 0.01581722319859402
+    }
+  },
+  "privacy": {
+    "mia_auc": 0.8854685377999095,
+    "dup_rate": 0.0,
+    "dp_requested": false,
+    "dp_effective": false,
+    "dp_epsilon": null,
+    "dp_delta": null
+  },
+  "composite": {
+    "x_mia": 0.08073020012472362,
+    "y_utility": 0.06882571489709763
+  },
+  "meta": {
+    "model": "gc",
+    "attempt": 2,
+    "dp_backend": "none",
+    "dp_effective": false,
+    "n_real": 569,
+    "n_synth": 569,
+    "evaluator_backend": "custom"
+  },
+  "compliance": {
+    "passed": false,
+    "privacy_passed": false,
+    "utility_passed": true,
+    "fairness_passed": true,
+    "violations": [
+      "MIA AUC 0.885 exceeds threshold 0.6"
+    ],
+    "score": 0.8710429447852761,
+    "level": "hipaa_like",
+    "timestamp": "2026-01-11T20:33:28.677434"
+  }
+}
+
+--- Benchmark Result ---
+{
+  "utility": {
+    "ks_mean": 0.08073020012472362,
+    "corr_delta": 0.06882571489709763,
+    "auroc": null,
+    "c_index": null,
+    "fairness": {
+      "rare_coverage": null,
+      "freq_skew": 0.01581722319859402
+    }
+  },
+  "privacy": {
+    "mia_auc": 0.8854685377999095,
+    "dup_rate": 0.0,
+    "dp_requested": false,
+    "dp_effective": false,
+    "dp_epsilon": null,
+    "dp_delta": null
+  },
+  "composite": {
+    "x_mia": 0.08073020012472362,
+    "y_utility": 0.06882571489709763
+  },
+  "meta": {
+    "model": "gc",
+    "attempt": 2,
+    "dp_backend": "none",
+    "dp_effective": false,
+    "n_real": 569,
+    "n_synth": 569,
+    "evaluator_backend": "custom"
+  },
+  "compliance": {
+    "passed": false,
+    "privacy_passed": false,
+    "utility_passed": true,
+    "fairness_passed": true,
+    "violations": [
+      "MIA AUC 0.885 exceeds threshold 0.6"
+    ],
+    "score": 0.8710429447852761,
+    "level": "hipaa_like",
+    "timestamp": "2026-01-11T20:33:28.677434"
+  }
+}
+❌ Breast Cancer FAILED (KS=0.08073020012472362, MIA=0.8854685377999095)
+
+==================================================
+BENCHMARKING: Credit Fraud Proxy
+==================================================
+[worker][preprocessing] Applying mandatory smart preprocessing via OpenRouter LLM...
+[worker][preprocessing] Preprocessing agent returned no plan (OpenRouter may be unavailable)
+[worker][metadata] SynthCity DataLoader unavailable: TypeError. Using SDV metadata.
+[worker][method] User explicitly selected method: 'ddpm'
+[worker] attempt=1 method=ddpm hparams={}
+[worker][dp] backend=none strict=False epsilon=None method=ddpm
+[worker] error during ddpm fit/sample: ImportError: TabDDPM not available. Install a TabDDPM implementation (e.g., 'pip install tab-ddpm' or via synthcity) to use method='diffusion'.
+[worker] attempt=2 method=gc hparams={}
+[worker][dp] backend=none strict=False epsilon=None method=gc
+[worker][metrics] model=gc dp_backend=none dp_effective=False ks=0.07650967741935485 cd=0.01213290022922162 mia=1.0 evaluator=custom
+[worker][compliance] Status: FAILED, Score: 84.00%, Violations: 1
+[worker][compliance] Violations:
+[worker][compliance]   - MIA AUC 1.000 exceeds threshold 0.6
+[worker] attempt=2 overall_ok=False reasons=KS mean 0.077 ≤ 0.10 (ok); Corr Δ 0.012 ≤ 0.10 (ok); MIA AUC 1.000 > 0.60 (fail); Dup rate 0.0% ≤ 5% (ok)
+[worker][optimizer] Failure analysis: Privacy failure: Membership inference attack too successful.
+[worker][optimizer] Suggestions: Switch to TabDDPM or enable DP for better privacy
+[worker] metrics: {
+  "utility": {
+    "ks_mean": 0.07650967741935485,
+    "corr_delta": 0.01213290022922162,
+    "auroc": null,
+    "c_index": null,
+    "fairness": {
+      "rare_coverage": 1.0,
+      "freq_skew": 0.00039999999999997806
+    }
+  },
+  "privacy": {
+    "mia_auc": 1.0,
+    "dup_rate": 0.0,
+    "dp_requested": false,
+    "dp_effective": false,
+    "dp_epsilon": null,
+    "dp_delta": null
+  },
+  "composite": {
+    "x_mia": 0.07650967741935485,
+    "y_utility": 0.01213290022922162
+  },
+  "meta": {
+    "model": "gc",
+    "attempt": 2,
+    "dp_backend": "none",
+    "dp_effective": false,
+    "n_real": 10000,
+    "n_synth": 5000,
+    "evaluator_backend": "custom"
+  },
+  "compliance": {
+    "passed": false,
+    "privacy_passed": false,
+    "utility_passed": true,
+    "fairness_passed": true,
+    "violations": [
+      "MIA AUC 1.000 exceeds threshold 0.6"
+    ],
+    "score": 0.8400000000000001,
+    "level": "hipaa_like",
+    "timestamp": "2026-01-11T20:33:31.728547"
+  }
+}
+
+--- Benchmark Result ---
+{
+  "utility": {
+    "ks_mean": 0.07650967741935485,
+    "corr_delta": 0.01213290022922162,
+    "auroc": null,
+    "c_index": null,
+    "fairness": {
+      "rare_coverage": 1.0,
+      "freq_skew": 0.00039999999999997806
+    }
+  },
+  "privacy": {
+    "mia_auc": 1.0,
+    "dup_rate": 0.0,
+    "dp_requested": false,
+    "dp_effective": false,
+    "dp_epsilon": null,
+    "dp_delta": null
+  },
+  "composite": {
+    "x_mia": 0.07650967741935485,
+    "y_utility": 0.01213290022922162
+  },
+  "meta": {
+    "model": "gc",
+    "attempt": 2,
+    "dp_backend": "none",
+    "dp_effective": false,
+    "n_real": 10000,
+    "n_synth": 5000,
+    "evaluator_backend": "custom"
+  },
+  "compliance": {
+    "passed": false,
+    "privacy_passed": false,
+    "utility_passed": true,
+    "fairness_passed": true,
+    "violations": [
+      "MIA AUC 1.000 exceeds threshold 0.6"
+    ],
+    "score": 0.8400000000000001,
+    "level": "hipaa_like",
+    "timestamp": "2026-01-11T20:33:31.728547"
+  }
+}
+❌ Credit Fraud Proxy FAILED (KS=0.07650967741935485, MIA=1.0)

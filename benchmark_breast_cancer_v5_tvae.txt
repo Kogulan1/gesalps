@@ -1,0 +1,518 @@
+INFO:worker:[worker][preprocessing] Fetching preprocessing plan...
+INFO:worker:[worker][preprocessing] Applied preprocessing plan: N/A
+INFO:sdv.metadata.multi_table:Detected metadata:
+{
+    "columns": {
+        "mean radius": {
+            "sdtype": "numerical"
+        },
+        "mean texture": {
+            "sdtype": "numerical"
+        },
+        "mean perimeter": {
+            "sdtype": "numerical"
+        },
+        "mean area": {
+            "sdtype": "numerical"
+        },
+        "mean smoothness": {
+            "sdtype": "numerical"
+        },
+        "mean compactness": {
+            "sdtype": "numerical"
+        },
+        "mean concavity": {
+            "sdtype": "numerical"
+        },
+        "mean concave points": {
+            "sdtype": "numerical"
+        },
+        "mean symmetry": {
+            "sdtype": "numerical"
+        },
+        "mean fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "radius error": {
+            "sdtype": "numerical"
+        },
+        "texture error": {
+            "sdtype": "numerical"
+        },
+        "perimeter error": {
+            "sdtype": "numerical"
+        },
+        "area error": {
+            "sdtype": "numerical"
+        },
+        "smoothness error": {
+            "sdtype": "numerical"
+        },
+        "compactness error": {
+            "sdtype": "numerical"
+        },
+        "concavity error": {
+            "sdtype": "numerical"
+        },
+        "concave points error": {
+            "sdtype": "numerical"
+        },
+        "symmetry error": {
+            "sdtype": "numerical"
+        },
+        "fractal dimension error": {
+            "sdtype": "numerical"
+        },
+        "worst radius": {
+            "sdtype": "numerical"
+        },
+        "worst texture": {
+            "sdtype": "numerical"
+        },
+        "worst perimeter": {
+            "sdtype": "numerical"
+        },
+        "worst area": {
+            "sdtype": "numerical"
+        },
+        "worst smoothness": {
+            "sdtype": "numerical"
+        },
+        "worst compactness": {
+            "sdtype": "numerical"
+        },
+        "worst concavity": {
+            "sdtype": "numerical"
+        },
+        "worst concave points": {
+            "sdtype": "numerical"
+        },
+        "worst symmetry": {
+            "sdtype": "numerical"
+        },
+        "worst fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "target": {
+            "sdtype": "categorical"
+        }
+    }
+}
+INFO:sdv.metadata.single_table:Detected metadata:
+INFO:sdv.metadata.single_table:{
+    "columns": {
+        "mean radius": {
+            "sdtype": "numerical"
+        },
+        "mean texture": {
+            "sdtype": "numerical"
+        },
+        "mean perimeter": {
+            "sdtype": "numerical"
+        },
+        "mean area": {
+            "sdtype": "numerical"
+        },
+        "mean smoothness": {
+            "sdtype": "numerical"
+        },
+        "mean compactness": {
+            "sdtype": "numerical"
+        },
+        "mean concavity": {
+            "sdtype": "numerical"
+        },
+        "mean concave points": {
+            "sdtype": "numerical"
+        },
+        "mean symmetry": {
+            "sdtype": "numerical"
+        },
+        "mean fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "radius error": {
+            "sdtype": "numerical"
+        },
+        "texture error": {
+            "sdtype": "numerical"
+        },
+        "perimeter error": {
+            "sdtype": "numerical"
+        },
+        "area error": {
+            "sdtype": "numerical"
+        },
+        "smoothness error": {
+            "sdtype": "numerical"
+        },
+        "compactness error": {
+            "sdtype": "numerical"
+        },
+        "concavity error": {
+            "sdtype": "numerical"
+        },
+        "concave points error": {
+            "sdtype": "numerical"
+        },
+        "symmetry error": {
+            "sdtype": "numerical"
+        },
+        "fractal dimension error": {
+            "sdtype": "numerical"
+        },
+        "worst radius": {
+            "sdtype": "numerical"
+        },
+        "worst texture": {
+            "sdtype": "numerical"
+        },
+        "worst perimeter": {
+            "sdtype": "numerical"
+        },
+        "worst area": {
+            "sdtype": "numerical"
+        },
+        "worst smoothness": {
+            "sdtype": "numerical"
+        },
+        "worst compactness": {
+            "sdtype": "numerical"
+        },
+        "worst concavity": {
+            "sdtype": "numerical"
+        },
+        "worst concave points": {
+            "sdtype": "numerical"
+        },
+        "worst symmetry": {
+            "sdtype": "numerical"
+        },
+        "worst fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "target": {
+            "sdtype": "categorical"
+        }
+    },
+    "METADATA_SPEC_VERSION": "SINGLE_TABLE_V1"
+}
+[2026-01-12T13:03:04.468723+0100][94751][CRITICAL] Error importing TabularGoggle: No module named 'dgl'
+[2026-01-12T13:03:04.471296+0100][94751][CRITICAL] module disabled: /Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/generic/plugin_goggle.py
+[2026-01-12T13:03:05.604327+0100][94751][CRITICAL] module disabled: /Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/generic/plugin_goggle.py
+INFO:models.factory:[factory] Using SynthCity backend for method 'tvae' (plugin: tvae)
+[2026-01-12T13:03:05.606125+0100][94751][CRITICAL] module disabled: /Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/generic/plugin_goggle.py
+[2026-01-12T13:03:05.606556+0100][94751][CRITICAL] module disabled: /Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/generic/plugin_goggle.py
+INFO:models.factory:[factory] Using SynthCity backend for method 'tvae' (plugin: tvae)
+
+======================================================================
+BENCHMARKING WITH GREENGUARD: Breast Cancer
+======================================================================
+Dataset: 569 rows, 31 columns
+
+──────────────────────────────────────────────────────────────────────
+🔄 ATTEMPT 1/5
+──────────────────────────────────────────────────────────────────────
+[Optimizer] Using default hyperparameters
+[Training] Starting with hyperparameters: {}
+[worker][preprocessing] Applying mandatory smart preprocessing via OpenRouter LLM...
+[MockAgent] Applying deterministic research-based preprocessing...
+[worker][preprocessing] Applied 30 preprocessing steps
+[worker][preprocessing] Rationale: Applied research-based Quantile Transformation and Winsorization to improve diffusion model convergence....
+[KeOps] Warning : CUDA libraries not found or could not be loaded; Switching to CPU only.
+[worker][metadata] SynthCity DataLoader unavailable: TypeError. Using SDV metadata.
+[worker][method] User explicitly selected method: 'tvae'
+[worker] attempt=1 method=tvae hparams={}
+[worker][dp] backend=none strict=False epsilon=None method=tvae
+  0%|          | 0/1000 [00:00<?, ?it/s]  0%|          | 1/1000 [00:00<02:39,  6.25it/s]  0%|          | 3/1000 [00:00<01:47,  9.24it/s]  0%|          | 5/1000 [00:00<01:39, 10.00it/s]  1%|          | 7/1000 [00:00<01:35, 10.41it/s]  1%|          | 9/1000 [00:00<01:33, 10.59it/s]  1%|          | 11/1000 [00:01<01:32, 10.72it/s]  1%|▏         | 13/1000 [00:01<01:31, 10.75it/s]  2%|▏         | 15/1000 [00:01<01:29, 11.06it/s]  2%|▏         | 17/1000 [00:01<01:25, 11.55it/s]  2%|▏         | 19/1000 [00:01<01:22, 11.90it/s]  2%|▏         | 21/1000 [00:01<01:20, 12.16it/s]  2%|▏         | 23/1000 [00:02<01:19, 12.30it/s]  2%|▎         | 25/1000 [00:02<01:19, 12.26it/s]  3%|▎         | 27/1000 [00:02<01:18, 12.37it/s]  3%|▎         | 29/1000 [00:02<01:17, 12.46it/s]  3%|▎         | 31/1000 [00:02<01:17, 12.51it/s]  3%|▎         | 33/1000 [00:02<01:18, 12.32it/s]  4%|▎         | 35/1000 [00:03<01:20, 12.06it/s]  4%|▎         | 37/1000 [00:03<01:24, 11.43it/s]  4%|▍         | 39/1000 [00:03<01:21, 11.72it/s]  4%|▍         | 41/1000 [00:03<01:20, 11.95it/s]  4%|▍         | 43/1000 [00:03<01:19, 12.11it/s]  4%|▍         | 45/1000 [00:03<01:18, 12.18it/s]  5%|▍         | 47/1000 [00:04<01:17, 12.29it/s]  5%|▍         | 49/1000 [00:04<01:16, 12.49it/s]  5%|▌         | 51/1000 [00:04<01:17, 12.30it/s]  5%|▌         | 53/1000 [00:04<01:16, 12.36it/s]  6%|▌         | 55/1000 [00:04<01:16, 12.39it/s]  6%|▌         | 57/1000 [00:04<01:16, 12.29it/s]  6%|▌         | 59/1000 [00:05<01:19, 11.85it/s]  6%|▌         | 61/1000 [00:05<01:26, 10.91it/s]  6%|▋         | 63/1000 [00:05<01:24, 11.06it/s]  6%|▋         | 65/1000 [00:05<01:23, 11.21it/s]  7%|▋         | 67/1000 [00:05<01:21, 11.43it/s]  7%|▋         | 69/1000 [00:05<01:20, 11.55it/s]  7%|▋         | 71/1000 [00:06<01:19, 11.71it/s]  7%|▋         | 73/1000 [00:06<01:22, 11.30it/s]  8%|▊         | 75/1000 [00:06<01:25, 10.84it/s]  8%|▊         | 77/1000 [00:06<01:25, 10.73it/s]  8%|▊         | 79/1000 [00:06<01:30, 10.16it/s]  8%|▊         | 81/1000 [00:07<01:27, 10.54it/s]  8%|▊         | 83/1000 [00:07<01:24, 10.84it/s]  8%|▊         | 85/1000 [00:07<01:21, 11.17it/s]  9%|▊         | 87/1000 [00:07<01:21, 11.27it/s]  9%|▉         | 89/1000 [00:07<01:19, 11.46it/s]  9%|▉         | 91/1000 [00:07<01:18, 11.58it/s]  9%|▉         | 93/1000 [00:08<01:18, 11.60it/s] 10%|▉         | 95/1000 [00:08<01:17, 11.69it/s] 10%|▉         | 97/1000 [00:08<01:35,  9.48it/s] 10%|▉         | 99/1000 [00:08<01:30,  9.90it/s] 10%|█         | 101/1000 [00:08<01:29, 10.08it/s] 10%|█         | 103/1000 [00:09<01:26, 10.40it/s] 10%|█         | 105/1000 [00:09<01:20, 11.06it/s] 11%|█         | 107/1000 [00:09<01:17, 11.48it/s] 11%|█         | 109/1000 [00:09<01:15, 11.87it/s] 11%|█         | 111/1000 [00:09<01:14, 11.97it/s] 11%|█▏        | 113/1000 [00:09<01:13, 12.11it/s] 12%|█▏        | 115/1000 [00:10<01:12, 12.22it/s] 12%|█▏        | 117/1000 [00:10<01:12, 12.24it/s] 12%|█▏        | 119/1000 [00:10<01:11, 12.25it/s] 12%|█▏        | 121/1000 [00:10<01:11, 12.24it/s] 12%|█▏        | 123/1000 [00:10<01:11, 12.22it/s] 12%|█▎        | 125/1000 [00:10<01:13, 11.87it/s] 13%|█▎        | 127/1000 [00:11<01:18, 11.16it/s] 13%|█▎        | 129/1000 [00:11<01:19, 10.91it/s] 13%|█▎        | 131/1000 [00:11<01:23, 10.41it/s] 13%|█▎        | 133/1000 [00:11<01:20, 10.73it/s] 14%|█▎        | 135/1000 [00:11<01:17, 11.18it/s] 14%|█▎        | 137/1000 [00:12<01:15, 11.51it/s] 14%|█▍        | 139/1000 [00:12<01:13, 11.73it/s] 14%|█▍        | 141/1000 [00:12<01:12, 11.89it/s] 14%|█▍        | 143/1000 [00:12<01:11, 12.07it/s] 14%|█▍        | 145/1000 [00:12<01:10, 12.18it/s] 15%|█▍        | 147/1000 [00:12<01:09, 12.23it/s] 15%|█▍        | 149/1000 [00:12<01:09, 12.20it/s] 15%|█▌        | 151/1000 [00:13<01:09, 12.16it/s] 15%|█▌        | 153/1000 [00:13<01:08, 12.30it/s] 16%|█▌        | 155/1000 [00:13<01:08, 12.37it/s] 16%|█▌        | 157/1000 [00:13<01:08, 12.38it/s] 16%|█▌        | 159/1000 [00:13<01:07, 12.41it/s] 16%|█▌        | 161/1000 [00:13<01:07, 12.36it/s] 16%|█▋        | 163/1000 [00:14<01:09, 12.00it/s] 16%|█▋        | 165/1000 [00:14<01:10, 11.93it/s] 17%|█▋        | 167/1000 [00:14<01:12, 11.56it/s] 17%|█▋        | 169/1000 [00:14<01:10, 11.78it/s] 17%|█▋        | 171/1000 [00:14<01:08, 12.03it/s] 17%|█▋        | 173/1000 [00:14<01:08, 12.02it/s] 18%|█▊        | 175/1000 [00:15<01:08, 12.09it/s] 18%|█▊        | 177/1000 [00:15<01:07, 12.15it/s] 18%|█▊        | 179/1000 [00:15<01:10, 11.73it/s] 18%|█▊        | 181/1000 [00:15<01:10, 11.56it/s] 18%|█▊        | 183/1000 [00:15<01:13, 11.11it/s] 18%|█▊        | 185/1000 [00:16<01:10, 11.52it/s] 19%|█▊        | 187/1000 [00:16<01:08, 11.86it/s] 19%|█▉        | 189/1000 [00:16<01:07, 12.02it/s] 19%|█▉        | 191/1000 [00:16<01:06, 12.20it/s] 19%|█▉        | 193/1000 [00:16<01:06, 12.22it/s] 20%|█▉        | 195/1000 [00:16<01:06, 12.11it/s] 20%|█▉        | 197/1000 [00:16<01:06, 12.08it/s] 20%|█▉        | 199/1000 [00:17<01:06, 12.12it/s] 20%|██        | 201/1000 [00:17<01:07, 11.83it/s] 20%|██        | 203/1000 [00:17<01:06, 12.03it/s] 20%|██        | 205/1000 [00:17<01:05, 12.08it/s] 21%|██        | 207/1000 [00:17<01:04, 12.27it/s] 21%|██        | 209/1000 [00:17<01:05, 11.99it/s] 21%|██        | 211/1000 [00:18<01:06, 11.78it/s] 21%|██▏       | 213/1000 [00:18<01:09, 11.40it/s] 22%|██▏       | 215/1000 [00:18<01:07, 11.67it/s] 22%|██▏       | 217/1000 [00:18<01:08, 11.36it/s] 22%|██▏       | 219/1000 [00:18<01:10, 11.12it/s] 22%|██▏       | 221/1000 [00:19<01:09, 11.19it/s] 22%|██▏       | 223/1000 [00:19<01:11, 10.80it/s] 22%|██▎       | 225/1000 [00:19<01:08, 11.23it/s] 23%|██▎       | 227/1000 [00:19<01:07, 11.43it/s] 23%|██▎       | 229/1000 [00:19<01:05, 11.71it/s] 23%|██▎       | 231/1000 [00:19<01:04, 11.85it/s] 23%|██▎       | 233/1000 [00:20<01:04, 11.92it/s] 24%|██▎       | 235/1000 [00:20<01:03, 12.06it/s] 24%|██▎       | 237/1000 [00:20<01:04, 11.79it/s] 24%|██▍       | 239/1000 [00:20<01:06, 11.50it/s] 24%|██▍       | 241/1000 [00:20<01:05, 11.62it/s] 24%|██▍       | 243/1000 [00:20<01:06, 11.46it/s] 24%|██▍       | 245/1000 [00:21<01:05, 11.53it/s] 25%|██▍       | 247/1000 [00:21<01:05, 11.49it/s] 25%|██▍       | 249/1000 [00:21<01:14, 10.14it/s] 25%|██▌       | 251/1000 [00:21<01:12, 10.35it/s] 25%|██▌       | 253/1000 [00:21<01:09, 10.81it/s] 26%|██▌       | 255/1000 [00:22<01:06, 11.22it/s] 26%|██▌       | 257/1000 [00:22<01:17,  9.62it/s] 26%|██▌       | 259/1000 [00:22<01:15,  9.87it/s] 26%|██▌       | 261/1000 [00:22<01:29,  8.30it/s] 26%|██▋       | 263/1000 [00:23<01:22,  8.92it/s] 26%|██▋       | 265/1000 [00:23<01:17,  9.52it/s] 27%|██▋       | 267/1000 [00:23<01:11, 10.22it/s] 27%|██▋       | 269/1000 [00:23<01:08, 10.71it/s] 27%|██▋       | 271/1000 [00:23<01:06, 11.02it/s] 27%|██▋       | 273/1000 [00:23<01:05, 11.07it/s] 28%|██▊       | 275/1000 [00:24<01:08, 10.63it/s] 28%|██▊       | 277/1000 [00:24<01:08, 10.60it/s] 28%|██▊       | 279/1000 [00:24<01:06, 10.78it/s] 28%|██▊       | 281/1000 [00:24<01:08, 10.50it/s] 28%|██▊       | 283/1000 [00:24<01:05, 10.98it/s] 28%|██▊       | 285/1000 [00:24<01:02, 11.38it/s] 29%|██▊       | 287/1000 [00:25<01:00, 11.72it/s] 29%|██▉       | 289/1000 [00:25<00:59, 11.90it/s] 29%|██▉       | 291/1000 [00:25<00:58, 12.06it/s] 29%|██▉       | 293/1000 [00:25<00:57, 12.19it/s] 30%|██▉       | 295/1000 [00:25<00:57, 12.26it/s] 30%|██▉       | 297/1000 [00:25<00:58, 12.02it/s] 30%|██▉       | 299/1000 [00:26<00:59, 11.72it/s] 30%|███       | 301/1000 [00:26<01:00, 11.55it/s] 30%|███       | 303/1000 [00:26<00:59, 11.79it/s] 30%|███       | 305/1000 [00:26<00:58, 11.86it/s] 31%|███       | 307/1000 [00:26<00:59, 11.72it/s] 31%|███       | 309/1000 [00:27<00:59, 11.58it/s] 31%|███       | 311/1000 [00:27<01:04, 10.68it/s] 31%|███▏      | 313/1000 [00:27<01:05, 10.47it/s] 32%|███▏      | 315/1000 [00:27<01:05, 10.42it/s] 32%|███▏      | 317/1000 [00:27<01:06, 10.32it/s] 32%|███▏      | 319/1000 [00:28<01:05, 10.33it/s] 32%|███▏      | 321/1000 [00:28<01:06, 10.28it/s] 32%|███▏      | 323/1000 [00:28<01:06, 10.14it/s] 32%|███▎      | 325/1000 [00:28<01:06, 10.20it/s] 33%|███▎      | 327/1000 [00:28<01:03, 10.61it/s] 33%|███▎      | 329/1000 [00:28<01:01, 10.99it/s] 33%|███▎      | 331/1000 [00:29<00:59, 11.34it/s] 33%|███▎      | 333/1000 [00:29<00:58, 11.48it/s] 34%|███▎      | 335/1000 [00:29<00:56, 11.72it/s] 34%|███▎      | 337/1000 [00:29<00:55, 11.98it/s] 34%|███▍      | 339/1000 [00:29<00:54, 12.18it/s] 34%|███▍      | 341/1000 [00:29<00:53, 12.22it/s] 34%|███▍      | 343/1000 [00:30<00:53, 12.29it/s] 34%|███▍      | 345/1000 [00:30<00:52, 12.45it/s] 35%|███▍      | 347/1000 [00:30<00:52, 12.39it/s] 35%|███▍      | 349/1000 [00:30<00:53, 12.24it/s] 35%|███▌      | 351/1000 [00:30<00:55, 11.80it/s] 35%|███▌      | 353/1000 [00:30<00:58, 10.98it/s] 36%|███▌      | 355/1000 [00:31<01:01, 10.52it/s] 36%|███▌      | 357/1000 [00:31<01:07,  9.53it/s] 36%|███▌      | 359/1000 [00:31<01:04,  9.87it/s] 36%|███▌      | 361/1000 [00:31<01:05,  9.73it/s] 36%|███▋      | 363/1000 [00:32<01:04,  9.93it/s] 36%|███▋      | 365/1000 [00:32<01:02, 10.14it/s] 37%|███▋      | 367/1000 [00:32<01:01, 10.34it/s] 37%|███▋      | 369/1000 [00:32<01:00, 10.42it/s] 37%|███▋      | 371/1000 [00:32<00:58, 10.84it/s] 37%|███▋      | 373/1000 [00:32<00:55, 11.23it/s] 38%|███▊      | 375/1000 [00:33<00:54, 11.39it/s] 38%|███▊      | 377/1000 [00:33<00:53, 11.62it/s] 38%|███▊      | 379/1000 [00:33<00:52, 11.78it/s] 38%|███▊      | 381/1000 [00:33<00:51, 12.06it/s] 38%|███▊      | 383/1000 [00:33<00:50, 12.20it/s] 38%|███▊      | 385/1000 [00:33<00:50, 12.08it/s] 39%|███▊      | 387/1000 [00:34<00:50, 12.16it/s] 39%|███▉      | 389/1000 [00:34<00:49, 12.23it/s] 39%|███▉      | 391/1000 [00:34<00:49, 12.33it/s] 39%|███▉      | 393/1000 [00:34<00:48, 12.39it/s] 40%|███▉      | 395/1000 [00:34<00:48, 12.42it/s] 40%|███▉      | 397/1000 [00:34<00:49, 12.27it/s] 40%|███▉      | 399/1000 [00:35<00:49, 12.10it/s] 40%|████      | 400/1000 [00:35<00:52, 11.35it/s]
+INFO:worker:Corr Delta calculated (custom): 0.1963
+INFO:worker:Dup rate calculated (custom): 0.0000 (0 duplicates out of 569 synthetic rows)
+WARNING:libs.compliance:Unknown compliance level 'medium', defaulting to HIPAA_LIKE
+INFO:worker:[worker][preprocessing] Fetching preprocessing plan...
+INFO:worker:[worker][preprocessing] Applied preprocessing plan: N/A
+INFO:sdv.metadata.multi_table:Detected metadata:
+{
+    "columns": {
+        "mean radius": {
+            "sdtype": "numerical"
+        },
+        "mean texture": {
+            "sdtype": "numerical"
+        },
+        "mean perimeter": {
+            "sdtype": "numerical"
+        },
+        "mean area": {
+            "sdtype": "numerical"
+        },
+        "mean smoothness": {
+            "sdtype": "numerical"
+        },
+        "mean compactness": {
+            "sdtype": "numerical"
+        },
+        "mean concavity": {
+            "sdtype": "numerical"
+        },
+        "mean concave points": {
+            "sdtype": "numerical"
+        },
+        "mean symmetry": {
+            "sdtype": "numerical"
+        },
+        "mean fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "radius error": {
+            "sdtype": "numerical"
+        },
+        "texture error": {
+            "sdtype": "numerical"
+        },
+        "perimeter error": {
+            "sdtype": "numerical"
+        },
+        "area error": {
+            "sdtype": "numerical"
+        },
+        "smoothness error": {
+            "sdtype": "numerical"
+        },
+        "compactness error": {
+            "sdtype": "numerical"
+        },
+        "concavity error": {
+            "sdtype": "numerical"
+        },
+        "concave points error": {
+            "sdtype": "numerical"
+        },
+        "symmetry error": {
+            "sdtype": "numerical"
+        },
+        "fractal dimension error": {
+            "sdtype": "numerical"
+        },
+        "worst radius": {
+            "sdtype": "numerical"
+        },
+        "worst texture": {
+            "sdtype": "numerical"
+        },
+        "worst perimeter": {
+            "sdtype": "numerical"
+        },
+        "worst area": {
+            "sdtype": "numerical"
+        },
+        "worst smoothness": {
+            "sdtype": "numerical"
+        },
+        "worst compactness": {
+            "sdtype": "numerical"
+        },
+        "worst concavity": {
+            "sdtype": "numerical"
+        },
+        "worst concave points": {
+            "sdtype": "numerical"
+        },
+        "worst symmetry": {
+            "sdtype": "numerical"
+        },
+        "worst fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "target": {
+            "sdtype": "categorical"
+        }
+    }
+}
+INFO:sdv.metadata.single_table:Detected metadata:
+INFO:sdv.metadata.single_table:{
+    "columns": {
+        "mean radius": {
+            "sdtype": "numerical"
+        },
+        "mean texture": {
+            "sdtype": "numerical"
+        },
+        "mean perimeter": {
+            "sdtype": "numerical"
+        },
+        "mean area": {
+            "sdtype": "numerical"
+        },
+        "mean smoothness": {
+            "sdtype": "numerical"
+        },
+        "mean compactness": {
+            "sdtype": "numerical"
+        },
+        "mean concavity": {
+            "sdtype": "numerical"
+        },
+        "mean concave points": {
+            "sdtype": "numerical"
+        },
+        "mean symmetry": {
+            "sdtype": "numerical"
+        },
+        "mean fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "radius error": {
+            "sdtype": "numerical"
+        },
+        "texture error": {
+            "sdtype": "numerical"
+        },
+        "perimeter error": {
+            "sdtype": "numerical"
+        },
+        "area error": {
+            "sdtype": "numerical"
+        },
+        "smoothness error": {
+            "sdtype": "numerical"
+        },
+        "compactness error": {
+            "sdtype": "numerical"
+        },
+        "concavity error": {
+            "sdtype": "numerical"
+        },
+        "concave points error": {
+            "sdtype": "numerical"
+        },
+        "symmetry error": {
+            "sdtype": "numerical"
+        },
+        "fractal dimension error": {
+            "sdtype": "numerical"
+        },
+        "worst radius": {
+            "sdtype": "numerical"
+        },
+        "worst texture": {
+            "sdtype": "numerical"
+        },
+        "worst perimeter": {
+            "sdtype": "numerical"
+        },
+        "worst area": {
+            "sdtype": "numerical"
+        },
+        "worst smoothness": {
+            "sdtype": "numerical"
+        },
+        "worst compactness": {
+            "sdtype": "numerical"
+        },
+        "worst concavity": {
+            "sdtype": "numerical"
+        },
+        "worst concave points": {
+            "sdtype": "numerical"
+        },
+        "worst symmetry": {
+            "sdtype": "numerical"
+        },
+        "worst fractal dimension": {
+            "sdtype": "numerical"
+        },
+        "target": {
+            "sdtype": "categorical"
+        }
+    },
+    "METADATA_SPEC_VERSION": "SINGLE_TABLE_V1"
+}
+[2026-01-12T13:03:44.505144+0100][94751][CRITICAL] module disabled: /Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/generic/plugin_goggle.py
+[2026-01-12T13:03:44.505699+0100][94751][CRITICAL] module disabled: /Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/generic/plugin_goggle.py
+INFO:models.factory:[factory] Using SynthCity backend for method 'tvae' (plugin: tvae)
+[2026-01-12T13:03:44.506755+0100][94751][CRITICAL] module disabled: /Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/generic/plugin_goggle.py
+[2026-01-12T13:03:44.507179+0100][94751][CRITICAL] module disabled: /Users/kogulan/Desktop/gesalps/.venv/lib/python3.12/site-packages/synthcity/plugins/generic/plugin_goggle.py
+INFO:models.factory:[factory] Using SynthCity backend for method 'tvae' (plugin: tvae)
+[worker][metrics] Using SynthCity evaluators for utility metrics
+[worker][metrics] Using SynthCity evaluators for privacy metrics
+[worker][metrics] model=tvae dp_backend=none dp_effective=False ks=0.8145019558931914 cd=0.19633795322266 mia=0.14762741652021089 evaluator=synthcity
+[worker][compliance] Status: FAILED, Score: 62.50%, Violations: 2
+[worker][compliance] Violations:
+[worker][compliance]   - KS mean 0.815 exceeds threshold 0.1
+[worker][compliance]   - Correlation delta 0.196 exceeds threshold 0.1
+[worker] attempt=1 overall_ok=False reasons=KS mean 0.815 > 0.10 (fail); Corr Δ 0.196 > 0.10 (fail); MIA AUC 0.148 ≤ 0.60 (ok); Dup rate 0.0% ≤ 5% (ok)
+[worker][optimizer] Failure analysis: EXTREME CRITICAL: KS statistic extremely high (0.815). Training almost certainly failed or was incomplete. This is not a normal failure - training likely did not complete.
+[worker][optimizer] Suggestions: EXTREME: Training failed. Switch to TabDDPM (ddpm) with n_iter=600-800 immediately, CRITICAL: Current method is not suitable - TabDDPM is required for this dataset
+[worker] metrics: {
+  "utility": {
+    "ks_mean": 0.8145019558931914,
+    "corr_delta": 0.19633795322266,
+    "auroc": null,
+    "c_index": null,
+    "fairness": {
+      "rare_coverage": null,
+      "freq_skew": 0.03866432337434092
+    }
+  },
+  "privacy": {
+    "mia_auc": 0.14762741652021089,
+    "dup_rate": 0.0,
+    "dp_requested": false,
+    "dp_effective": false,
+    "dp_epsilon": null,
+    "dp_delta": null
+  },
+  "composite": {
+    "x_mia": 0.8145019558931914,
+    "y_utility": 0.19633795322266
+  },
+  "meta": {
+    "model": "tvae",
+    "attempt": 1,
+    "dp_backend": "none",
+    "dp_effective": false,
+    "n_real": 569,
+    "n_synth": 569,
+    "evaluator_backend": "synthcity"
+  },
+  "compliance": {
+    "passed": false,
+    "privacy_passed": true,
+    "utility_passed": false,
+    "fairness_passed": true,
+    "violations": [
+      "KS mean 0.815 exceeds threshold 0.1",
+      "Correlation delta 0.196 exceeds threshold 0.1"
+    ],
+    "score": 0.6250128742958745,
+    "level": "hipaa_like",
+    "timestamp": "2026-01-12T12:03:44.401746"
+  }
+}
+
+──────────────────────────────────────────────────────────────────────
+📊 ATTEMPT 1 RESULTS
+──────────────────────────────────────────────────────────────────────
+KS Mean:     0.8145 ❌ (threshold: 0.1)
+Corr Delta:  0.1963 ❌ (threshold: 0.1)
+MIA AUC:     0.1476 ✅ (threshold: 0.6)
+Dup Rate:    0.0000 ✅ (threshold: 0.05)
+Score:       62.5%
+
+⚠️  Failed checks: ks_ok, cd_ok
+🔄 Retrying with optimized hyperparameters...
+
+──────────────────────────────────────────────────────────────────────
+🔄 ATTEMPT 2/5
+──────────────────────────────────────────────────────────────────────
+[Optimizer] Suggested hyperparameters (retry 1): {'n_iter': 45000, 'batch_size': 64}
+[Training] Starting with hyperparameters: {'n_iter': 45000, 'batch_size': 64}
+[worker][preprocessing] Applying mandatory smart preprocessing via OpenRouter LLM...
+[MockAgent] Applying deterministic research-based preprocessing...
+[worker][preprocessing] Applied 30 preprocessing steps
+[worker][preprocessing] Rationale: Applied research-based Quantile Transformation and Winsorization to improve diffusion model convergence....
+[worker][metadata] SynthCity DataLoader unavailable: TypeError. Using SDV metadata.
+[worker][method] User explicitly selected method: 'tvae'
+[worker] attempt=1 method=tvae hparams={"batch_size": 64}
+[worker][dp] backend=none strict=False epsilon=None method=tvae
+  0%|          | 0/1000 [00:00<?, ?it/s]  0%|          | 1/1000 [00:00<03:40,  4.53it/s]  0%|          | 2/1000 [00:00<03:05,  5.37it/s]  0%|          | 3/1000 [00:00<02:55,  5.69it/s]  0%|          | 4/1000 [00:00<02:47,  5.94it/s]  0%|          | 5/1000 [00:00<02:41,  6.15it/s]  1%|          | 6/1000 [00:01<02:41,  6.15it/s]  1%|          | 7/1000 [00:01<02:44,  6.04it/s]  1%|          | 8/1000 [00:01<02:45,  6.00it/s]  1%|          | 9/1000 [00:01<02:58,  5.55it/s]  1%|          | 10/1000 [00:01<02:57,  5.59it/s]  1%|          | 11/1000 [00:01<02:53,  5.71it/s]  1%|          | 12/1000 [00:02<02:58,  5.52it/s]  1%|▏         | 13/1000 [00:02<02:53,  5.68it/s]  1%|▏         | 14/1000 [00:02<02:50,  5.80it/s]  2%|▏         | 15/1000 [00:02<02:46,  5.92it/s]  2%|▏         | 16/1000 [00:02<02:41,  6.09it/s]  2%|▏         | 17/1000 [00:02<02:41,  6.10it/s]  2%|▏         | 18/1000 [00:03<02:42,  6.03it/s]  2%|▏         | 19/1000 [00:03<02:42,  6.05it/s]  2%|▏         | 20/1000 [00:03<02:44,  5.97it/s]  2%|▏         | 21/1000 [00:03<02:43,  5.97it/s]  2%|▏         | 22/1000 [00:03<02:43,  5.97it/s]  2%|▏         | 23/1000 [00:03<02:43,  5.99it/s]  2%|▏         | 24/1000 [00:04<02:41,  6.06it/s]  2%|▎         | 25/1000 [00:04<02:42,  5.99it/s]  3%|▎         | 26/1000 [00:04<02:39,  6.10it/s]  3%|▎         | 27/1000 [00:04<02:38,  6.14it/s]  3%|▎         | 28/1000 [00:04<02:41,  6.01it/s]  3%|▎         | 29/1000 [00:04<02:41,  6.02it/s]  3%|▎         | 30/1000 [00:05<02:40,  6.03it/s]  3%|▎         | 31/1000 [00:05<02:44,  5.91it/s]  3%|▎         | 32/1000 [00:05<02:40,  6.04it/s]  3%|▎         | 33/1000 [00:05<02:41,  5.97it/s]  3%|▎         | 34/1000 [00:05<02:44,  5.88it/s]  4%|▎         | 35/1000 [00:05<02:44,  5.87it/s]  4%|▎         | 36/1000 [00:06<02:45,  5.84it/s]  4%|▎         | 37/1000 [00:06<02:41,  5.98it/s]  4%|▍         | 38/1000 [00:06<02:39,  6.02it/s]  4%|▍         | 39/1000 [00:06<02:37,  6.12it/s]  4%|▍         | 40/1000 [00:06<02:39,  6.01it/s]  4%|▍         | 41/1000 [00:06<02:37,  6.09it/s]  4%|▍         | 42/1000 [00:07<02:34,  6.20it/s]  4%|▍         | 43/1000 [00:07<02:33,  6.22it/s]  4%|▍         | 44/1000 [00:07<02:31,  6.29it/s]  4%|▍         | 45/1000 [00:07<02:31,  6.31it/s]  5%|▍         | 46/1000 [00:07<02:32,  6.26it/s]  5%|▍         | 47/1000 [00:07<02:32,  6.25it/s]  5%|▍         | 48/1000 [00:08<02:37,  6.04it/s]  5%|▍         | 49/1000 [00:08<02:47,  5.67it/s]  5%|▌         | 50/1000 [00:08<02:52,  5.51it/s]  5%|▌         | 51/1000 [00:08<02:58,  5.32it/s]  5%|▌         | 52/1000 [00:08<02:50,  5.56it/s]  5%|▌         | 53/1000 [00:08<02:45,  5.74it/s]  5%|▌         | 54/1000 [00:09<02:42,  5.82it/s]  6%|▌         | 55/1000 [00:09<02:39,  5.92it/s]  6%|▌         | 56/1000 [00:09<02:38,  5.95it/s]  6%|▌         | 57/1000 [00:09<02:35,  6.08it/s]  6%|▌         | 58/1000 [00:09<02:31,  6.22it/s]  6%|▌         | 59/1000 [00:09<02:31,  6.23it/s]  6%|▌         | 60/1000 [00:10<02:29,  6.27it/s]  6%|▌         | 61/1000 [00:10<02:32,  6.16it/s]  6%|▌         | 62/1000 [00:10<02:31,  6.19it/s]  6%|▋         | 63/1000 [00:10<02:33,  6.09it/s]  6%|▋         | 64/1000 [00:10<02:31,  6.17it/s]  6%|▋         | 65/1000 [00:10<02:30,  6.20it/s]  7%|▋         | 66/1000 [00:11<02:31,  6.18it/s]  7%|▋         | 67/1000 [00:11<02:29,  6.22it/s]  7%|▋         | 68/1000 [00:11<02:31,  6.16it/s]  7%|▋         | 69/1000 [00:11<02:32,  6.12it/s]  7%|▋         | 70/1000 [00:11<02:31,  6.15it/s]  7%|▋         | 71/1000 [00:11<02:38,  5.87it/s]  7%|▋         | 72/1000 [00:12<02:33,  6.04it/s]  7%|▋         | 73/1000 [00:12<02:32,  6.08it/s]  7%|▋         | 74/1000 [00:12<02:30,  6.13it/s]  8%|▊         | 75/1000 [00:12<02:30,  6.16it/s]  8%|▊         | 76/1000 [00:12<02:32,  6.06it/s]  8%|▊         | 77/1000 [00:12<02:31,  6.10it/s]  8%|▊         | 78/1000 [00:13<02:30,  6.14it/s]  8%|▊         | 79/1000 [00:13<02:28,  6.21it/s]  8%|▊         | 80/1000 [00:13<02:26,  6.28it/s]  8%|▊         | 81/1000 [00:13<02:34,  5.94it/s]  8%|▊         | 82/1000 [00:13<02:38,  5.79it/s]  8%|▊         | 83/1000 [00:13<02:41,  5.67it/s]  8%|▊         | 84/1000 [00:14<02:38,  5.77it/s]  8%|▊         | 85/1000 [00:14<02:45,  5.53it/s]  9%|▊         | 86/1000 [00:14<02:42,  5.64it/s]  9%|▊         | 87/1000 [00:14<02:43,  5.60it/s]  9%|▉         | 88/1000 [00:14<02:42,  5.63it/s]  9%|▉         | 89/1000 [00:14<02:44,  5.54it/s]  9%|▉         | 90/1000 [00:15<02:43,  5.57it/s]  9%|▉         | 91/1000 [00:15<02:55,  5.18it/s]  9%|▉         | 92/1000 [00:15<02:50,  5.32it/s]  9%|▉         | 93/1000 [00:15<02:44,  5.51it/s]  9%|▉         | 94/1000 [00:15<02:39,  5.70it/s] 10%|▉         | 95/1000 [00:16<02:36,  5.80it/s] 10%|▉         | 96/1000 [00:16<02:34,  5.85it/s] 10%|▉         | 97/1000 [00:16<02:34,  5.84it/s] 10%|▉         | 98/1000 [00:16<02:59,  5.02it/s] 10%|▉         | 99/1000 [00:16<02:57,  5.08it/s] 10%|█         | 100/1000 [00:17<02:49,  5.32it/s] 10%|█         | 101/1000 [00:17<02:45,  5.43it/s] 10%|█         | 102/1000 [00:17<02:39,  5.64it/s] 10%|█         | 103/1000 [00:17<02:34,  5.79it/s] 10%|█         | 104/1000 [00:17<02:32,  5.88it/s] 10%|█         | 105/1000 [00:17<02:29,  5.97it/s] 11%|█         | 106/1000 [00:17<02:27,  6.04it/s] 11%|█         | 107/1000 [00:18<02:26,  6.09it/s] 11%|█         | 108/1000 [00:18<02:28,  6.00it/s] 11%|█         | 109/1000 [00:18<02:27,  6.05it/s] 11%|█         | 110/1000 [00:18<02:25,  6.12it/s] 11%|█         | 111/1000 [00:18<02:23,  6.19it/s] 11%|█         | 112/1000 [00:18<02:21,  6.29it/s] 11%|█▏        | 113/1000 [00:19<02:21,  6.25it/s] 11%|█▏        | 114/1000 [00:19<02:21,  6.27it/s] 12%|█▏        | 115/1000 [00:19<02:20,  6.29it/s] 12%|█▏        | 116/1000 [00:19<02:20,  6.28it/s] 12%|█▏        | 117/1000 [00:19<02:20,  6.29it/s] 12%|█▏        | 118/1000 [00:19<02:23,  6.13it/s] 12%|█▏        | 119/1000 [00:20<02:21,  6.22it/s] 12%|█▏        | 120/1000 [00:20<02:23,  6.13it/s] 12%|█▏        | 121/1000 [00:20<02:23,  6.12it/s] 12%|█▏        | 122/1000 [00:20<02:22,  6.16it/s] 12%|█▏        | 123/1000 [00:20<02:27,  5.95it/s] 12%|█▏        | 124/1000 [00:20<02:27,  5.94it/s] 12%|█▎        | 125/1000 [00:21<02:24,  6.06it/s] 13%|█▎        | 126/1000 [00:21<02:23,  6.09it/s] 13%|█▎        | 127/1000 [00:21<02:21,  6.15it/s] 13%|█▎        | 128/1000 [00:21<02:19,  6.23it/s] 13%|█▎        | 129/1000 [00:21<02:18,  6.29it/s] 13%|█▎        | 130/1000 [00:21<02:18,  6.27it/s] 13%|█▎        | 131/1000 [00:22<02:19,  6.24it/s] 13%|█▎        | 132/1000 [00:22<02:19,  6.20it/s] 13%|█▎        | 133/1000 [00:22<02:22,  6.09it/s] 13%|█▎        | 134/1000 [00:22<02:32,  5.69it/s] 14%|█▎        | 135/1000 [00:22<02:34,  5.59it/s] 14%|█▎        | 136/1000 [00:22<02:40,  5.40it/s] 14%|█▎        | 137/1000 [00:23<02:36,  5.53it/s] 14%|█▍        | 138/1000 [00:23<02:30,  5.71it/s] 14%|█▍        | 139/1000 [00:23<02:25,  5.92it/s] 14%|█▍        | 140/1000 [00:23<02:22,  6.02it/s] 14%|█▍        | 141/1000 [00:23<02:21,  6.09it/s] 14%|█▍        | 142/1000 [00:23<02:19,  6.16it/s] 14%|█▍        | 143/1000 [00:24<02:18,  6.17it/s] 14%|█▍        | 144/1000 [00:24<02:17,  6.21it/s] 14%|█▍        | 145/1000 [00:24<02:17,  6.21it/s] 15%|█▍        | 146/1000 [00:24<02:17,  6.20it/s] 15%|█▍        | 147/1000 [00:24<02:17,  6.19it/s] 15%|█▍        | 148/1000 [00:24<02:17,  6.21it/s] 15%|█▍        | 149/1000 [00:25<02:17,  6.18it/s] 15%|█▌        | 150/1000 [00:25<02:17,  6.16it/s] 15%|█▌        | 151/1000 [00:25<02:18,  6.14it/s] 15%|█▌        | 152/1000 [00:25<02:17,  6.18it/s] 15%|█▌        | 153/1000 [00:25<02:16,  6.21it/s] 15%|█▌        | 154/1000 [00:25<02:15,  6.26it/s] 16%|█▌        | 155/1000 [00:26<02:20,  6.00it/s] 16%|█▌        | 156/1000 [00:26<02:19,  6.04it/s] 16%|█▌        | 157/1000 [00:26<02:19,  6.04it/s] 16%|█▌        | 158/1000 [00:26<02:20,  6.00it/s] 16%|█▌        | 159/1000 [00:26<02:26,  5.75it/s] 16%|█▌        | 160/1000 [00:26<02:24,  5.83it/s] 16%|█▌        | 161/1000 [00:27<02:24,  5.83it/s] 16%|█▌        | 162/1000 [00:27<02:22,  5.90it/s] 16%|█▋        | 163/1000 [00:27<02:20,  5.94it/s] 16%|█▋        | 164/1000 [00:27<02:19,  6.00it/s] 16%|█▋        | 165/1000 [00:27<02:16,  6.10it/s] 17%|█▋        | 166/1000 [00:27<02:15,  6.16it/s] 17%|█▋        | 167/1000 [00:28<02:14,  6.22it/s] 17%|█▋        | 168/1000 [00:28<02:14,  6.21it/s] 17%|█▋        | 169/1000 [00:28<02:12,  6.25it/s] 17%|█▋        | 170/1000 [00:28<02:12,  6.28it/s] 17%|█▋        | 171/1000 [00:28<02:14,  6.19it/s] 17%|█▋        | 172/1000 [00:28<02:17,  6.03it/s] 17%|█▋        | 173/1000 [00:29<02:21,  5.84it/s] 17%|█▋        | 174/1000 [00:29<02:20,  5.88it/s] 18%|█▊        | 175/1000 [00:29<02:17,  6.01it/s] 18%|█▊        | 176/1000 [00:29<02:14,  6.15it/s] 18%|█▊        | 177/1000 [00:29<02:13,  6.17it/s] 18%|█▊        | 178/1000 [00:29<02:12,  6.19it/s] 18%|█▊        | 179/1000 [00:30<02:16,  6.03it/s] 18%|█▊        | 180/1000 [00:30<02:17,  5.98it/s] 18%|█▊        | 181/1000 [00:30<02:16,  5.99it/s] 18%|█▊        | 182/1000 [00:30<02:22,  5.73it/s] 18%|█▊        | 183/1000 [00:30<02:20,  5.82it/s] 18%|█▊        | 184/1000 [00:30<02:18,  5.87it/s] 18%|█▊        | 185/1000 [00:31<02:17,  5.92it/s] 19%|█▊        | 186/1000 [00:31<02:24,  5.63it/s] 19%|█▊        | 187/1000 [00:31<02:21,  5.75it/s] 19%|█▉        | 188/1000 [00:31<02:19,  5.82it/s] 19%|█▉        | 189/1000 [00:31<02:17,  5.92it/s] 19%|█▉        | 190/1000 [00:31<02:14,  6.02it/s] 19%|█▉        | 191/1000 [00:32<02:13,  6.04it/s] 19%|█▉        | 192/1000 [00:32<02:12,  6.10it/s] 19%|█▉        | 193/1000 [00:32<02:10,  6.16it/s] 19%|█▉        | 194/1000 [00:32<02:09,  6.22it/s] 20%|█▉        | 195/1000 [00:32<02:07,  6.31it/s] 20%|█▉        | 196/1000 [00:32<02:10,  6.17it/s] 20%|█▉        | 197/1000 [00:33<02:07,  6.28it/s] 20%|█▉        | 198/1000 [00:33<02:07,  6.30it/s] 20%|█▉        | 199/1000 [00:33<02:09,  6.20it/s] 20%|██        | 200/1000 [00:33<02:10,  6.12it/s] 20%|██        | 201/1000 [00:33<02:20,  5.68it/s] 20%|██        | 202/1000 [00:33<02:16,  5.86it/s] 20%|██        | 203/1000 [00:34<02:13,  5.99it/s] 20%|██        | 204/1000 [00:34<02:11,  6.05it/s] 20%|██        | 205/1000 [00:34<02:09,  6.12it/s] 21%|██        | 206/1000 [00:34<02:08,  6.16it/s] 21%|██        | 207/1000 [00:34<02:07,  6.23it/s] 21%|██        | 208/1000 [00:34<02:11,  6.02it/s] 21%|██        | 209/1000 [00:35<02:11,  5.99it/s] 21%|██        | 210/1000 [00:35<02:10,  6.06it/s] 21%|██        | 211/1000 [00:35<02:11,  6.00it/s] 21%|██        | 212/1000 [00:35<02:07,  6.18it/s] 21%|██▏       | 213/1000 [00:35<02:05,  6.27it/s] 21%|██▏       | 214/1000 [00:35<02:04,  6.29it/s] 22%|██▏       | 215/1000 [00:35<02:05,  6.27it/s] 22%|██▏       | 216/1000 [00:36<02:04,  6.27it/s] 22%|██▏       | 217/1000 [00:36<02:07,  6.16it/s] 22%|██▏       | 218/1000 [00:36<02:07,  6.16it/s] 22%|██▏       | 219/1000 [00:36<02:06,  6.19it/s] 22%|██▏       | 220/1000 [00:36<02:05,  6.23it/s] 22%|██▏       | 221/1000 [00:36<02:04,  6.26it/s] 22%|██▏       | 222/1000 [00:37<02:02,  6.33it/s] 22%|██▏       | 223/1000 [00:37<02:02,  6.37it/s] 22%|██▏       | 224/1000 [00:37<02:01,  6.36it/s] 22%|██▎       | 225/1000 [00:37<02:01,  6.36it/s] 23%|██▎       | 226/1000 [00:37<02:01,  6.38it/s] 23%|██▎       | 227/1000 [00:37<02:01,  6.35it/s] 23%|██▎       | 228/1000 [00:38<02:01,  6.33it/s] 23%|██▎       | 229/1000 [00:38<02:03,  6.23it/s] 23%|██▎       | 230/1000 [00:38<02:04,  6.17it/s] 23%|██▎       | 231/1000 [00:38<02:04,  6.15it/s] 23%|██▎       | 232/1000 [00:38<02:06,  6.06it/s] 23%|██▎       | 233/1000 [00:38<02:05,  6.11it/s] 23%|██▎       | 234/1000 [00:39<02:07,  6.02it/s] 24%|██▎       | 235/1000 [00:39<02:09,  5.90it/s] 24%|██▎       | 236/1000 [00:39<02:10,  5.86it/s] 24%|██▎       | 237/1000 [00:39<02:08,  5.94it/s] 24%|██▍       | 238/1000 [00:39<02:10,  5.86it/s] 24%|██▍       | 239/1000 [00:39<02:08,  5.90it/s]

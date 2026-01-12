@@ -6,7 +6,7 @@ pandas==2.2.2
 python-jose==3.3.0
 supabase==2.4.0
 httpx==0.25.2
-# Align gotrue with httpx<0.26 to satisfy supabase==2.4.0
+# ...
 gotrue==2.8.1
 python-dotenv==1.0.1
 reportlab==4.2.5
@@ -18,4 +18,7 @@ torch==2.2.2
 torchvision==0.17.2
 torchaudio==2.2.2
 opacus==1.5.4
-synthcity
+synthcity>=0.2.12
+
+scipy<1.13
+ipython
