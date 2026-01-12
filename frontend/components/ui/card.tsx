@@ -21,3 +21,7 @@ export function CardContent({ className = "", ...props }: React.HTMLAttributes<H
 export function CardDescription({ className = "", ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
   return <p className={`text-sm text-muted-foreground ${className}`} {...props} />;
 }
+
+export function CardFooter({ className = "", ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return <div className={`mt-3 flex items-center ${className}`} {...props} />;
+}
