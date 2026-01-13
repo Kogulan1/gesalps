@@ -749,18 +749,37 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
       onSuccess();
       // Modal stays open to show run progress
     } catch (error: any) {
-      console.error('Error starting run:', error);
+      console.error('[RunExecutionModal] Error starting run:', error);
+      console.error('[RunExecutionModal] Error details:', {
+        message: error?.message,
+        stack: error?.stack,
+        name: error?.name,
+        datasetId: dataset?.id,
+        mode: useAllGreen ? 'allgreen' : (useAgentic ? 'agent' : 'custom'),
+        useAllGreen,
+        useAgentic
+      });
+      
       // Revert UI to config if starting failed
       setRunState('config');
       setRunId(null);
-      const { getUserFriendlyErrorMessage } = await import('@/lib/errorMessages');
-      const friendlyMessage = getUserFriendlyErrorMessage(error);
-      // Use toast instead of alert for better UX
-      toast({
-        title: "Failed to start run",
-        description: friendlyMessage,
-        variant: "destructive"
-      });
+      
+      try {
+        const { getUserFriendlyErrorMessage } = await import('@/lib/errorMessages');
+        const friendlyMessage = getUserFriendlyErrorMessage(error);
+        toast({
+          title: "Failed to start run",
+          description: friendlyMessage,
+          variant: "destructive"
+        });
+      } catch (importError) {
+        // Fallback if errorMessages module fails
+        toast({
+          title: "Failed to start run",
+          description: error?.message || String(error),
+          variant: "destructive"
+        });
+      }
     } finally {
       setLoading(false);
     }
