@@ -20,8 +20,10 @@ export async function authedFetch(path: string, init: RequestInit = {}) {
   const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || "";
   
   if (!base) {
+    const errorMsg = 'Backend API URL not configured. Please set NEXT_PUBLIC_BACKEND_API_BASE environment variable.';
     console.error('[API] NEXT_PUBLIC_BACKEND_API_BASE is not set! Please configure it in Vercel environment variables.');
-    throw new Error('Backend API URL not configured. Please set NEXT_PUBLIC_BACKEND_API_BASE environment variable.');
+    // Return a rejected promise instead of throwing to prevent client-side crashes
+    return Promise.reject(new Error(errorMsg));
   }
   
   const headers = new Headers(init.headers);
