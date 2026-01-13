@@ -37,8 +37,8 @@ from supabase import create_client, Client
 
 # Load environment variables from .env file
 # Try to load from the current directory and parent directory (for Docker)
-load_dotenv()
-load_dotenv(dotenv_path="../.env")  # Docker looks in parent dir
+load_dotenv(override=True)
+load_dotenv(dotenv_path="../.env", override=True)  # Docker looks in parent dir
 
 # ---------- Env & Supabase ----------
 SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL")
@@ -474,6 +474,33 @@ def list_datasets(user: Dict[str, Any] = Depends(require_user)):
         })
     
     return datasets_with_metadata
+
+@app.get("/v1/datasets/{dataset_id}")
+def get_dataset(dataset_id: str, user: Dict[str, Any] = Depends(require_user)):
+    """Get detailed information for a specific dataset."""
+    try:
+        res = supabase.table("datasets").select("*").eq("id", dataset_id).single().execute()
+        if not res.data:
+            raise HTTPException(status_code=404, detail="Dataset not found")
+        
+        # Check project ownership
+        proj = supabase.table("projects").select("owner_id").eq("id", res.data["project_id"]).single().execute()
+        if not proj.data or proj.data.get("owner_id") != user["id"]:
+            # For development
+            if user["id"] != "00000000-0000-0000-0000-000000000001":
+                raise HTTPException(status_code=403, detail="Forbidden")
+
+        # Add extra fields for frontend parity
+        dataset = res.data
+        dataset["file_name"] = dataset["file_url"].split("/")[-1] if dataset.get("file_url") else "unknown.csv"
+        dataset["rows"] = dataset.get("rows_count") or 0
+        dataset["columns"] = dataset.get("cols_count") or 0
+        dataset["status"] = "Ready"
+        
+        return dataset
+    except Exception as e:
+        if isinstance(e, HTTPException): raise e
+        raise HTTPException(status_code=500, detail=str(e))
 @app.post("/v1/datasets/upload")
 async def upload_dataset(project_id: str = Form(...), file: UploadFile = File(...), user: Dict[str, Any] = Depends(require_user)):
     ensure_bucket("datasets")
@@ -753,7 +780,7 @@ def list_runs(user: Dict[str, Any] = Depends(require_user)):
 
 class StartRun(BaseModel):
     dataset_id: str
-    method: str
+    method: Optional[str] = None
     mode: str
     config_json: Dict[str, Any] | None = None
     name: str | None = None
