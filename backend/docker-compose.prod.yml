@@ -105,7 +105,7 @@ services:
       dockerfile: synth_worker/Dockerfile
     image: gesalps-worker:latest
     container_name: gesalps_allgreen_worker
-    command: ["python", "-u", "synth_worker/allgreen_worker.py"]
+    command: ["python", "-u", "allgreen_worker.py"]
     env_file: .env
     environment:
       - DP_BACKEND=custom
