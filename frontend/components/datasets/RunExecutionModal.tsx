@@ -1559,8 +1559,9 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
                 onAutoRetryChange={setAutoRetry}
                 clinicalPreprocessing={clinicalPreprocessing}
                 onClinicalPreprocessingChange={setClinicalPreprocessing}
+                useAllGreen={useAllGreen}
+                onUseAllGreenChange={setUseAllGreen}
               />
-                </div>
             </div>
         </DialogContent>
       </Dialog>
