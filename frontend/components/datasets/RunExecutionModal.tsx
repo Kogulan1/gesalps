@@ -57,6 +57,7 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
   const [method, setMethod] = useState("ddpm");
   const [privacyLevel, setPrivacyLevel] = useState("Medium");
   const [useAgentic, setUseAgentic] = useState(true); // Default to agent mode (GreenGuard)
+  const [useAllGreen, setUseAllGreen] = useState(false); // All Green Service mode
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [showNameConfirm, setShowNameConfirm] = useState(false);
@@ -546,7 +547,8 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
       // Use method if explicitly set in advanced settings, otherwise let agent decide (null)
       const methodToUse = advancedModel !== 'auto' ? advancedModel : (method && method !== 'ddpm' ? method : null);
       const backendMethod = methodToUse ? (methodMapping[methodToUse] || methodToUse) : null;
-      const mode = useAgentic ? 'agent' : 'custom';
+      // All Green mode takes precedence
+      const mode = useAllGreen ? 'allgreen' : (useAgentic ? 'agent' : 'custom');
 
       const requestBody: any = {
         dataset_id: dataset.id,

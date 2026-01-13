@@ -28,6 +28,8 @@ interface AdvancedSettingsAccordionProps {
   onAutoRetryChange?: (enabled: boolean) => void;
   clinicalPreprocessing?: boolean;
   onClinicalPreprocessingChange?: (enabled: boolean) => void;
+  useAllGreen?: boolean;
+  onUseAllGreenChange?: (enabled: boolean) => void;
 }
 
 export function AdvancedSettingsAccordion({
@@ -39,16 +41,20 @@ export function AdvancedSettingsAccordion({
   onAutoRetryChange,
   clinicalPreprocessing: controlledClinicalPreprocessing,
   onClinicalPreprocessingChange,
+  useAllGreen: controlledUseAllGreen,
+  onUseAllGreenChange,
 }: AdvancedSettingsAccordionProps = {}) {
   const [internalModel, setInternalModel] = useState("auto");
   const [internalMaxIterations, setInternalMaxIterations] = useState(2000);
   const [internalAutoRetry, setInternalAutoRetry] = useState(true);
   const [internalClinicalPreprocessing, setInternalClinicalPreprocessing] = useState(true);
+  const [internalUseAllGreen, setInternalUseAllGreen] = useState(false);
 
   const model = controlledModel ?? internalModel;
   const maxIterations = controlledMaxIterations ?? internalMaxIterations;
   const autoRetry = controlledAutoRetry ?? internalAutoRetry;
   const clinicalPreprocessing = controlledClinicalPreprocessing ?? internalClinicalPreprocessing;
+  const useAllGreen = controlledUseAllGreen ?? internalUseAllGreen;
 
   const handleModelChange = (value: string) => {
     if (onModelChange) {
@@ -82,6 +88,14 @@ export function AdvancedSettingsAccordion({
       onClinicalPreprocessingChange(checked);
     } else {
       setInternalClinicalPreprocessing(checked);
+    }
+  };
+
+  const handleUseAllGreenChange = (checked: boolean) => {
+    if (onUseAllGreenChange) {
+      onUseAllGreenChange(checked);
+    } else {
+      setInternalUseAllGreen(checked);
     }
   };
 
@@ -169,6 +183,24 @@ export function AdvancedSettingsAccordion({
               <Switch 
                 checked={clinicalPreprocessing} 
                 onCheckedChange={handleClinicalPreprocessingChange}
+                className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-300 [&>span]:bg-white [&>span]:shadow-md"
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
+              <div className="space-y-0.5">
+                <div className="flex items-center space-x-2">
+                  <Sparkles className="h-3.5 w-3.5 text-green-600" />
+                  <Label className="text-sm font-semibold text-green-900 dark:text-green-100">All Green Service</Label>
+                  <span className="text-[10px] bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 px-1.5 py-0.5 rounded">PROVEN</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Use dedicated service with proven configuration (2000 epochs, guaranteed all green metrics).
+                </p>
+              </div>
+              <Switch 
+                checked={useAllGreen} 
+                onCheckedChange={handleUseAllGreenChange}
                 className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-300 [&>span]:bg-white [&>span]:shadow-md"
               />
             </div>
