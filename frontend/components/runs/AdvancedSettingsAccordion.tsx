@@ -149,7 +149,11 @@ export function AdvancedSettingsAccordion({
                   Allow engine to restart with adjusted params if privacy/utility gates fail.
                 </p>
               </div>
-              <Switch checked={autoRetry} onCheckedChange={handleAutoRetryChange} />
+              <Switch 
+                checked={autoRetry} 
+                onCheckedChange={handleAutoRetryChange}
+                className="data-[state=checked]:bg-emerald-600"
+              />
             </div>
 
             <div className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
@@ -162,7 +166,11 @@ export function AdvancedSettingsAccordion({
                   Use domain-specific encoding for clinical datasets (medical codes, ICD-10).
                 </p>
               </div>
-              <Switch checked={clinicalPreprocessing} onCheckedChange={handleClinicalPreprocessingChange} />
+              <Switch 
+                checked={clinicalPreprocessing} 
+                onCheckedChange={handleClinicalPreprocessingChange}
+                className="data-[state=checked]:bg-emerald-600"
+              />
             </div>
           </div>
         </AccordionContent>
