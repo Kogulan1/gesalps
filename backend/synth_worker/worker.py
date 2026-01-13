@@ -2226,22 +2226,25 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
                     _sanitize_hparams(current_method, current_hparams),
                     dp_opts,
                 )
-                # Clinical Preprocessing for TVAE (v18) - Legacy Path
+                # Clinical Preprocessing for TVAE and TabDDPM (v18) - Legacy Path
                 cp_legacy = None
                 real_train_legacy = real_clean
-                if current_method == "tvae" and CLINICAL_PREPROCESSOR_AVAILABLE:
+                # Use clinical preprocessor for TVAE and TabDDPM (state-of-the-art method)
+                if current_method in ("tvae", "ddpm", "tabddpm") and CLINICAL_PREPROCESSOR_AVAILABLE:
                     try:
-                        print("[worker][clinical-preprocessor] Initializing ClinicalPreprocessor for TVAE (Legacy Path)...")
+                        method_name = "TabDDPM" if current_method in ("ddpm", "tabddpm") else "TVAE"
+                        print(f"[worker][clinical-preprocessor] Initializing ClinicalPreprocessor for {method_name} (v18)...")
                         cp_legacy = ClinicalPreprocessor()
                         cp_legacy.fit(real_clean, metadata.to_dict())
                         real_train_legacy = cp_legacy.transform(real_clean)
-                        print("[worker][clinical-preprocessor] Data transformed for TVAE training (Legacy Path)")
+                        print(f"[worker][clinical-preprocessor] Data transformed for {method_name} training (v18)")
                     except Exception as e:
-                        print(f"[worker][clinical-preprocessor] Preprocessing failed (Legacy Path): {e}. Falling back to default.")
+                        print(f"[worker][clinical-preprocessor] Preprocessing failed: {e}. Falling back to default.")
                         real_train_legacy = real_clean
                         cp_legacy = None
 
                 # Use DataLoader if SynthCity backend and loader available, otherwise use DataFrame
+                # For TabDDPM with clinical preprocessor, we need to use the transformed DataFrame
                 if isinstance(synth_model, SynthcitySynthesizer) and using_synthcity_loader and synthcity_loader is not None and cp_legacy is None:
                     synth_model.fit(synthcity_loader)
                 else:
@@ -2258,13 +2261,14 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
                 synth = synth_model.sample(num_rows=n)
                 
                 # Clinical Inverse Transform (v18) - Legacy Path
-                if current_method == "tvae" and cp_legacy is not None:
+                if current_method in ("tvae", "ddpm", "tabddpm") and cp_legacy is not None:
                     try:
-                        print("[worker][clinical-preprocessor] Applying inverse transform for TVAE (Legacy Path)...")
+                        method_name = "TabDDPM" if current_method in ("ddpm", "tabddpm") else "TVAE"
+                        print(f"[worker][clinical-preprocessor] Applying inverse transform for {method_name} (v18)...")
                         synth = cp_legacy.inverse_transform(synth)
-                        print("[worker][clinical-preprocessor] Data restored to original space (Legacy Path)")
+                        print(f"[worker][clinical-preprocessor] Data restored to original space (v18)")
                     except Exception as e:
-                        print(f"[worker][clinical-preprocessor] Inverse transform failed (Legacy Path): {e}")
+                        print(f"[worker][clinical-preprocessor] Inverse transform failed: {e}")
                 
                 # Validate synthetic data was generated
                 if synth is None or (isinstance(synth, pd.DataFrame) and len(synth) == 0):
@@ -2872,17 +2876,19 @@ def _attempt_train(plan_item: Dict[str, Any], real_df: pd.DataFrame, metadata: S
     use_loader_for_train = isinstance(model, SynthcitySynthesizer) and train_loader is not None
     
     # Train with timeout protection
-    # Clinical Preprocessing for TVAE (v18)
+    # Clinical Preprocessing for TVAE and TabDDPM (v18)
     cp = None
     real_train = real_df
-    if method == "tvae" and CLINICAL_PREPROCESSOR_AVAILABLE:
+    # Use clinical preprocessor for TVAE and TabDDPM (state-of-the-art method)
+    if method in ("tvae", "ddpm", "tabddpm") and CLINICAL_PREPROCESSOR_AVAILABLE:
         try:
-            print("[worker][clinical-preprocessor] Initializing ClinicalPreprocessor for TVAE (v18)...")
+            method_name = "TabDDPM" if method in ("ddpm", "tabddpm") else "TVAE"
+            print(f"[worker][clinical-preprocessor] Initializing ClinicalPreprocessor for {method_name} (v18)...")
             cp = ClinicalPreprocessor()
             # ClinicalPreprocessor.fit requires dict-style metadata
             cp.fit(real_df, metadata.to_dict())
             real_train = cp.transform(real_df)
-            print("[worker][clinical-preprocessor] Data transformed for TVAE training")
+            print(f"[worker][clinical-preprocessor] Data transformed for {method_name} training (v18)")
         except Exception as e:
             print(f"[worker][clinical-preprocessor] Preprocessing failed: {e}. Falling back to default.")
             real_train = real_df
@@ -2908,11 +2914,12 @@ def _attempt_train(plan_item: Dict[str, Any], real_df: pd.DataFrame, metadata: S
     synth = model.sample(num_rows=n)
     
     # Clinical Inverse Transform (v18)
-    if method == "tvae" and cp is not None:
+    if method in ("tvae", "ddpm", "tabddpm") and cp is not None:
         try:
-            print("[worker][clinical-preprocessor] Applying inverse transform for TVAE...")
+            method_name = "TabDDPM" if method in ("ddpm", "tabddpm") else "TVAE"
+            print(f"[worker][clinical-preprocessor] Applying inverse transform for {method_name} (v18)...")
             synth = cp.inverse_transform(synth)
-            print("[worker][clinical-preprocessor] Data restored to original space")
+            print(f"[worker][clinical-preprocessor] Data restored to original space (v18)")
         except Exception as e:
             print(f"[worker][clinical-preprocessor] Inverse transform failed: {e}")
             # Continue with untransformed synth if inverse fails
