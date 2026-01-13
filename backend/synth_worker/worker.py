@@ -2144,6 +2144,7 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
     prev_metrics: Optional[Dict[str, Any]] = None
     best_score = 1e9
     best_bundle: Dict[str, Any] = {}
+    cp_legacy = None # Clinical Preprocessor for legacy loop (v18)
     while True:
         # Build model according to current plan
         try:
@@ -2225,11 +2226,27 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
                     _sanitize_hparams(current_method, current_hparams),
                     dp_opts,
                 )
-                    # Use DataLoader if SynthCity backend and loader available, otherwise use DataFrame
-                if isinstance(synth_model, SynthcitySynthesizer) and using_synthcity_loader and synthcity_loader is not None:
+                # Clinical Preprocessing for TVAE (v18) - Legacy Path
+                cp_legacy = None
+                real_train_legacy = real_clean
+                if current_method == "tvae" and CLINICAL_PREPROCESSOR_AVAILABLE:
+                    try:
+                        print("[worker][clinical-preprocessor] Initializing ClinicalPreprocessor for TVAE (Legacy Path)...")
+                        cp_legacy = ClinicalPreprocessor()
+                        cp_legacy.fit(real_clean, metadata.to_dict())
+                        real_train_legacy = cp_legacy.transform(real_clean)
+                        print("[worker][clinical-preprocessor] Data transformed for TVAE training (Legacy Path)")
+                    except Exception as e:
+                        print(f"[worker][clinical-preprocessor] Preprocessing failed (Legacy Path): {e}. Falling back to default.")
+                        real_train_legacy = real_clean
+                        cp_legacy = None
+
+                # Use DataLoader if SynthCity backend and loader available, otherwise use DataFrame
+                if isinstance(synth_model, SynthcitySynthesizer) and using_synthcity_loader and synthcity_loader is not None and cp_legacy is None:
                     synth_model.fit(synthcity_loader)
                 else:
-                    synth_model.fit(real_clean)
+                    # If ClinicalPreprocessor is active, we MUST use the transformed DataFrame
+                    synth_model.fit(real_train_legacy)
                 
                 # Validate n before sampling
                 if n <= 0:
@@ -2237,8 +2254,17 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
                         f"Invalid num_rows: {n}. Check sample_multiplier={sample_multiplier}, "
                         f"max_synth_rows={max_synth_rows}, dataset_size={len(real_clean)}"
                     )
-                
+
                 synth = synth_model.sample(num_rows=n)
+                
+                # Clinical Inverse Transform (v18) - Legacy Path
+                if current_method == "tvae" and cp_legacy is not None:
+                    try:
+                        print("[worker][clinical-preprocessor] Applying inverse transform for TVAE (Legacy Path)...")
+                        synth = cp_legacy.inverse_transform(synth)
+                        print("[worker][clinical-preprocessor] Data restored to original space (Legacy Path)")
+                    except Exception as e:
+                        print(f"[worker][clinical-preprocessor] Inverse transform failed (Legacy Path): {e}")
                 
                 # Validate synthetic data was generated
                 if synth is None or (isinstance(synth, pd.DataFrame) and len(synth) == 0):
