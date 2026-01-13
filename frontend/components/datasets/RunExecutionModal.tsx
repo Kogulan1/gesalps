@@ -574,17 +574,32 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
         requestBody.method = backendMethod;
       }
       
-      const response = await fetch(`${base}/v1/runs`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestBody)
-      });
+      let response: Response;
+      try {
+        response = await fetch(`${base}/v1/runs`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(requestBody)
+        });
+      } catch (fetchError: any) {
+        // Handle network errors (CORS, connection refused, etc.)
+        if (fetchError instanceof TypeError && fetchError.message.includes('fetch')) {
+          throw new Error('Unable to connect to the server. Please check your internet connection and try again.');
+        }
+        throw fetchError;
+      }
 
       if (!response.ok) {
-        const errorData = await response.json();
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch {
+          // If response is not JSON, use status text
+          throw new Error(`Failed to start run: ${response.status} ${response.statusText}`);
+        }
         throw new Error(errorData.detail || `Failed to start run: ${response.status}`);
       }
 
@@ -671,8 +686,12 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
       setRunId(null);
       const { getUserFriendlyErrorMessage } = await import('@/lib/errorMessages');
       const friendlyMessage = getUserFriendlyErrorMessage(error);
-      // Use alert for now - toast will be added when useToast is available
-      alert(`Failed to start run: ${friendlyMessage}`);
+      // Use toast instead of alert for better UX
+      toast({
+        title: "Failed to start run",
+        description: friendlyMessage,
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
