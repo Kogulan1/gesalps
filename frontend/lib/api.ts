@@ -136,6 +136,28 @@ export async function getRunSteps(runId: string) {
   return await res.json();
 }
 
+export async function getRunLogs(runId: string, tail: number = 500) {
+  const res = await authedFetch(`/v1/runs/${runId}/logs?tail=${tail}`);
+  if (!res.ok) {
+    // Return empty progress if logs unavailable
+    return {
+      run_id: runId,
+      raw_logs: [],
+      progress: {
+        status: "unknown",
+        message: "Logs unavailable",
+        current_step: null,
+        progress_messages: [],
+        training_info: {},
+        errors: [],
+        warnings: []
+      },
+      log_count: 0
+    };
+  }
+  return await res.json();
+}
+
 // Generate or fetch a signed URL for the formatted PDF report
 export async function ensureReportPDF(runId: string) {
   const res = await authedFetch(`/v1/runs/${runId}/report/pdf`, { method: 'POST' });

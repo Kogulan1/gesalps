@@ -932,6 +932,188 @@ def run_steps(run_id: str, user: Dict[str, Any] = Depends(require_user)):
         # PGRST205: table not found in schema cache
         return []
 
+@app.get("/v1/runs/{run_id}/logs")
+def run_logs(run_id: str, user: Dict[str, Any] = Depends(require_user), tail: int = 500):
+    """Get Docker logs for a specific run with parsed progress information."""
+    # Verify ownership
+    r = supabase.table("runs").select("id,project_id,status,started_at").eq("id", run_id).single().execute()
+    if not r.data:
+        raise HTTPException(status_code=404, detail="Run not found")
+    proj = supabase.table("projects").select("owner_id").eq("id", r.data["project_id"]).single().execute()
+    if not proj.data or proj.data.get("owner_id") != user["id"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    
+    # Fetch Docker logs via SSH to VPS
+    import subprocess
+    import re
+    
+    vps_host = os.getenv("VPS_HOST", "194.34.232.76")
+    vps_user = os.getenv("VPS_USER", "root")
+    docker_compose_path = os.getenv("DOCKER_COMPOSE_PATH", "/opt/gesalps/backend")
+    compose_file = os.getenv("DOCKER_COMPOSE_FILE", "docker-compose.prod.yml")
+    service_name = os.getenv("WORKER_SERVICE_NAME", "synth-worker")
+    
+    try:
+        # SSH command to fetch logs
+        ssh_cmd = [
+            "ssh", "-o", "StrictHostKeyChecking=no", "-o", "ConnectTimeout=5",
+            f"{vps_user}@{vps_host}",
+            f"cd {docker_compose_path} && docker compose -f {compose_file} logs --tail {tail} {service_name}"
+        ]
+        
+        result = subprocess.run(
+            ssh_cmd,
+            capture_output=True,
+            text=True,
+            timeout=15
+        )
+        
+        if result.returncode != 0:
+            # Fallback: return status from database
+            return {
+                "run_id": run_id,
+                "raw_logs": [],
+                "progress": {
+                    "status": r.data.get("status", "unknown"),
+                    "message": f"Could not fetch logs via SSH: {result.stderr[:200]}",
+                    "current_step": None,
+                    "progress_messages": [],
+                    "training_info": {},
+                    "errors": [],
+                    "warnings": []
+                },
+                "log_count": 0
+            }
+        
+        raw_logs = result.stdout
+        
+        # Filter logs for this specific run_id
+        run_logs = []
+        for line in raw_logs.split('\n'):
+            if run_id in line:
+                run_logs.append(line)
+        
+        # Parse logs to extract progress information
+        progress_info = {
+            "status": r.data.get("status", "unknown"),
+            "current_step": None,
+            "progress_messages": [],
+            "training_info": {},
+            "errors": [],
+            "warnings": []
+        }
+        
+        # Extract progress information
+        for line in run_logs:
+            # Training progress
+            if "[worker][TVAE]" in line or "[worker][training]" in line:
+                progress_info["progress_messages"].append({
+                    "timestamp": _extract_timestamp(line),
+                    "message": line,
+                    "type": "training"
+                })
+                if "Starting training" in line:
+                    # Extract epochs, batch_size, rows
+                    epochs_match = re.search(r'epochs=(\d+)', line)
+                    batch_match = re.search(r'batch_size=(\d+)', line)
+                    rows_match = re.search(r'rows=(\d+)', line)
+                    if epochs_match:
+                        progress_info["training_info"]["epochs"] = int(epochs_match.group(1))
+                    if batch_match:
+                        progress_info["training_info"]["batch_size"] = int(batch_match.group(1))
+                    if rows_match:
+                        progress_info["training_info"]["rows"] = int(rows_match.group(1))
+                elif "Training in progress" in line or "Training completed" in line:
+                    elapsed_match = re.search(r'elapsed: ([\d.]+) minutes?', line)
+                    if elapsed_match:
+                        progress_info["training_info"]["elapsed_minutes"] = float(elapsed_match.group(1))
+            
+            # Step information
+            elif "[worker][GreenGuard]" in line or "Starting attempt" in line:
+                progress_info["current_step"] = line
+                progress_info["progress_messages"].append({
+                    "timestamp": _extract_timestamp(line),
+                    "message": line,
+                    "type": "step"
+                })
+            
+            # Clinical preprocessor
+            elif "[worker][clinical-preprocessor]" in line:
+                progress_info["progress_messages"].append({
+                    "timestamp": _extract_timestamp(line),
+                    "message": line,
+                    "type": "preprocessing"
+                })
+            
+            # Errors
+            elif "ERROR" in line or "Error" in line:
+                if "[worker]" in line or run_id in line:  # Only relevant errors
+                    progress_info["errors"].append({
+                        "timestamp": _extract_timestamp(line),
+                        "message": line
+                    })
+            
+            # Warnings
+            elif "WARNING" in line or "Warning" in line:
+                if "[worker]" in line or run_id in line:  # Only relevant warnings
+                    progress_info["warnings"].append({
+                        "timestamp": _extract_timestamp(line),
+                        "message": line
+                    })
+        
+        return {
+            "run_id": run_id,
+            "raw_logs": run_logs[-100:],  # Last 100 lines
+            "progress": progress_info,
+            "log_count": len(run_logs)
+        }
+    
+    except FileNotFoundError:
+        # SSH not available (e.g., in Vercel without SSH access)
+        return {
+            "run_id": run_id,
+            "raw_logs": [],
+            "progress": {
+                "status": r.data.get("status", "unknown"),
+                "message": "SSH/Docker logs not available in this environment",
+                "current_step": None,
+                "progress_messages": [],
+                "training_info": {},
+                "errors": [],
+                "warnings": []
+            },
+            "log_count": 0
+        }
+    except Exception as e:
+        # Return basic status if log fetching fails
+        return {
+            "run_id": run_id,
+            "raw_logs": [],
+            "progress": {
+                "status": r.data.get("status", "unknown"),
+                "message": f"Could not fetch logs: {str(e)[:200]}",
+                "current_step": None,
+                "progress_messages": [],
+                "training_info": {},
+                "errors": [],
+                "warnings": []
+            },
+            "log_count": 0
+        }
+
+def _extract_timestamp(line: str) -> Optional[str]:
+    """Extract timestamp from log line."""
+    import re
+    # Try ISO format: 2026-01-13T11:47:07.551732+0000
+    iso_match = re.search(r'(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[.\d]*[+-]\d{4})', line)
+    if iso_match:
+        return iso_match.group(1)
+    # Try simpler format
+    simple_match = re.search(r'(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})', line)
+    if simple_match:
+        return simple_match.group(1)
+    return None
+
 @app.delete("/v1/runs/{run_id}")
 def delete_run(run_id: str, user: Dict[str, Any] = Depends(require_user)):
     r = supabase.table("runs").select("id,project_id").eq("id", run_id).single().execute()

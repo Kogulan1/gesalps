@@ -27,6 +27,7 @@ import { getUserFriendlyErrorMessage } from "@/lib/errorMessages";
 import { AgentPlanTab } from "./AgentPlanTab";
 import { AgentTimeline } from "./AgentTimeline";
 import { ExecutionLogTab } from "./ExecutionLogTab";
+import { RealTimeLogsTab } from "./RealTimeLogsTab";
 
 interface RunDetailsExpansionProps {
   runId: string;
@@ -375,6 +376,10 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
               <Play className="h-3 w-3" />
               <span>Execution</span>
             </TabsTrigger>
+            <TabsTrigger value="logs" className="flex items-center space-x-1">
+              <Zap className="h-3 w-3" />
+              <span>Live Logs</span>
+            </TabsTrigger>
             <TabsTrigger value="agent-timeline" className="flex items-center space-x-1">
               <TrendingUp className="h-3 w-3" />
               <span>Timeline</span>
@@ -600,6 +605,10 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
               <div className="max-h-[60vh] overflow-y-auto">
                 <ExecutionLogTab steps={steps} />
               </div>
+            </TabsContent>
+
+            <TabsContent value="logs" className="mt-4">
+              <RealTimeLogsTab runId={runId} status={results.status} />
             </TabsContent>
 
             <TabsContent value="agent-timeline" className="mt-4">
