@@ -984,6 +984,23 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
                 })()}
               </div>
             </div>
+
+            {/* Action Buttons */}
+            {runId && (
+              <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                <Button
+                  onClick={() => {
+                    handleClose();
+                    router.push(`/${locale}/runs?runId=${runId}`);
+                  }}
+                  variant="outline"
+                  className="flex items-center space-x-2"
+                >
+                  <Eye className="h-4 w-4" />
+                  <span>View in Runs Page</span>
+                </Button>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
@@ -1200,6 +1217,23 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
                 })()}
               </div>
             </div>
+
+            {/* Action Buttons */}
+            {runId && (
+              <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                <Button
+                  onClick={() => {
+                    handleClose();
+                    router.push(`/${locale}/runs?runId=${runId}`);
+                  }}
+                  variant="outline"
+                  className="flex items-center space-x-2"
+                >
+                  <Eye className="h-4 w-4" />
+                  <span>View in Runs Page</span>
+                </Button>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>

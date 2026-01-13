@@ -550,24 +550,66 @@ export function RunsContent({ initialRunId }: RunsContentProps = {}) {
   // Auto-expand and scroll to run if initialRunId is provided
   useEffect(() => {
     if (initialRunId && runs.length > 0) {
-      // Wait for runs to load, then expand and scroll
-      const timer = setTimeout(() => {
-        setExpandedRunId(initialRunId);
-        const runElement = document.querySelector(`[data-run-id="${initialRunId}"]`);
-        if (runElement) {
-          runElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }, 500);
-      return () => clearTimeout(timer);
+      // Check if the run exists in the current list
+      const runExists = runs.some(r => r.id === initialRunId);
+      if (runExists) {
+        // Wait for runs to load, then expand and scroll
+        const timer = setTimeout(() => {
+          setExpandedRunId(initialRunId);
+          const runElement = document.querySelector(`[data-run-id="${initialRunId}"]`);
+          if (runElement) {
+            runElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 500);
+        return () => clearTimeout(timer);
+      }
     }
   }, [initialRunId, runs]);
 
   // Poll for running/queued runs to get real-time updates
   useEffect(() => {
     const hasActiveRuns = runs.some(r => r.status === 'running' || r.status === 'queued');
-    if (!hasActiveRuns) return;
+    
+    // If we have an initialRunId but the run isn't in the list yet, refresh more frequently
+    const needsRefresh = initialRunId && !runs.some(r => r.id === initialRunId);
+    const pollInterval = needsRefresh ? 1000 : (hasActiveRuns ? 2000 : null);
+    
+    if (!pollInterval) return;
 
-    const pollInterval = setInterval(async () => {
+    const interval = setInterval(async () => {
+      // Check if we still need to refresh (run might have been added)
+      const stillNeedsRefresh = initialRunId && !runs.some(r => r.id === initialRunId);
+      
+      // If we're looking for a specific run that's not in the list, refresh the full list
+      if (stillNeedsRefresh) {
+        // Refresh the full runs list to find the new run
+        const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE || 'http://localhost:8000';
+        if (!base) return;
+
+        try {
+          const supabase = createSupabaseBrowserClient();
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session?.access_token) return;
+
+          const response = await fetch(`${base}/v1/runs`, {
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (response.ok) {
+            const runsData = await response.json();
+            if (Array.isArray(runsData)) {
+              setRuns(runsData as Run[]);
+            }
+          }
+        } catch (err) {
+          console.error('Error refreshing runs list:', err);
+        }
+        return;
+      }
+
       const activeRuns = runs.filter(r => r.status === 'running' || r.status === 'queued');
       if (activeRuns.length === 0) return;
 
@@ -608,10 +650,10 @@ export function RunsContent({ initialRunId }: RunsContentProps = {}) {
       } catch (err) {
         console.error('Error polling runs:', err);
       }
-    }, 2000); // Poll every 2 seconds
+    }, pollInterval);
 
-    return () => clearInterval(pollInterval);
-  }, [runs]);
+    return () => clearInterval(interval);
+  }, [runs, initialRunId]);
 
   // Close expansion only when clicking on another run's view button (not automatic click-outside)
   // This prevents accidental closure and allows users to interact with the expansion freely
