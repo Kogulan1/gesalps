@@ -120,12 +120,37 @@ class TVAESynthesizer(BaseSynthesizer):
             epochs = getattr(self._model, '_epochs', None) or getattr(self._model, 'epochs', None) or 'unknown'
             batch_size = getattr(self._model, '_batch_size', None) or getattr(self._model, 'batch_size', None) or 'unknown'
             print(f"[worker][TVAE] Starting training: epochs={epochs}, batch_size={batch_size}, rows={len(data)}")
+            if epochs != 'unknown':
+                estimated_minutes = max(5, int(int(epochs) / 100))  # Rough estimate: ~1 min per 100 epochs
+                print(f"[worker][TVAE] Estimated training time: {estimated_minutes}-{estimated_minutes + 10} minutes")
         except Exception:
             pass
         
         import time
+        import threading
+        
         training_start = time.time()
-        self._model.fit(data)
+        last_log_time = training_start
+        
+        # Progress logging thread
+        def log_progress():
+            nonlocal last_log_time
+            while True:
+                time.sleep(60)  # Log every 60 seconds
+                elapsed = time.time() - training_start
+                if elapsed > 0:
+                    print(f"[worker][TVAE] Training in progress... elapsed: {elapsed/60:.1f} minutes")
+                    last_log_time = time.time()
+        
+        progress_thread = threading.Thread(target=log_progress, daemon=True)
+        progress_thread.start()
+        
+        try:
+            self._model.fit(data)
+        finally:
+            # Stop progress logging
+            pass
+        
         training_elapsed = time.time() - training_start
         print(f"[worker][TVAE] Training completed in {training_elapsed:.1f}s ({training_elapsed/60:.1f} minutes)")
     
