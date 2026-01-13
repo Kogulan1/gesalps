@@ -329,7 +329,7 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
             setRenderKey(prev => prev + 1);
             
             // Detect new steps and announce them
-            if (newSteps.length > currentCount) {
+            if (newSteps.length > previousStepCountRef.current) {
               const latestStep = newSteps[newSteps.length - 1];
               let announcementText = '';
               
