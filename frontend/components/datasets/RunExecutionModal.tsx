@@ -35,6 +35,7 @@ import {
 import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
 import { ExecutionLogTab } from "@/components/runs/ExecutionLogTab";
 import { AgentPlanTab } from "@/components/runs/AgentPlanTab";
+import { useToast } from "@/components/toast/Toaster";
 
 interface RunExecutionModalProps {
   isOpen: boolean;
