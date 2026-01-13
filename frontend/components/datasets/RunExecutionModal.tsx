@@ -530,10 +530,16 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
   };
 
   const startRun = async (name: string) => {
+    if (loading) {
+      console.warn('Run already starting, ignoring duplicate request');
+      return;
+    }
+    
     setLoading(true);
     // Optimistically switch to started state so config UI is hidden immediately
     setRunState('started');
     setStartTime(new Date());
+    
     try {
       const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || 'http://localhost:8000';
       
@@ -580,7 +586,8 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
           description: description,
           auto_retry: autoRetry,
           clinical_preprocessing: clinicalPreprocessing,
-          ...(useAgentic && {
+          // Only include agent config if using agent mode (not All Green)
+          ...(useAgentic && !useAllGreen && {
             agent: {
               provider: 'ollama',
               model: 'gpt-oss:20b',
@@ -591,7 +598,10 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
       };
       
       // Only include method if explicitly set (null/undefined means agent chooses)
-      if (backendMethod) {
+      // For All Green mode, method is always TVAE (handled by backend, but we can set it explicitly)
+      if (useAllGreen) {
+        requestBody.method = 'tvae'; // All Green service uses TVAE
+      } else if (backendMethod) {
         requestBody.method = backendMethod;
       }
       
