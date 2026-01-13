@@ -454,16 +454,24 @@ class SyntheticDataOptimizer:
         dataset_complexity: Optional[Dict[str, Any]] = None,
         retry_count: int = 0
     ) -> Dict[str, Any]:
-        """Suggest TVAE hyperparameters with SOTA scaling for "All Green" goal."""
-        # Ultra-Aggressive Epoch Scaling
-        # Base epochs increased for small-N clinical data stability
+        """Suggest TVAE hyperparameters with SOTA scaling for "All Green" goal.
+        
+        Based on successful local benchmarks that achieved all green metrics:
+        - Breast Cancer (569 rows): 2000 epochs with Clinical Preprocessor v18
+        - Pima Diabetes: 2000 epochs with Clinical Preprocessor v18
+        - Heart Disease: 2000 epochs with Clinical Preprocessor v18
+        """
+        # CRITICAL: Start with 2000 epochs for small-N clinical data (proven to work)
+        # This matches the successful local benchmark configuration
         if n_rows < 1000:
-            # Small datasets need high density of gradient updates
-            epochs = 500 + (retry_count * 1500) 
+            # Small clinical datasets: Use 2000 epochs from start (proven configuration)
+            epochs = 2000
         elif n_rows < 5000:
-            epochs = 400 + (retry_count * 800)
+            # Medium datasets: Start with 2000, increase on retry
+            epochs = 2000 + (retry_count * 500)
         else:
-            epochs = 300 + (retry_count * 500)
+            # Large datasets: Start lower but scale up
+            epochs = 1500 + (retry_count * 500)
         
         # Adaptive batch size - smaller batches provide more regularization for VAEs
         if n_rows < 1000:

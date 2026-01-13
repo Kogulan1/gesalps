@@ -1773,9 +1773,10 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
                 "batch_size": batch_size,
             }
         if m == "tvae":
-            # Adaptive epochs for TVAE
+            # CRITICAL: Use 2000 epochs for small-N clinical data (proven to achieve all green)
+            # This matches successful local benchmarks (Breast Cancer, Pima Diabetes, Heart Disease)
             if n_rows < 1000:
-                epochs = 250
+                epochs = 2000  # Proven configuration from local benchmarks
             elif n_rows < 10000:
                 epochs = 350
             else:
