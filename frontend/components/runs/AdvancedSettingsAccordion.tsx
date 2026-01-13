@@ -19,8 +19,71 @@ import {
 } from "@/components/ui/select";
 import { Settings2, Cpu, RefreshCw, BarChart } from "lucide-react";
 
-export function AdvancedSettingsAccordion() {
-  const [model, setModel] = useState("auto");
+interface AdvancedSettingsAccordionProps {
+  model?: string;
+  onModelChange?: (model: string) => void;
+  maxIterations?: number;
+  onMaxIterationsChange?: (iterations: number) => void;
+  autoRetry?: boolean;
+  onAutoRetryChange?: (enabled: boolean) => void;
+  clinicalPreprocessing?: boolean;
+  onClinicalPreprocessingChange?: (enabled: boolean) => void;
+}
+
+export function AdvancedSettingsAccordion({
+  model: controlledModel,
+  onModelChange,
+  maxIterations: controlledMaxIterations,
+  onMaxIterationsChange,
+  autoRetry: controlledAutoRetry,
+  onAutoRetryChange,
+  clinicalPreprocessing: controlledClinicalPreprocessing,
+  onClinicalPreprocessingChange,
+}: AdvancedSettingsAccordionProps = {}) {
+  const [internalModel, setInternalModel] = useState("auto");
+  const [internalMaxIterations, setInternalMaxIterations] = useState(2000);
+  const [internalAutoRetry, setInternalAutoRetry] = useState(true);
+  const [internalClinicalPreprocessing, setInternalClinicalPreprocessing] = useState(true);
+
+  const model = controlledModel ?? internalModel;
+  const maxIterations = controlledMaxIterations ?? internalMaxIterations;
+  const autoRetry = controlledAutoRetry ?? internalAutoRetry;
+  const clinicalPreprocessing = controlledClinicalPreprocessing ?? internalClinicalPreprocessing;
+
+  const handleModelChange = (value: string) => {
+    if (onModelChange) {
+      onModelChange(value);
+    } else {
+      setInternalModel(value);
+    }
+  };
+
+  const handleMaxIterationsChange = (value: string) => {
+    const numValue = parseInt(value, 10);
+    if (!isNaN(numValue)) {
+      if (onMaxIterationsChange) {
+        onMaxIterationsChange(numValue);
+      } else {
+        setInternalMaxIterations(numValue);
+      }
+    }
+  };
+
+  const handleAutoRetryChange = (checked: boolean) => {
+    if (onAutoRetryChange) {
+      onAutoRetryChange(checked);
+    } else {
+      setInternalAutoRetry(checked);
+    }
+  };
+
+  const handleClinicalPreprocessingChange = (checked: boolean) => {
+    if (onClinicalPreprocessingChange) {
+      onClinicalPreprocessingChange(checked);
+    } else {
+      setInternalClinicalPreprocessing(checked);
+    }
+  };
 
   return (
     <Accordion type="single" collapsible className="w-full">
@@ -39,7 +102,7 @@ export function AdvancedSettingsAccordion() {
                 <Cpu className="h-4 w-4 text-primary/70" />
                 <Label className="text-sm font-semibold">Model Architecture</Label>
               </div>
-              <Select value={model} onValueChange={setModel}>
+              <Select value={model} onValueChange={handleModelChange}>
                 <SelectTrigger className="bg-background">
                   <SelectValue placeholder="Select architecture" />
                 </SelectTrigger>
@@ -63,7 +126,8 @@ export function AdvancedSettingsAccordion() {
               </div>
               <Input 
                 type="number" 
-                defaultValue={2000} 
+                value={maxIterations}
+                onChange={(e) => handleMaxIterationsChange(e.target.value)}
                 className="bg-background"
                 placeholder="e.g. 2000"
               />
@@ -85,7 +149,7 @@ export function AdvancedSettingsAccordion() {
                   Allow engine to restart with adjusted params if privacy/utility gates fail.
                 </p>
               </div>
-              <Switch defaultChecked />
+              <Switch checked={autoRetry} onCheckedChange={handleAutoRetryChange} />
             </div>
 
             <div className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
@@ -98,7 +162,7 @@ export function AdvancedSettingsAccordion() {
                   Use domain-specific encoding for clinical datasets (medical codes, ICD-10).
                 </p>
               </div>
-              <Switch defaultChecked />
+              <Switch checked={clinicalPreprocessing} onCheckedChange={handleClinicalPreprocessingChange} />
             </div>
           </div>
         </AccordionContent>

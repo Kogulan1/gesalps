@@ -36,6 +36,8 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
 import { ExecutionLogTab } from "@/components/runs/ExecutionLogTab";
 import { AgentPlanTab } from "@/components/runs/AgentPlanTab";
 import { useToast } from "@/components/toast/Toaster";
+import { QuickConfigCard } from "@/components/runs/QuickConfigCard";
+import { AdvancedSettingsAccordion } from "@/components/runs/AdvancedSettingsAccordion";
 
 interface RunExecutionModalProps {
   isOpen: boolean;
@@ -54,10 +56,15 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
   const [runName, setRunName] = useState("");
   const [method, setMethod] = useState("ddpm");
   const [privacyLevel, setPrivacyLevel] = useState("Medium");
-  const [useAgentic, setUseAgentic] = useState(false);
+  const [useAgentic, setUseAgentic] = useState(true); // Default to agent mode (GreenGuard)
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [showNameConfirm, setShowNameConfirm] = useState(false);
+  // Advanced settings state
+  const [advancedModel, setAdvancedModel] = useState("auto");
+  const [maxIterations, setMaxIterations] = useState(2000);
+  const [autoRetry, setAutoRetry] = useState(true);
+  const [clinicalPreprocessing, setClinicalPreprocessing] = useState(true);
   
   // Run tracking state
   const [runState, setRunState] = useState<RunState>('config');
@@ -475,6 +482,33 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
     await startRun(finalRunName);
   };
 
+  // Handle QuickConfigCard start
+  const handleQuickStart = async (config: any) => {
+    // Update state from QuickConfigCard
+    if (config.name) {
+      setRunName(config.name);
+    }
+    if (config.privacy_level) {
+      const privacyLevelCapitalized = config.privacy_level.charAt(0).toUpperCase() + config.privacy_level.slice(1);
+      setPrivacyLevel(privacyLevelCapitalized);
+    }
+    // Use agent mode by default (GreenGuard) - always true for QuickConfigCard
+    setUseAgentic(true);
+    
+    // Use advanced model if set, otherwise let agent decide (undefined/null)
+    const methodToUse = advancedModel !== 'auto' ? advancedModel : undefined;
+    if (methodToUse) {
+      setMethod(methodToUse);
+    } else {
+      // Reset to undefined so agent can choose
+      setMethod(undefined as any);
+    }
+    
+    // Start the run
+    const finalRunName = config.name || runName.trim() || `${dataset?.name || 'dataset'}_run_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)}`;
+    await startRun(finalRunName);
+  };
+
   const startRun = async (name: string) => {
     setLoading(true);
     // Optimistically switch to started state so config UI is hidden immediately
@@ -509,19 +543,22 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
         'Auto': 'auto'
       };
 
-      const backendMethod = methodMapping[method] || 'ddpm'; // Default to ddpm instead of tvae
+      // Use method if explicitly set in advanced settings, otherwise let agent decide (null)
+      const methodToUse = advancedModel !== 'auto' ? advancedModel : (method && method !== 'ddpm' ? method : null);
+      const backendMethod = methodToUse ? (methodMapping[methodToUse] || methodToUse) : null;
       const mode = useAgentic ? 'agent' : 'custom';
 
-      const requestBody = {
+      const requestBody: any = {
         dataset_id: dataset.id,
-        method: backendMethod,
         mode: mode,
         name: name,
         config_json: {
           sample_multiplier: 1.0,
-          max_synth_rows: 2000,
+          max_synth_rows: maxIterations || 2000,
           privacy_level: privacyLevel.toLowerCase(),
           description: description,
+          auto_retry: autoRetry,
+          clinical_preprocessing: clinicalPreprocessing,
           ...(useAgentic && {
             agent: {
               provider: 'ollama',
@@ -531,6 +568,11 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
           })
         }
       };
+
+      // Only include method if explicitly set (null/undefined means agent chooses)
+      if (backendMethod) {
+        requestBody.method = backendMethod;
+      }
       
       const response = await fetch(`${base}/v1/runs`, {
         method: 'POST',
@@ -1437,343 +1479,29 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
   // Configuration view (default)
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={handleClose} className="w-[95vw] sm:max-w-6xl lg:max-w-7xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={isOpen} onOpenChange={handleClose} className="w-[95vw] sm:max-w-4xl lg:max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogContent className="p-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Combined Header & Dataset Info */}
-          <div className="border border-gray-200 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Play className="h-5 w-5 text-blue-600" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900">Start New Synthesis Run</h2>
-                  <p className="text-sm text-gray-600">Configure and start a new synthetic data generation run</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3 text-right">
-                <div className="p-2 bg-white rounded-lg border border-gray-200">
-                  <Database className="h-5 w-5 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-sm text-gray-900">{dataset?.name}</h3>
-                  <div className="flex items-center space-x-3 text-xs text-gray-500 mt-1">
-                    <span>{dataset?.rows?.toLocaleString() || 'N/A'} rows</span>
-                    <span>{dataset?.columns || 'N/A'} columns</span>
-                    <span>{dataset?.size || 'N/A'} size</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-            {/* Left Column - Configuration */}
-            <div className="xl:col-span-2 space-y-6">
-              {/* Run Name - Compact */}
-          <div className="space-y-2">
-                <Label htmlFor="name" className="text-sm font-medium">Run Name</Label>
-            <Input
-              id="name"
-              value={runName}
-              onChange={(e) => setRunName(e.target.value)}
-                  placeholder="Enter a descriptive name for this run"
-                  className="w-full"
+          <div className="space-y-6">
+            {/* QuickConfigCard - Simplified One-Click UI */}
+            <QuickConfigCard 
+              dataset={dataset}
+              onStart={handleQuickStart}
             />
-          </div>
 
-              {/* Synthesis Method - 3x2 Grid */}
-              <div className="space-y-3">
-                <Label className="text-sm font-medium flex items-center space-x-2">
-                  <Settings className="h-4 w-4" />
-                  <span>Synthesis Method</span>
-                </Label>
-                <div className="grid grid-cols-3 gap-3">
-                  {methods.map((methodOption) => (
-                    <button
-                      key={methodOption.value}
-                      type="button"
-                      onClick={() => setMethod(methodOption.value)}
-                      className={`p-3 rounded-lg border text-left transition-all ${
-                        method === methodOption.value
-                          ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
-                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                        <span className="font-medium text-sm">{methodOption.label}</span>
-                          {methodOption.badge && (
-                            <span className="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded font-semibold" title="2025 state-of-the-art diffusion model — best clinical data fidelity">
-                              {methodOption.badge}
-                            </span>
-                          )}
-                          {methodOption.recommended && !methodOption.badge && (
-                            <span className="text-xs text-yellow-600">⭐</span>
-                          )}
-                        </div>
-                        <div className={`w-4 h-4 rounded-full border-2 ${
-                          method === methodOption.value ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
-                        }`}>
-                          {method === methodOption.value && (
-                            <div className="w-full h-full rounded-full bg-white scale-50"></div>
-                          )}
-                        </div>
-                      </div>
-                      <p className="text-xs text-gray-600 mb-2 line-clamp-2" title={methodOption.value === "ddpm" ? "2025 state-of-the-art diffusion model — best clinical data fidelity" : methodOption.description}>
-                        {methodOption.description}
-                      </p>
-                      <div className="flex items-center justify-between">
-                        <Badge variant="outline" className="text-xs">{methodOption.category}</Badge>
-                        {methodOption.recommended && (
-                          <Badge variant="secondary" className="text-xs">⭐ Recommended</Badge>
-                        )}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-            </div>
-
-              {/* Privacy Level - 4x1 Layout */}
-              <div className="space-y-3">
-                <Label className="text-sm font-medium flex items-center space-x-2">
-                  <Shield className="h-4 w-4" />
-                  <span>Privacy Level</span>
-                </Label>
-                <div className="grid grid-cols-4 gap-3">
-                  {privacyLevels.map((level) => (
-                    <button
-                      key={level.value}
-                      type="button"
-                      onClick={() => setPrivacyLevel(level.value)}
-                      className={`p-3 rounded-lg border text-center transition-all ${
-                        privacyLevel === level.value
-                          ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
-                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      <div className="flex flex-col items-center space-y-2">
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm font-medium">{level.label}</span>
-                          <div className={`w-4 h-4 rounded-full border-2 ${
-                            privacyLevel === level.value ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
-                          }`}>
-                            {privacyLevel === level.value && (
-                              <div className="w-full h-full rounded-full bg-white scale-50"></div>
-                            )}
-                          </div>
-                        </div>
-                        <Badge className={`text-xs ${level.color}`}>{level.epsilon}</Badge>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-
-            </div>
-
-            {/* Right Column - Preview & Info */}
-            <div className="xl:col-span-1 space-y-3">
-              {/* Run Preview - Even Height */}
-              <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50">
-                <CardContent className="p-3">
-                  <h4 className="font-semibold text-sm mb-3 flex items-center space-x-2 text-blue-900">
-                    <div className="p-1 bg-blue-100 rounded-lg">
-                      <Info className="h-4 w-4" />
-                    </div>
-                    <span>Run Preview</span>
-                  </h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between items-center py-1">
-                      <span className="text-blue-700 font-medium text-xs">Name:</span>
-                      <span className="font-semibold text-blue-900 text-xs truncate max-w-32">
-                        {runName.trim() || `${dataset?.name || 'dataset'}_run_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)}`}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center py-1">
-                      <span className="text-blue-700 font-medium text-xs">Method:</span>
-                      <div className="flex items-center gap-1 flex-wrap justify-end">
-                      <span className="font-semibold text-blue-900 text-xs">{selectedMethod?.label}</span>
-                        {selectedMethod?.value === 'ddpm' && (
-                          <span className="text-xs bg-red-500 text-white px-1.5 py-0.5 rounded font-semibold" title="2025 state-of-the-art diffusion model — best clinical data fidelity">
-                            SOTA
-                          </span>
-                        )}
-                        {/* Show recommendation if agent suggests TabDDPM */}
-                        {runData?.config_json?.plan?.choice?.method === 'ddpm' && (
-                          <span className="text-xs bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded font-semibold" title="AI Agent recommended TabDDPM for this dataset">
-                            ⭐ Recommended: TabDDPM
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center py-1">
-                      <span className="text-blue-700 font-medium text-xs">Privacy:</span>
-                      <div className={`px-2 py-1 rounded-full text-xs font-semibold ${selectedPrivacy?.color || 'bg-gray-100 text-gray-800'}`}>
-                        {selectedPrivacy?.label}
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center py-1">
-                      <span className="text-blue-700 font-medium text-xs">AI Agent:</span>
-                      <Badge variant={useAgentic ? "default" : "secondary"} className="text-xs">
-                        {useAgentic ? "On" : "Off"}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-
-              {/* Privacy Guarantees - Even Height */}
-              <Card className="border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
-                <CardContent className="p-3">
-                  <h4 className="font-semibold text-sm mb-3 flex items-center space-x-2 text-green-900">
-                    <div className="p-1 bg-green-100 rounded-lg">
-                      <Shield className="h-4 w-4" />
-                    </div>
-                    <span>Privacy Guarantees</span>
-                  </h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center space-x-2 p-2 bg-green-100 rounded-lg">
-                      <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
-                      <span className="text-green-800 text-xs">Differential privacy protection</span>
-                    </div>
-                    <div className="flex items-center space-x-2 p-2 bg-green-100 rounded-lg">
-                      <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
-                      <span className="text-green-800 text-xs">No original data exposure</span>
-                    </div>
-                    <div className="flex items-center space-x-2 p-2 bg-green-100 rounded-lg">
-                      <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
-                      <span className="text-green-800 text-xs">Statistical utility preserved</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            {/* Advanced Settings Accordion */}
+            <div className="w-full">
+              <AdvancedSettingsAccordion 
+                model={advancedModel}
+                onModelChange={setAdvancedModel}
+                maxIterations={maxIterations}
+                onMaxIterationsChange={setMaxIterations}
+                autoRetry={autoRetry}
+                onAutoRetryChange={setAutoRetry}
+                clinicalPreprocessing={clinicalPreprocessing}
+                onClinicalPreprocessingChange={setClinicalPreprocessing}
+              />
             </div>
           </div>
-
-          {/* AI Agent - Full Width */}
-          <div className="border border-gray-200 rounded-lg bg-gray-50 p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <Brain className="h-5 w-5 text-purple-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">AI Agent</h3>
-                  <p className="text-sm text-gray-600">Intelligent optimization powered by AI</p>
-                </div>
-              </div>
-              
-              {/* Working Toggle Switch - Fixed pointer events */}
-              <label className="flex items-center cursor-pointer relative z-10" onClick={(e) => e.stopPropagation()}>
-                <input
-                  type="checkbox"
-                  checked={useAgentic}
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    setUseAgentic(e.target.checked);
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                  className="sr-only"
-                />
-                <div 
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 cursor-pointer ${
-                    useAgentic ? 'bg-green-500' : 'bg-gray-300'
-                  }`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setUseAgentic(!useAgentic);
-                  }}
-                >
-                  <div className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 ${
-                    useAgentic ? 'translate-x-6' : 'translate-x-1'
-                  }`} />
-                </div>
-              </label>
-            </div>
-            
-            {/* Features List - Full Width Single Row */}
-            <div className="flex items-center justify-between text-xs text-gray-600">
-              <div className="flex items-center space-x-2">
-                <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
-                <span>Auto method selection</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
-                <span>Parameter optimization</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
-                <span>Privacy tuning</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
-                <span>Quality assurance</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Description - After AI Agent */}
-          <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-medium">Description (Optional)</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Add notes about this run..."
-              rows={3}
-              className="w-full"
-            />
-          </div>
-
-          <div className="border-t border-gray-200 my-4" />
-          
-          <div className="flex items-center justify-between">
-            {/* Estimated Time - Left */}
-            <div className="flex items-center space-x-3 text-sm text-gray-600">
-              <div className="flex items-center space-x-2">
-                <Clock className="h-4 w-4 text-orange-500" />
-                <span className="font-medium">Estimated Time:</span>
-              </div>
-              <div className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full font-semibold">
-                {calculateEstimatedTime()}
-              </div>
-            </div>
-
-            {/* Action Buttons - Right */}
-            <div className="flex space-x-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleClose}
-                disabled={loading}
-                className="px-6 py-2"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={loading}
-                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 px-8 py-2 font-semibold shadow-lg"
-              >
-                {loading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Starting Run...
-                  </>
-                ) : (
-                  <>
-                    <Play className="h-4 w-4 mr-2" />
-                    Start Run
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-          </form>
         </DialogContent>
       </Dialog>
 
