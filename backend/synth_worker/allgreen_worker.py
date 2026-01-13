@@ -101,14 +101,24 @@ def execute_allgreen_pipeline(run_id: str, dataset_id: str) -> Dict[str, Any]:
         dataset = dataset_res.data
         file_url = dataset["file_url"]
         
-        # Download dataset
-        import requests
-        response = requests.get(file_url, timeout=60)
-        response.raise_for_status()
-        
-        # Load CSV
+        # Download dataset from Supabase storage (same as main worker)
+        DATASET_BUCKET = "datasets"
         import io
-        real_df = pd.read_csv(io.StringIO(response.text))
+        try:
+            # file_url is a path, not a full URL - use Supabase storage API
+            b = supabase.storage.from_(DATASET_BUCKET).download(file_url)
+            raw = b if isinstance(b, (bytes, bytearray)) else b.read()
+            real_df = pd.read_csv(io.BytesIO(raw))
+        except Exception as e:
+            # Fallback: try as full URL if it's already a URL
+            if file_url.startswith("http"):
+                import requests
+                response = requests.get(file_url, timeout=60)
+                response.raise_for_status()
+                real_df = pd.read_csv(io.StringIO(response.text))
+            else:
+                raise ValueError(f"Failed to download dataset: {e}")
+        
         print(f"[allgreen-worker] Loaded dataset: {len(real_df)} rows, {len(real_df.columns)} columns")
         
         # Step 2: Detect metadata
