@@ -1,31 +1,11 @@
 {
-  "functions": {
-    "api/*.py": {
-      "runtime": "python3.11",
-      "maxDuration": 60,
-      "memory": 1024
+  "builds": [
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/next"
     }
-  },
+  ],
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/main.py"
-    },
-    {
-      "src": "/v1/(.*)",
-      "dest": "/api/main.py"
-    },
-    {
-      "src": "/dev/(.*)",
-      "dest": "/api/main.py"
-    },
-    {
-      "src": "/docs",
-      "dest": "/api/main.py"
-    },
-    {
-      "src": "/openapi.json",
-      "dest": "/api/main.py"
-    }
+    { "src": "/(.*)", "dest": "/frontend/$1" }
   ]
 }
