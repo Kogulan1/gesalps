@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Settings2, Cpu, RefreshCw, BarChart } from "lucide-react";
+import { Settings2, Cpu, RefreshCw, BarChart, Sparkles } from "lucide-react";
 
 interface AdvancedSettingsAccordionProps {
   model?: string;
