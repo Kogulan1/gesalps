@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Settings2, Cpu, RefreshCw, BarChart, Sparkles } from "lucide-react";
+import { Settings2, Cpu, RefreshCw, BarChart, CheckCircle2 } from "lucide-react";
 
 interface AdvancedSettingsAccordionProps {
   model?: string;
@@ -190,7 +190,7 @@ export function AdvancedSettingsAccordion({
             <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
               <div className="space-y-0.5">
                 <div className="flex items-center space-x-2">
-                  <Sparkles className="h-3.5 w-3.5 text-green-600" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
                   <Label className="text-sm font-semibold text-green-900 dark:text-green-100">All Green Service</Label>
                   <span className="text-[10px] bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 px-1.5 py-0.5 rounded">PROVEN</span>
                 </div>
