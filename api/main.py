@@ -653,10 +653,36 @@ def start_run(body: StartRun, user: Dict[str, Any] = Depends(require_user)):
 
     # Determine mode (default agent)
     mode_in = (body.mode or "agent").strip().lower() or "agent"
+    
+    # Special handling for "allgreen" mode - dedicated service
+    if mode_in == "allgreen":
+        # For allgreen mode, use the dedicated allgreen-worker service
+        # Set method to tvae and create minimal config
+        method_l = "tvae"  # Force TVAE for allgreen service
+        cfg = {
+            "sample_multiplier": 1.0,
+            "max_synth_rows": 2000,
+            "clinical_preprocessing": True,  # Always enabled for allgreen
+        }
+        # Merge with any provided config_json
+        if body.config_json:
+            cfg.update(body.config_json)
+        # Create minimal plan for logging (allgreen worker doesn't need full plan)
+        cfg["plan"] = {
+            "choice": {"method": "tvae"},
+            "hyperparams": {
+                "epochs": 2000,
+                "batch_size": 32,
+                "embedding_dim": 512,
+                "compress_dims": [256, 256],
+                "decompress_dims": [256, 256],
+            },
+            "rationale": "All Green Service - Proven Configuration",
+        }
 
     # If agent mode, compute a plan and attach to config_json.plan
     try:
-        if mode_in == "agent" and mode_in != "allgreen":  # Skip if already handled
+        if mode_in == "agent":
             pref = cfg.get("preference") if isinstance(cfg.get("preference"), dict) else {"tradeoff": cfg.get("mode") or cfg.get("tradeoff") or "balanced"}
             plan = _agent_plan_internal(body.dataset_id, pref, cfg.get("goal"), cfg.get("prompt"))
             cfg["plan"] = plan
