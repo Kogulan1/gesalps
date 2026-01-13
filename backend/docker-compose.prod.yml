@@ -5,9 +5,9 @@ services:
       dockerfile: Dockerfile
     image: gesalps-api:latest
     container_name: gesalps_api
-    # Use internal port only - Nginx will proxy
-    expose:
-      - "8000"
+    # Expose port to host for Nginx reverse proxy
+    ports:
+      - "127.0.0.1:8000:8000"
     env_file: .env
     environment:
       - WORKER_ENABLED=false
