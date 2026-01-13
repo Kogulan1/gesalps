@@ -656,7 +656,7 @@ def start_run(body: StartRun, user: Dict[str, Any] = Depends(require_user)):
 
     # If agent mode, compute a plan and attach to config_json.plan
     try:
-        if mode_in == "agent":
+        if mode_in == "agent" and mode_in != "allgreen":  # Skip if already handled
             pref = cfg.get("preference") if isinstance(cfg.get("preference"), dict) else {"tradeoff": cfg.get("mode") or cfg.get("tradeoff") or "balanced"}
             plan = _agent_plan_internal(body.dataset_id, pref, cfg.get("goal"), cfg.get("prompt"))
             cfg["plan"] = plan
