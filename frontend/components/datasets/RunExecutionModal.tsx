@@ -469,8 +469,13 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
       setRunName("");
       setMethod("ddpm");
       setPrivacyLevel("Medium");
-      setUseAgentic(false);
+      setUseAgentic(true); // Reset to default (agent mode)
+      setUseAllGreen(false); // Reset All Green toggle
       setDescription("");
+      setAdvancedModel("auto");
+      setMaxIterations(2000);
+      setAutoRetry(true);
+      setClinicalPreprocessing(true);
     }
   }, [isOpen]);
 
@@ -485,29 +490,43 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
 
   // Handle QuickConfigCard start
   const handleQuickStart = async (config: any) => {
-    // Update state from QuickConfigCard
-    if (config.name) {
-      setRunName(config.name);
+    try {
+      // Update state from QuickConfigCard
+      if (config.name) {
+        setRunName(config.name);
+      }
+      if (config.privacy_level) {
+        const privacyLevelCapitalized = config.privacy_level.charAt(0).toUpperCase() + config.privacy_level.slice(1);
+        setPrivacyLevel(privacyLevelCapitalized);
+      }
+      
+      // If All Green is enabled, use that mode; otherwise use agent mode (GreenGuard)
+      if (!useAllGreen) {
+        setUseAgentic(true);
+      }
+      
+      // Use advanced model if set, otherwise let agent decide (undefined/null)
+      const methodToUse = advancedModel !== 'auto' ? advancedModel : undefined;
+      if (methodToUse) {
+        setMethod(methodToUse);
+      } else {
+        // Reset to undefined so agent can choose
+        setMethod(undefined as any);
+      }
+      
+      // Start the run
+      const finalRunName = config.name || runName.trim() || `${dataset?.name || 'dataset'}_run_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)}`;
+      await startRun(finalRunName);
+    } catch (error) {
+      console.error('Error in handleQuickStart:', error);
+      toast({
+        title: "Failed to start run",
+        description: error instanceof Error ? error.message : String(error),
+        variant: "destructive"
+      });
+      setRunState('config');
+      setLoading(false);
     }
-    if (config.privacy_level) {
-      const privacyLevelCapitalized = config.privacy_level.charAt(0).toUpperCase() + config.privacy_level.slice(1);
-      setPrivacyLevel(privacyLevelCapitalized);
-    }
-    // Use agent mode by default (GreenGuard) - always true for QuickConfigCard
-    setUseAgentic(true);
-    
-    // Use advanced model if set, otherwise let agent decide (undefined/null)
-    const methodToUse = advancedModel !== 'auto' ? advancedModel : undefined;
-    if (methodToUse) {
-      setMethod(methodToUse);
-    } else {
-      // Reset to undefined so agent can choose
-      setMethod(undefined as any);
-    }
-    
-    // Start the run
-    const finalRunName = config.name || runName.trim() || `${dataset?.name || 'dataset'}_run_${new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)}`;
-    await startRun(finalRunName);
   };
 
   const startRun = async (name: string) => {
