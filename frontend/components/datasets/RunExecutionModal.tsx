@@ -1562,6 +1562,7 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
                 useAllGreen={useAllGreen}
                 onUseAllGreenChange={setUseAllGreen}
               />
+                </div>
             </div>
         </DialogContent>
       </Dialog>
