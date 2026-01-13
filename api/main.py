@@ -618,7 +618,7 @@ def list_runs(user: Dict[str, Any] = Depends(require_user)):
 class StartRun(BaseModel):
     dataset_id: str
     method: str
-    mode: str
+    mode: str  # Can be "agent", "custom", or "allgreen" (for dedicated All Green service)
     config_json: Dict[str, Any] | None = None  # Can include "enable_smart_preprocess": true/false (default: true)
     name: str | None = None
 
@@ -738,7 +738,7 @@ def start_run(body: StartRun, user: Dict[str, Any] = Depends(require_user)):
         "project_id": project_id,
         "dataset_id": body.dataset_id,
         "started_by": user["id"],
-        "method": body.method,
+        "method": method_l if mode_in == "allgreen" else body.method,  # Use tvae for allgreen mode
         "mode": mode_in,
         "name": body.name,
         "status": "queued",

@@ -99,6 +99,41 @@ services:
       - "com.gesalps.service=worker"
       - "com.gesalps.version=latest"
 
+  allgreen-worker:
+    build: 
+      context: .
+      dockerfile: synth_worker/Dockerfile
+    image: gesalps-worker:latest
+    container_name: gesalps_allgreen_worker
+    command: ["python", "-u", "synth_worker/allgreen_worker.py"]
+    env_file: .env
+    environment:
+      - DP_BACKEND=custom
+      - DP_STRICT_DEFAULT=false
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    stop_grace_period: 30s
+    labels:
+      - "com.gesalps.service=allgreen-worker"
+      - "com.gesalps.version=latest"
+
   report-service:
     build: 
       context: ./report_service
