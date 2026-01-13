@@ -152,7 +152,7 @@ export function AdvancedSettingsAccordion({
               <Switch 
                 checked={autoRetry} 
                 onCheckedChange={handleAutoRetryChange}
-                className="data-[state=checked]:bg-green-500"
+                className="data-[state=checked]:bg-lime-500 data-[state=unchecked]:bg-gray-300"
               />
             </div>
 
@@ -169,7 +169,7 @@ export function AdvancedSettingsAccordion({
               <Switch 
                 checked={clinicalPreprocessing} 
                 onCheckedChange={handleClinicalPreprocessingChange}
-                className="data-[state=checked]:bg-green-500"
+                className="data-[state=checked]:bg-lime-500 data-[state=unchecked]:bg-gray-300"
               />
             </div>
           </div>
