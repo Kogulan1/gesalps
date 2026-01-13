@@ -568,28 +568,66 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
           })
         }
       };
-
+      
       // Only include method if explicitly set (null/undefined means agent chooses)
       if (backendMethod) {
         requestBody.method = backendMethod;
       }
       
+      // Retry logic for network errors
       let response: Response;
-      try {
-        response = await fetch(`${base}/v1/runs`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(requestBody)
-        });
-      } catch (fetchError: any) {
-        // Handle network errors (CORS, connection refused, etc.)
-        if (fetchError instanceof TypeError && fetchError.message.includes('fetch')) {
-          throw new Error('Unable to connect to the server. Please check your internet connection and try again.');
+      const maxRetries = 3;
+      let lastError: any = null;
+      
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+          // Add timeout to fetch (30 seconds)
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 30000);
+          
+          response = await fetch(`${base}/v1/runs`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+            body: JSON.stringify(requestBody),
+            signal: controller.signal
+          });
+          
+          clearTimeout(timeoutId);
+          
+          // If we got a response (even if not ok), break retry loop
+          break;
+        } catch (fetchError: any) {
+          lastError = fetchError;
+          
+          // Don't retry on abort (timeout) or if it's not a network error
+          if (fetchError.name === 'AbortError') {
+            throw new Error('Request timed out. Please check your connection and try again.');
+          }
+          
+          // Only retry on network errors (TypeError), not on HTTP errors
+          if (!(fetchError instanceof TypeError) || attempt === maxRetries - 1) {
+            // Handle network errors (CORS, connection refused, etc.)
+            if (fetchError instanceof TypeError && fetchError.message.includes('fetch')) {
+              throw new Error('Unable to connect to the server. Please check your internet connection and try again.');
+            }
+            throw fetchError;
+          }
+          
+          // Wait before retrying (exponential backoff: 500ms, 1000ms, 2000ms)
+          await new Promise(resolve => setTimeout(resolve, 500 * Math.pow(2, attempt)));
+          console.log(`[RunExecutionModal] Retry attempt ${attempt + 1}/${maxRetries}...`);
         }
-        throw fetchError;
+      }
+      
+      // If we exhausted retries, throw the last error
+      if (!response && lastError) {
+        if (lastError instanceof TypeError && lastError.message.includes('fetch')) {
+          throw new Error('Unable to connect to the server after multiple attempts. Please check your internet connection and try again.');
+        }
+        throw lastError;
       }
 
       if (!response.ok) {
@@ -1505,6 +1543,7 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
             <QuickConfigCard 
               dataset={dataset}
               onStart={handleQuickStart}
+              disabled={loading}
             />
 
             {/* Advanced Settings Accordion */}
@@ -1519,8 +1558,8 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
                 clinicalPreprocessing={clinicalPreprocessing}
                 onClinicalPreprocessingChange={setClinicalPreprocessing}
               />
+                </div>
             </div>
-          </div>
         </DialogContent>
       </Dialog>
 

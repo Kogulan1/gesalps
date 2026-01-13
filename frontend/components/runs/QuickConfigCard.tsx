@@ -12,9 +12,10 @@ import { Zap, FileText, ShieldCheck } from "lucide-react";
 interface QuickConfigCardProps {
   dataset: any;
   onStart: (config: any) => void;
+  disabled?: boolean;
 }
 
-export function QuickConfigCard({ dataset, onStart }: QuickConfigCardProps) {
+export function QuickConfigCard({ dataset, onStart, disabled = false }: QuickConfigCardProps) {
   const [runName, setRunName] = useState("");
   const [privacyLevel, setPrivacyLevel] = useState("Medium");
 
@@ -98,8 +99,9 @@ export function QuickConfigCard({ dataset, onStart }: QuickConfigCardProps) {
       <CardFooter className="bg-primary/5 border-t border-primary/10 p-6">
         <Button 
           onClick={handleStart}
+          disabled={disabled}
           size="lg" 
-          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-14 text-lg shadow-lg group transition-all duration-300 hover:scale-[1.01]"
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-14 text-lg shadow-lg group transition-all duration-300 hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Zap className="mr-2 h-5 w-5 fill-current group-hover:animate-pulse" />
           Generate Synthetic Data
