@@ -116,9 +116,18 @@ class TVAESynthesizer(BaseSynthesizer):
         self._real_columns = list(data.columns) # Store columns for alignment
         try:
             print(f"[sdv-debug] Fitting TVAE on data head:\n{data.iloc[:3, :5]}")
+            # Log training start with hyperparameters
+            epochs = getattr(self._model, '_epochs', None) or getattr(self._model, 'epochs', None) or 'unknown'
+            batch_size = getattr(self._model, '_batch_size', None) or getattr(self._model, 'batch_size', None) or 'unknown'
+            print(f"[worker][TVAE] Starting training: epochs={epochs}, batch_size={batch_size}, rows={len(data)}")
         except Exception:
             pass
+        
+        import time
+        training_start = time.time()
         self._model.fit(data)
+        training_elapsed = time.time() - training_start
+        print(f"[worker][TVAE] Training completed in {training_elapsed:.1f}s ({training_elapsed/60:.1f} minutes)")
     
     def sample(self, num_rows: int) -> pd.DataFrame:
         """Generate synthetic data."""

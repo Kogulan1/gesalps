@@ -504,7 +504,8 @@ class SyntheticDataOptimizer:
             "batch_size": batch_size,
             "embedding_dim": embedding_dim,
             "compress_dims": [256, 256],  # Proven architecture from local benchmarks
-            "decompress_dims": [256, 256]  # Proven architecture from local benchmarks
+            "decompress_dims": [256, 256],  # Proven architecture from local benchmarks
+            "verbose": True  # Enable progress logging for long training runs
         }
     
     def grid_search_epsilon(
