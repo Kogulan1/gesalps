@@ -943,30 +943,44 @@ def run_logs(run_id: str, user: Dict[str, Any] = Depends(require_user), tail: in
     if not proj.data or proj.data.get("owner_id") != user["id"]:
         raise HTTPException(status_code=403, detail="Forbidden")
     
-    # Fetch Docker logs via SSH to VPS
+    # Fetch Docker logs - try direct Docker first (if running on VPS), then SSH fallback
     import subprocess
     import re
     
-    vps_host = os.getenv("VPS_HOST", "194.34.232.76")
-    vps_user = os.getenv("VPS_USER", "root")
     docker_compose_path = os.getenv("DOCKER_COMPOSE_PATH", "/opt/gesalps/backend")
     compose_file = os.getenv("DOCKER_COMPOSE_FILE", "docker-compose.prod.yml")
     service_name = os.getenv("WORKER_SERVICE_NAME", "synth-worker")
     
     try:
-        # SSH command to fetch logs
-        ssh_cmd = [
-            "ssh", "-o", "StrictHostKeyChecking=no", "-o", "ConnectTimeout=5",
-            f"{vps_user}@{vps_host}",
-            f"cd {docker_compose_path} && docker compose -f {compose_file} logs --tail {tail} {service_name}"
+        # Try direct Docker Compose command first (if API is running on VPS)
+        docker_cmd = [
+            "docker", "compose", "-f", f"{docker_compose_path}/{compose_file}",
+            "logs", "--tail", str(tail), service_name
         ]
         
         result = subprocess.run(
-            ssh_cmd,
+            docker_cmd,
             capture_output=True,
             text=True,
-            timeout=15
+            timeout=10,
+            cwd=docker_compose_path
         )
+        
+        # If direct Docker fails, try SSH fallback (for remote API servers)
+        if result.returncode != 0:
+            vps_host = os.getenv("VPS_HOST", "194.34.232.76")
+            vps_user = os.getenv("VPS_USER", "root")
+            ssh_cmd = [
+                "ssh", "-o", "StrictHostKeyChecking=no", "-o", "ConnectTimeout=5",
+                f"{vps_user}@{vps_host}",
+                f"cd {docker_compose_path} && docker compose -f {compose_file} logs --tail {tail} {service_name}"
+            ]
+            result = subprocess.run(
+                ssh_cmd,
+                capture_output=True,
+                text=True,
+                timeout=15
+            )
         
         if result.returncode != 0:
             # Fallback: return status from database
