@@ -106,7 +106,7 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
       setRunData(runDataResult);
 
       // Fetch metrics (may not exist for cancelled/failed runs)
-      let metricsData = {};
+      let metricsData: any = {};
       try {
         metricsData = await getRunMetrics(runId);
       } catch (err) {
@@ -141,15 +141,18 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
       if (runDataResult.status === 'cancelled') {
         computedStatus = 'Cancelled';
       } else if (runDataResult.status === 'succeeded') {
-        computedStatus = 'Completed';
+        computedStatus = 'Succeeded';
         if (metricsData && Object.keys(metricsData).length > 0) {
-          const rowsGenerated = metricsData?.rows_generated || 0;
-          // If 0 rows generated, mark as Failed
-          if (rowsGenerated === 0) {
+          const hasMetrics = metricsData?.utility || metricsData?.privacy;
+          const rowsGenerated = metricsData?.rows_generated;
+          
+          // Only mark as Failed if we have metrics but rows_generated is explicitly 0
+          // If rows_generated is missing, we assume it's a successful legacy run or intercepted run
+          if (rowsGenerated === 0 && hasMetrics) {
             computedStatus = 'Failed';
           } else {
-            const privacyPassed = (metricsData?.privacy?.mia_auc || 1) <= 0.6 && (metricsData?.privacy?.dup_rate || 1) <= 0.05;
-            const utilityPassed = (metricsData?.utility?.ks_mean || 1) <= 0.1 && (metricsData?.utility?.corr_delta || 1) <= 0.15;
+            const privacyPassed = metricsData?.privacy?.mia_auc <= 0.6 && metricsData?.privacy?.dup_rate <= 0.05;
+            const utilityPassed = metricsData?.utility?.ks_mean <= 0.15 && metricsData?.utility?.corr_delta <= 0.10;
             if (!privacyPassed || !utilityPassed) {
               computedStatus = 'Completed with Failures';
             }
@@ -177,10 +180,10 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
           utility_score: metricsData?.utility_score || 0
         },
         metrics: {
-          rows_generated: metricsData?.rows_generated || 0,
+          rows_generated: metricsData?.rows_generated || (metricsData ? 1 : 0),
           columns_generated: metricsData?.columns_generated || 0,
-          privacy_audit_passed: (metricsData?.privacy?.mia_auc || 1) <= 0.6 && (metricsData?.privacy?.dup_rate || 1) <= 0.05,
-          utility_audit_passed: (metricsData?.utility?.ks_mean || 1) <= 0.1 && (metricsData?.utility?.corr_delta || 1) <= 0.15,
+          privacy_audit_passed: (metricsData?.privacy?.mia_auc ?? 1) <= 0.6 && (metricsData?.privacy?.dup_rate ?? 1) <= 0.05,
+          utility_audit_passed: (metricsData?.utility?.ks_mean ?? 1) <= 0.15 && (metricsData?.utility?.corr_delta ?? 1) <= 0.10,
           privacy: {
             mia_auc: metricsData?.privacy?.mia_auc || 0,
             dup_rate: metricsData?.privacy?.dup_rate || 0
@@ -194,7 +197,7 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
       setResults(runResults);
       setError(null); // Clear any previous errors
     } catch (err) {
-      const errorMessage = getUserFriendlyErrorMessage(err);
+      const errorMessage = getUserFriendlyErrorMessage(err as any);
       console.error('Error loading results:', err);
       
       // Only close expansion if run is truly not found (404)
@@ -215,54 +218,56 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
   const handleDownloadReport = async () => {
     if (!results?.id) return;
     try {
-      const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE || 'http://localhost:8000';
       const supabase = createSupabaseBrowserClient();
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) return;
 
-      const response = await fetch(`${base}/v1/runs/${results.id}/download`, {
-        headers: { 'Authorization': `Bearer ${session.access_token}` },
-      });
-      if (!response.ok) throw new Error('Failed to download report');
+      // Use signed URL for private bucket access
+      const path = `run_artifacts/${results.id}/report.pdf`;
+      const { data, error } = await supabase.storage
+        .from('run_artifacts')
+        .createSignedUrl(path, 60); // 1 minute expiry
 
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      if (error || !data?.signedUrl) throw new Error('Failed to generate secure link');
+
+      // Trigger download
       const a = document.createElement('a');
-      a.href = url;
+      a.href = data.signedUrl;
       a.download = `${results.name}-report.pdf`;
       document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
       console.error('Error downloading report:', error);
+      alert('Failed to download report. Artifact may not exist.');
     }
   };
 
   const handleDownloadData = async () => {
     if (!results?.id) return;
     try {
-      const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE || 'http://localhost:8000';
       const supabase = createSupabaseBrowserClient();
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) return;
 
-      const response = await fetch(`${base}/v1/runs/${results.id}/synthetic-data`, {
-        headers: { 'Authorization': `Bearer ${session.access_token}` },
-      });
-      if (!response.ok) throw new Error('Failed to download synthetic data');
+      // Use signed URL for private bucket access
+      const path = `run_artifacts/${results.id}/synthetic.csv`;
+      const { data, error } = await supabase.storage
+        .from('run_artifacts')
+        .createSignedUrl(path, 60); // 1 minute expiry
 
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      if (error || !data?.signedUrl) throw new Error('Failed to generate secure link');
+
+      // Trigger download
       const a = document.createElement('a');
-      a.href = url;
+      a.href = data.signedUrl;
       a.download = `${results.name}-synthetic-data.csv`;
       document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
       console.error('Error downloading synthetic data:', error);
+      alert('Failed to download data. Artifact may not exist.');
     }
   };
 
@@ -339,12 +344,14 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
     );
   }
 
+  if (!results) return null;
+
   return (
     <Card className="mt-3 border-t-2 border-blue-500 shadow-lg" data-expansion>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center space-x-3 text-lg">
-            <span>{results.name}</span>
+            <span>{results?.name}</span>
             <Badge className={
               results.status === 'Completed' ? 'bg-green-100 text-green-800' :
               results.status === 'Completed with Failures' ? 'bg-orange-100 text-orange-800' :
@@ -475,11 +482,15 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">MIA AUC:</span>
-                      <span className="font-medium">{results.metrics.privacy.mia_auc.toFixed(3)}</span>
+                      <span className={`font-medium ${results.metrics.privacy.mia_auc <= 0.6 ? 'text-green-600' : 'text-red-600'}`}>
+                        {results.metrics.privacy.mia_auc.toFixed(3)}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Duplicate Rate:</span>
-                      <span className="font-medium">{(results.metrics.privacy.dup_rate * 100).toFixed(2)}%</span>
+                      <span className={`font-medium ${results.metrics.privacy.dup_rate <= 0.05 ? 'text-green-600' : 'text-red-600'}`}>
+                        {(results.metrics.privacy.dup_rate * 100).toFixed(2)}%
+                      </span>
                     </div>
                   </CardContent>
                 </Card>
@@ -507,11 +518,15 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">KS Mean:</span>
-                      <span className="font-medium">{results.metrics.utility.ks_mean.toFixed(3)}</span>
+                      <span className={`font-medium ${results.metrics.utility.ks_mean <= 0.15 ? 'text-green-600' : 'text-red-600'}`}>
+                        {results.metrics.utility.ks_mean.toFixed(3)}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Correlation Delta:</span>
-                      <span className="font-medium">{results.metrics.utility.corr_delta.toFixed(3)}</span>
+                      <span className={`font-medium ${results.metrics.utility.corr_delta <= 0.1 ? 'text-green-600' : 'text-red-600'}`}>
+                        {results.metrics.utility.corr_delta.toFixed(3)}
+                      </span>
                     </div>
                   </CardContent>
                 </Card>

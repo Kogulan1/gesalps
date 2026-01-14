@@ -187,6 +187,16 @@ app.add_middleware(
 )
 app.add_middleware(GZipMiddleware, minimum_size=1024)
 
+# --- One-Click Generation & Static Files ---
+from fastapi.staticfiles import StaticFiles
+from . import generation
+
+app.include_router(generation.router, prefix="/api/v1", tags=["generation"])
+
+tmp_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tmp")
+os.makedirs(tmp_dir, exist_ok=True)
+app.mount("/tmp", StaticFiles(directory=tmp_dir), name="tmp")
+
 # ---------- Utils ----------
 def ensure_bucket(name: str) -> None:
     try:
@@ -1842,15 +1852,27 @@ class AgentPlanBody(BaseModel):
 
 
 def _summarize_dataset(dataset_id: str) -> Dict[str, Any]:
+    t0 = time.time()
     ds = supabase.table("datasets").select("id,project_id,name,rows_count,cols_count,file_url,schema_json").eq("id", dataset_id).single().execute()
     if not ds.data:
         raise HTTPException(status_code=404, detail="Dataset not found")
     info = ds.data
+    
+    # Optimization: If schema_json is already rich with 'unique' counts, we might skip full download
+    # However, for the AI to have best info, we currently still read 1000 rows for distribution samples.
+    
+    print(f"[telemetry][summarize] metadata fetched in {time.time()-t0:.2f}s")
+    
+    t1 = time.time()
     # Download CSV (entire file) and read first 1000 rows
     try:
         raw = supabase.storage.from_("datasets").download(info["file_url"])  # bytes or response
         data = raw if isinstance(raw, (bytes, bytearray)) else raw.read()
+        print(f"[telemetry][summarize] download completed in {time.time()-t1:.2f}s ({len(data)} bytes)")
+        
+        t2 = time.time()
         df = pd.read_csv(io.BytesIO(data), nrows=1000)
+        print(f"[telemetry][summarize] pandas parse 1000 rows in {time.time()-t2:.2f}s")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to load dataset: {e}")
 

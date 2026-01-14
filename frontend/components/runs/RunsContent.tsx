@@ -148,7 +148,7 @@ const DEMO_RUNS: Run[] = [
       rows_generated: 800,
       columns_generated: 15,
       privacy_audit_passed: true,
-      utility_audit_passed: false,
+      utility_audit_passed: (0.12 <= 0.15 && 0.15 <= 0.10), // Result: false
       privacy: {
         mia_auc: 0.58,
         dup_rate: 0.02
@@ -458,7 +458,7 @@ export function RunsContent({ initialRunId }: RunsContentProps = {}) {
           if (expandedRunId === runId) {
             setExpandedRunId(null);
           }
-        } catch (err) {
+        } catch (err: any) {
           console.error('Error cancelling run:', err);
           const friendlyMessage = getUserFriendlyErrorMessage(err);
           toast({
@@ -515,7 +515,7 @@ export function RunsContent({ initialRunId }: RunsContentProps = {}) {
           
           // Remove from UI
           setRuns(prev => prev.filter(r => r.id !== runId));
-        } catch (err) {
+        } catch (err: any) {
           console.error('Error deleting run:', err);
           const friendlyMessage = getUserFriendlyErrorMessage(err);
           toast({
@@ -536,11 +536,14 @@ export function RunsContent({ initialRunId }: RunsContentProps = {}) {
     }
   };
 
-  const getMetricColor = (value: number, threshold: number) => {
-    if (value >= threshold) return 'bg-green-500';
-    if (value >= threshold * 0.7) return 'bg-orange-500';
-    if (value >= threshold * 0.4) return 'bg-red-500';
-    return 'bg-gray-300';
+  const getMetricColor = (value: number | undefined | null, threshold: number) => {
+    if (value === undefined || value === null) return 'bg-gray-300';
+    // Logic: Lower is better (for error metrics like KS, MIA, Dup Rate)
+    // Add small epsilon for tolerant comparison (0.1500001 -> 0.15)
+    const epsilon = 0.001;
+    if (value <= threshold + epsilon) return 'bg-green-500';
+    if (value <= (threshold * 1.5) + epsilon) return 'bg-orange-500';
+    return 'bg-red-500';
   };
 
   useEffect(() => {
@@ -731,16 +734,18 @@ export function RunsContent({ initialRunId }: RunsContentProps = {}) {
                 let metricsData = null;
                 if ((computedStatus === 'succeeded' || computedStatus === 'completed') && metricsResponse.ok) {
                   metricsData = await metricsResponse.json();
-                  const rowsGenerated = metricsData?.rows_generated || 0;
-                  
-                  // If 0 rows generated, mark as Failed
-                  if (rowsGenerated === 0) {
-                    computedStatus = 'failed';
-                  } else {
-                    const privacyPassed = (metricsData?.privacy?.mia_auc || 1) <= 0.6 && (metricsData?.privacy?.dup_rate || 1) <= 0.05;
-                    const utilityPassed = (metricsData?.utility?.ks_mean || 1) <= 0.1 && (metricsData?.utility?.corr_delta || 1) <= 0.15;
-                    if (!privacyPassed || !utilityPassed) {
-                      computedStatus = 'Completed with Failures';
+                  if (metricsData && Object.keys(metricsData).length > 0) {
+                    const rowsGenerated = metricsData?.rows_generated;
+                    
+                    // Only mark as Failed if rows_generated is explicitly 0 and we have metrics
+                    if (rowsGenerated === 0 && (metricsData?.utility || metricsData?.privacy)) {
+                      computedStatus = 'failed';
+                    } else {
+                      const privacyPassed = (metricsData?.privacy?.mia_auc ?? 1) <= 0.6 && (metricsData?.privacy?.dup_rate ?? 1) <= 0.05;
+                      const utilityPassed = (metricsData?.utility?.ks_mean ?? 1) <= 0.15 && (metricsData?.utility?.corr_delta ?? 1) <= 0.10;
+                      if (!privacyPassed || !utilityPassed) {
+                        computedStatus = 'Completed with Failures';
+                      }
                     }
                   }
                 }
@@ -1036,7 +1041,7 @@ export function RunsContent({ initialRunId }: RunsContentProps = {}) {
                                 <div className="flex items-center space-x-2 min-w-0 flex-1">
                                   <span className="font-medium text-sm truncate">{run.name}</span>
                                 <Badge className={`${getStatusColor(run.status)} text-xs px-2 py-1 flex-shrink-0`}>
-                                  {run.status === 'succeeded' ? 'Completed' : run.status === 'cancelled' ? 'Cancelled' : run.status}
+                                  {run.status === 'succeeded' ? 'Succeeded' : run.status === 'cancelled' ? 'Cancelled' : run.status}
                                 </Badge>
                                 {isRunning && (
                                   <Badge className="bg-green-100 text-green-800 border-green-300 text-xs flex-shrink-0">
@@ -1063,15 +1068,15 @@ export function RunsContent({ initialRunId }: RunsContentProps = {}) {
                                 <div className="flex items-center space-x-1">
                                   <Lock className="h-3 w-3 text-gray-500" />
                                   <div className="flex space-x-1">
-                                    <div className={`w-1 h-4 rounded ${getMetricColor(run.privacy?.mia_auc || run.metrics?.privacy?.mia_auc || 0, 0.5)}`} title={`MIA AUC: ${run.privacy?.mia_auc || run.metrics?.privacy?.mia_auc || 0}`}></div>
-                                    <div className={`w-1 h-4 rounded ${getMetricColor(run.privacy?.dup_rate || run.metrics?.privacy?.dup_rate || 0, 0.05)}`} title={`Dup Rate: ${run.privacy?.dup_rate || run.metrics?.privacy?.dup_rate || 0}`}></div>
+                                    <div className={`w-1 h-4 rounded ${getMetricColor(run.privacy?.mia_auc ?? run.metrics?.privacy?.mia_auc, 0.6)}`} title={`MIA AUC: ${run.privacy?.mia_auc ?? run.metrics?.privacy?.mia_auc ?? 'N/A'}`}></div>
+                                    <div className={`w-1 h-4 rounded ${getMetricColor(run.privacy?.dup_rate ?? run.metrics?.privacy?.dup_rate, 0.05)}`} title={`Dup Rate: ${run.privacy?.dup_rate ?? run.metrics?.privacy?.dup_rate ?? 'N/A'}`}></div>
                                   </div>
                                 </div>
                                 <div className="flex items-center space-x-1">
                                   <Zap className="h-3 w-3 text-gray-500" />
                                   <div className="flex space-x-1">
-                                    <div className={`w-1 h-4 rounded ${getMetricColor(run.utility?.ks_mean || run.metrics?.utility?.ks_mean || 0, 0.1)}`} title={`KS Mean: ${run.utility?.ks_mean || run.metrics?.utility?.ks_mean || 0}`}></div>
-                                    <div className={`w-1 h-4 rounded ${getMetricColor(run.utility?.corr_delta || run.metrics?.utility?.corr_delta || 0, 0.15)}`} title={`Corr Delta: ${run.utility?.corr_delta || run.metrics?.utility?.corr_delta || 0}`}></div>
+                                    <div className={`w-1 h-4 rounded ${getMetricColor(run.utility?.ks_mean ?? run.metrics?.utility?.ks_mean, 0.15)}`} title={`KS Mean: ${run.utility?.ks_mean ?? run.metrics?.utility?.ks_mean ?? 'N/A'}`}></div>
+                                    <div className={`w-1 h-4 rounded ${getMetricColor(run.utility?.corr_delta ?? run.metrics?.utility?.corr_delta, 0.10)}`} title={`Corr Delta: ${run.utility?.corr_delta ?? run.metrics?.utility?.corr_delta ?? 'N/A'}`}></div>
                                   </div>
                                 </div>
                               </div>

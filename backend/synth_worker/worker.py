@@ -22,6 +22,15 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Import GreenGuard Generation Service
+try:
+    from . import generation_service
+except ImportError:
+    try:
+        import generation_service
+    except ImportError:
+        pass
+
 # SDV (modern single-table synthesizers)
 try:
     # Newer SDV may expose a unified Metadata; keep fallback for older versions.
@@ -1319,6 +1328,7 @@ def _agent_plan_ollama(dataset_name: str, schema_json: Dict[str, Any], last_metr
 
 def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str, Any]:
     global get_preprocessing_plan
+    print(f"[worker][debug] execute_pipeline run_id={run.get('id')} mode={run.get('mode')} method={run.get('method')}")
     # Load dataset
     ds = supabase.table("datasets").select("file_url,rows_count,name,schema_json").eq("id", run["dataset_id"]).single().execute()
     file_url = (ds.data or {}).get("file_url")
@@ -1326,6 +1336,113 @@ def execute_pipeline(run: Dict[str, Any], cancellation_checker=None) -> Dict[str
         raise RuntimeError("Dataset file not found")
 
     real = _download_csv_from_storage(file_url)
+    
+    # ---------------------------------------------------------
+    # GREENGUARD GENERATION SERVICE INTERCEPT
+    # ---------------------------------------------------------
+    mode = (run.get("mode") or "").strip().lower()
+    method = (run.get("method") or "").strip().lower()
+    
+    # Use GreenGuard Service if mode is "allgreen" (from One-Click toggle) OR explicit tvae
+    use_greenguard = mode == "allgreen" or (method == "tvae" and mode != "agent")
+    
+    if use_greenguard:
+        try:
+            print(f"[worker][GreenGuard] Intercepting execution for run_id={run.get('id')} (mode={mode}, method={method})")
+            # Check if module is available
+            gen_svc = None
+            try:
+                import generation_service as gen_svc
+            except (ImportError, ValueError):
+                try:
+                    from . import generation_service as gen_svc
+                except (ImportError, ValueError):
+                    print("[worker][GreenGuard] Could not import generation_service")
+                    gen_svc = None
+
+            if gen_svc:
+                print(f"[worker][GreenGuard] Intercepting execution for {method} (mode={mode}) using Generation Service...")
+                
+                # Convert DF back to CSV bytes (robust way)
+                csv_buffer = io.BytesIO()
+                real.to_csv(csv_buffer, index=False)
+                csv_bytes = csv_buffer.getvalue()
+                
+                # Log Step 1: Preprocessing
+                try:
+                    supabase.table("run_steps").insert({
+                        "run_id": run["id"],
+                        "step_no": 1,
+                        "title": "Preprocessing",
+                        "detail": "GreenGuard Clinical Preprocessing (Proven Winsorization)",
+                        "metrics_json": {}
+                    }).execute()
+                except Exception:
+                    pass
+
+                # Execute Generation Service Pipeline
+                result_svc = gen_svc.generate_synthetic(csv_bytes)
+                
+                # Log Step 2: Training (Completed)
+                try:
+                    supabase.table("run_steps").insert({
+                        "run_id": run["id"],
+                        "step_no": 2,
+                        "title": "Training",
+                        "detail": "GreenGuard TVAE Execution Completed",
+                        "metrics_json": {}
+                    }).execute()
+                except Exception:
+                    pass
+                
+                # Upload Artifacts (PDF & CSV)
+                # Use same path structure as _make_artifacts: {project_id}/{run_id}/{filename}
+                project_id = run["project_id"]
+                run_id = run["id"]
+                
+                artifacts = {}
+                
+                # Upload CSV
+                if result_svc.get("synthetic_path"):
+                    with open(result_svc["synthetic_path"], "rb") as f:
+                        csv_data = f.read()
+                    csv_path = f"{project_id}/{run_id}/synthetic.csv"
+                    supabase.storage.from_(ARTIFACT_BUCKET).upload(csv_path, csv_data, {"content-type": "text/csv", "upsert": "true"})
+                    artifacts["synthetic_csv"] = csv_path
+                    
+                # Upload PDF
+                if result_svc.get("pdf_path"):
+                    with open(result_svc["pdf_path"], "rb") as f:
+                        pdf_data = f.read()
+                    pdf_path = f"{project_id}/{run_id}/report.pdf"
+                    supabase.storage.from_(ARTIFACT_BUCKET).upload(pdf_path, pdf_data, {"content-type": "application/pdf", "upsert": "true"})
+                    artifacts["report_pdf"] = pdf_path
+                
+                print(f"[worker][GreenGuard] Service execution successful. Artifacts: {list(artifacts.keys())}")
+                
+                # Log Step 3: Metrics
+                try:
+                    supabase.table("run_steps").insert({
+                        "run_id": run["id"],
+                        "step_no": 3,
+                        "title": "Metrics",
+                        "detail": "All Green Evaluation Completed",
+                        "metrics_json": result_svc["metrics"]
+                    }).execute()
+                except Exception:
+                    pass
+                
+                return {
+                    "metrics": result_svc["metrics"],
+                    "artifacts": artifacts
+                }
+            
+        except Exception as e:
+            print(f"[worker][GreenGuard] Service execution failed: {e}. Falling back to legacy pipeline.")
+            import traceback
+            traceback.print_exc()
+            # Fall through to legacy pipeline
+            pass
     
     # MANDATORY: Smart preprocessing via OpenRouter LLM (before model training)
     # This automatically detects/fixes issues like numeric column names, skewed distributions, feature collapse

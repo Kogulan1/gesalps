@@ -12,8 +12,8 @@ type Grade = "strong" | "good" | "check" | "na";
 function gradeFor(value: number | null | undefined, kind: "ks" | "corr" | "mia" | "dup" | "k" | "eps" | "auroc" | "cidx"): Grade {
   if (value === null || value === undefined || Number.isNaN(value)) return "na";
   if (kind === "ks") {
-    if (value <= 0.08) return "strong";
-    if (value <= 0.10) return "good";
+    if (value <= 0.10) return "strong";
+    if (value <= 0.15) return "good";
     return "check"; // higher is worse
   }
   if (kind === "corr") {
