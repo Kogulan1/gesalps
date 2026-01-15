@@ -297,7 +297,7 @@ export function RunsContent({ initialRunId }: RunsContentProps = {}) {
     setExpandedRunId(null);
   };
 
-  const handleDownloadRun = async (runId: string, runName: string) => {
+  const handleDownloadRun = async (run: Run) => {
     try {
       const supabase = createSupabaseBrowserClient();
       const { data: { session } } = await supabase.auth.getSession();
@@ -306,25 +306,43 @@ export function RunsContent({ initialRunId }: RunsContentProps = {}) {
         throw new Error('No authentication token available');
       }
 
-      // Use signed URL for private bucket access
-      // Path relative to bucket root: {run_id}/report.pdf
-      const path = `${runId}/report.pdf`;
-      const { data, error } = await supabase.storage
-        .from('run_artifacts')
-        .createSignedUrl(path, 60);
+      // Try multiple path formats:
+      // 1. {project_id}/{run_id}/report.pdf (New format)
+      // 2. {run_id}/report.pdf (Old format)
+      // 3. {dataset_id}/{run_id}/report.pdf (Alternative)
+      
+      const pathsToTry = [
+          `${run.project_id}/${run.id}/report.pdf`,
+          `${run.id}/report.pdf`,
+      ];
+      
+      let signedUrl = null;
+      let lastError = null;
+      
+      for (const path of pathsToTry) {
+           const { data, error } = await supabase.storage
+            .from('run_artifacts')
+            .createSignedUrl(path, 60);
+           
+           if (!error && data?.signedUrl) {
+               signedUrl = data.signedUrl;
+               break;
+           }
+           lastError = error;
+      }
 
-      if (error || !data?.signedUrl) throw new Error('Failed to generate secure link');
+      if (!signedUrl) throw new Error('Failed to locate report artifact. It may not have been generated yet.');
 
       // Trigger download
       const a = document.createElement('a');
-      a.href = data.signedUrl;
-      a.download = `${runName}-report.pdf`;
+      a.href = signedUrl;
+      a.download = `${run.name || 'run'}-report.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error downloading run:', error);
-      alert('Failed to download report. Artifact may not exist.');
+      alert(error.message || 'Failed to download report.');
     }
   };
 
@@ -1108,7 +1126,7 @@ export function RunsContent({ initialRunId }: RunsContentProps = {}) {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => handleDownloadRun(run.id, run.name)}
+                                    onClick={() => handleDownloadRun(run)}
                                     className="text-gray-600 hover:text-gray-900 h-7 w-7 p-0"
                                   >
                                     <Download className="h-4 w-4" />
