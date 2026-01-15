@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { DatasetPreviewModal } from "./DatasetPreviewModal";
+import { useRouter } from "next/navigation";
 import { 
   Search, 
   Plus,
@@ -34,7 +35,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { RenameModal } from "@/components/common/RenameModal";
 import { FileUploadModal } from "./FileUploadModal";
-import { RunExecutionModal } from "./RunExecutionModal";
+// import { RunExecutionModal } from "./RunExecutionModal"; // Replaced by page navigation
 import { ResultsModal } from "./ResultsModal";
 import { ViewModeToggle } from "@/components/common/ViewModeToggle";
 import { LoadingState, EmptyState, ErrorState } from "@/components/common/StateComponents";
@@ -67,6 +68,7 @@ type DemoDataset = {
 };
 
 export function DatasetsContent() {
+  const router = useRouter();
   const t = useTranslations('dashboard');
   const [datasets, setDatasets] = useState<DemoDataset[]>([]);
   const [loading, setLoading] = useState(true);
@@ -94,13 +96,7 @@ export function DatasetsContent() {
     currentName: ""
   });
   const [uploadModal, setUploadModal] = useState(false);
-  const [runExecutionModal, setRunExecutionModal] = useState<{
-    isOpen: boolean;
-    dataset: DemoDataset | null;
-  }>({
-    isOpen: false,
-    dataset: null
-  });
+
   const [resultsModal, setResultsModal] = useState<{
     isOpen: boolean;
     runId: string | null;
@@ -227,10 +223,7 @@ export function DatasetsContent() {
     fetchDatasets();
   };
 
-  const handleRunSuccess = () => {
-    // Refresh the datasets list
-    fetchDatasets();
-  };
+
 
   const handleViewResults = (runId: string, runName: string) => {
     setResultsModal({
@@ -241,10 +234,14 @@ export function DatasetsContent() {
   };
 
   const handleStartRun = (dataset: DemoDataset) => {
-    setRunExecutionModal({
-      isOpen: true,
-      dataset: dataset
-    });
+    // Redirect to the new simplified run page
+    if (dataset.project_id) {
+        router.push(`/en/projects/${dataset.project_id}/runs/new?datasetId=${dataset.id}`);
+    } else {
+        // Fallback or error if project_id missing
+        console.warn("Dataset has no project_id, cannot start run", dataset);
+        alert("This dataset is not associated with a project. Please assign it to a project first.");
+    }
   };
 
   useEffect(() => {
@@ -493,7 +490,7 @@ export function DatasetsContent() {
               {uniqueProjects.map(projectId => {
                 const project = datasets.find(d => d.project_id === projectId);
                 return (
-                  <DropdownMenuItem key={projectId} onClick={() => setFilterProject(projectId)}>
+                  <DropdownMenuItem key={projectId} onClick={() => setFilterProject(projectId as string)}>
                     {project?.project_name || 'Unknown Project'}
                   </DropdownMenuItem>
                 );
@@ -758,16 +755,7 @@ export function DatasetsContent() {
         projects={projects}
       />
 
-      <RunExecutionModal
-        isOpen={runExecutionModal.isOpen}
-        onClose={() => setRunExecutionModal({ isOpen: false, dataset: null })}
-        onSuccess={handleRunSuccess}
-        dataset={runExecutionModal.dataset}
-        onViewResults={(runId, runName) => {
-          setRunExecutionModal({ isOpen: false, dataset: null });
-          setResultsModal({ isOpen: true, runId, runName });
-        }}
-      />
+
 
       <ResultsModal
         isOpen={resultsModal.isOpen}
@@ -779,7 +767,15 @@ export function DatasetsContent() {
       <DatasetPreviewModal
         isOpen={previewModal.isOpen}
         onClose={() => setPreviewModal({ isOpen: false, dataset: null })}
-        dataset={previewModal.dataset}
+        dataset={previewModal.dataset ? {
+          id: previewModal.dataset.id,
+          name: previewModal.dataset.name,
+          description: previewModal.dataset.description || "",
+          file_path: previewModal.dataset.file_name || "",
+          size: previewModal.dataset.size || "0",
+          rows: previewModal.dataset.rows || 0,
+          columns: previewModal.dataset.columns || 0
+        } : null}
       />
     </div>
   );
