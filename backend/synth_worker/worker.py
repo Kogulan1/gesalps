@@ -2,7 +2,7 @@ import os, io, json, time, warnings
 import re
 import signal
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 from contextlib import contextmanager
 
 import numpy as np
@@ -507,6 +507,90 @@ def _sanitize_hparams(method: str, hp: Dict[str, Any]) -> Dict[str, Any]:
 
 # -------------------- Metrics --------------------
 
+def _compute_ml_utility(real: pd.DataFrame, synth: pd.DataFrame) -> Tuple[Optional[float], Optional[float]]:
+    """Compute ML utility (AUROC) by training on Synth, Testing on Real."""
+    try:
+        from sklearn.model_selection import train_test_split
+        from sklearn.ensemble import RandomForestClassifier
+        from sklearn.preprocessing import LabelEncoder
+        from sklearn.metrics import roc_auc_score
+        
+        # 1. Identify Target
+        # Simple heuristic: Column with fewest unique values (but >1) that is likely categorical
+        target = None
+        min_unique = 100
+        
+        # Prefer 'outcome', 'target', 'diagnosis', 'class' if present
+        candidates = [c for c in real.columns if c.lower() in ('outcome', 'target', 'diagnosis', 'class', 'label')]
+        if candidates:
+            target = candidates[0]
+        else:
+            # Fallback heuristic
+            for col in real.columns:
+                n_unique = real[col].nunique()
+                if 2 <= n_unique <= 10 and n_unique < min_unique:
+                    min_unique = n_unique
+                    target = col
+        
+        if not target:
+            return 0.0, 0.0 # No suitable target found
+            
+        print(f"[worker][ml-utility] Selected target column: {target}")
+
+        # 2. Prepare Data
+        # Drop target from X
+        X_real = real.drop(columns=[target])
+        y_real = real[target]
+        
+        X_synth = synth.drop(columns=[target])
+        y_synth = synth[target]
+        
+        # Encode Categoricals
+        # Combine to ensure same encoding
+        def encode_df(df_x, df_y):
+            df_x = df_x.copy()
+            le_y = LabelEncoder()
+            y_enc = le_y.fit_transform(df_y.astype(str))
+            
+            # Encode features
+            for col in df_x.columns:
+                if df_x[col].dtype == 'object' or df_x[col].dtype.name == 'category':
+                    le = LabelEncoder()
+                    # Fit on combined to catch all classes
+                    combined = pd.concat([df_x[col].astype(str), X_real[col].astype(str), X_synth[col].astype(str)]).unique()
+                    le.fit(combined)
+                    df_x[col] = le.transform(df_x[col].astype(str))
+                else:
+                    df_x[col] = df_x[col].fillna(0) # Fill numeric NaNs
+            return df_x, y_enc
+
+        X_synth_enc, y_synth_enc = encode_df(X_synth, y_synth)
+        X_real_enc, y_real_enc = encode_df(X_real, y_real)
+        
+        # 3. Train on Synthetic, Test on Real (TRTS)
+        clf = RandomForestClassifier(n_estimators=10, max_depth=5, random_state=42)
+        clf.fit(X_synth_enc, y_synth_enc)
+        
+        # Predict probs
+        if hasattr(clf, "predict_proba"):
+            y_pred_proba = clf.predict_proba(X_real_enc)
+            # Handle binary vs multiclass
+            if len(np.unique(y_real_enc)) == 2:
+                auroc = roc_auc_score(y_real_enc, y_pred_proba[:, 1])
+            else:
+                try:
+                    auroc = roc_auc_score(y_real_enc, y_pred_proba, multi_class='ovr')
+                except:
+                   auroc = 0.5 # Fallback
+        else:
+            auroc = 0.5
+            
+        return float(auroc), float(auroc) # Using AUROC for C-Index proxy for now
+        
+    except Exception as e:
+        print(f"[worker][ml-utility] Failed: {e}")
+        return 0.0, 0.0
+
 def _utility_metrics_synthcity(real: pd.DataFrame, synth: pd.DataFrame) -> Optional[Dict[str, Any]]:
     """Compute utility metrics using SynthCity evaluators.
     
@@ -611,89 +695,7 @@ def _utility_metrics_synthcity(real: pd.DataFrame, synth: pd.DataFrame) -> Optio
             "c_index": c_index,
         }
 
-def _compute_ml_utility(real: pd.DataFrame, synth: pd.DataFrame) -> Tuple[Optional[float], Optional[float]]:
-    """Compute ML utility (AUROC) by training on Synth, Testing on Real."""
-    try:
-        from sklearn.model_selection import train_test_split
-        from sklearn.ensemble import RandomForestClassifier
-        from sklearn.preprocessing import LabelEncoder
-        from sklearn.metrics import roc_auc_score
-        
-        # 1. Identify Target
-        # Simple heuristic: Column with fewest unique values (but >1) that is likely categorical
-        target = None
-        min_unique = 100
-        
-        # Prefer 'outcome', 'target', 'diagnosis', 'class' if present
-        candidates = [c for c in real.columns if c.lower() in ('outcome', 'target', 'diagnosis', 'class', 'label')]
-        if candidates:
-            target = candidates[0]
-        else:
-            # Fallback heuristic
-            for col in real.columns:
-                n_unique = real[col].nunique()
-                if 2 <= n_unique <= 10 and n_unique < min_unique:
-                    min_unique = n_unique
-                    target = col
-        
-        if not target:
-            return 0.0, 0.0 # No suitable target found
-            
-        print(f"[worker][ml-utility] Selected target column: {target}")
 
-        # 2. Prepare Data
-        # Drop target from X
-        X_real = real.drop(columns=[target])
-        y_real = real[target]
-        
-        X_synth = synth.drop(columns=[target])
-        y_synth = synth[target]
-        
-        # Encode Categoricals
-        # Combine to ensure same encoding
-        def encode_df(df_x, df_y):
-            df_x = df_x.copy()
-            le_y = LabelEncoder()
-            y_enc = le_y.fit_transform(df_y.astype(str))
-            
-            # Encode features
-            for col in df_x.columns:
-                if df_x[col].dtype == 'object' or df_x[col].dtype.name == 'category':
-                    le = LabelEncoder()
-                    # Fit on combined to catch all classes
-                    combined = pd.concat([df_x[col].astype(str), X_real[col].astype(str), X_synth[col].astype(str)]).unique()
-                    le.fit(combined)
-                    df_x[col] = le.transform(df_x[col].astype(str))
-                else:
-                    df_x[col] = df_x[col].fillna(0) # Fill numeric NaNs
-            return df_x, y_enc
-
-        X_synth_enc, y_synth_enc = encode_df(X_synth, y_synth)
-        X_real_enc, y_real_enc = encode_df(X_real, y_real)
-        
-        # 3. Train on Synthetic, Test on Real (TRTS)
-        clf = RandomForestClassifier(n_estimators=10, max_depth=5, random_state=42)
-        clf.fit(X_synth_enc, y_synth_enc)
-        
-        # Predict probs
-        if hasattr(clf, "predict_proba"):
-            y_pred_proba = clf.predict_proba(X_real_enc)
-            # Handle binary vs multiclass
-            if len(np.unique(y_real_enc)) == 2:
-                auroc = roc_auc_score(y_real_enc, y_pred_proba[:, 1])
-            else:
-                try:
-                    auroc = roc_auc_score(y_real_enc, y_pred_proba, multi_class='ovr')
-                except:
-                   auroc = 0.5 # Fallback
-        else:
-            auroc = 0.5
-            
-        return float(auroc), float(auroc) # Using AUROC for C-Index proxy for now
-        
-    except Exception as e:
-        print(f"[worker][ml-utility] Failed: {e}")
-        return 0.0, 0.0
         
         return None
     except (ImportError, AttributeError, Exception) as e:
