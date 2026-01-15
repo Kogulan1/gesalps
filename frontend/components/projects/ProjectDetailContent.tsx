@@ -61,6 +61,7 @@ interface Dataset {
 interface Run {
   id: string;
   name: string;
+  dataset_id?: string;
   dataset_name: string;
   status: "Running" | "Completed" | "Failed" | "Queued";
   started_at: string;
@@ -300,6 +301,7 @@ export function ProjectDetailContent() {
       const transformedRuns: Run[] = (projectData.runs || []).map((run: any) => ({
         id: run.id,
         name: run.name,
+        dataset_id: run.dataset_id,
         dataset_name: run.dataset_name || "Unknown Dataset", // Use dataset_name from API
         status: run.status === "succeeded" ? "Completed" : 
                 run.status === "running" ? "Running" :
@@ -843,7 +845,16 @@ export function ProjectDetailContent() {
                           size="sm" 
                           className="text-gray-700 border-gray-300 hover:bg-gray-50"
                           onClick={() => {
-                            setResultsModal({ isOpen: true, runId: run.id, runName: run.name });
+                            if (["Running", "Processing", "Started"].includes(run.status)) {
+                              // Redirect to the running dashboard
+                              if (run.dataset_id) {
+                                router.push(`/en/projects/${projectId}/runs/new?datasetId=${run.dataset_id}&runId=${run.id}`);
+                              } else {
+                                alert("Cannot resume run: missing dataset ID.");
+                              }
+                            } else {
+                              setResultsModal({ isOpen: true, runId: run.id, runName: run.name });
+                            }
                           }}
                         >
                           <Eye className="h-4 w-4 mr-2" />

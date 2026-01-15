@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { SimplifiedStartRun } from "./SimplifiedStartRun";
 import { RealTimeProgressDashboard } from "./RealTimeProgressDashboard";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
@@ -15,11 +16,23 @@ interface NewRunLayoutProps {
 export type RunStep = 'config' | 'running' | 'completed' | 'failed';
 
 export function NewRunLayout({ projectId, initialDatasetId }: NewRunLayoutProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const [step, setStep] = useState<RunStep>('config');
   const [dataset, setDataset] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isStarting, setIsStarting] = useState(false);
   const [runId, setRunId] = useState<string | null>(null);
+
+  // Check for existing run in URL to restore state
+  useEffect(() => {
+    const existingRunId = searchParams.get('runId');
+    if (existingRunId) {
+      setRunId(existingRunId);
+      setStep('running');
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (initialDatasetId) {
@@ -59,7 +72,8 @@ export function NewRunLayout({ projectId, initialDatasetId }: NewRunLayoutProps)
 
   const handleStartRun = async (config: any) => {
     try {
-      setStep('running');
+      setIsStarting(true);
+      // setStep('running'); // Removed: Don't show dashboard until we have runId 
       const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || 'http://localhost:8000';
       const supabase = createSupabaseBrowserClient();
       const { data: { session } } = await supabase.auth.getSession();
@@ -95,14 +109,25 @@ export function NewRunLayout({ projectId, initialDatasetId }: NewRunLayoutProps)
       }
 
       const result = await response.json();
+      
+      // Update URL with runId so refresh/navigation works
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('runId', result.run_id);
+      router.replace(`?${params.toString()}`, { scroll: false });
+
       setRunId(result.run_id);
+      setStep('running');
     } catch (err) {
-      setStep('failed');
+      // Stay on config step if failed, just show error
+      // setStep('failed'); 
+      console.error(err);
       toast({
         title: "Failed to start run",
         description: getUserFriendlyErrorMessage(err as any),
         variant: "error"
       });
+    } finally {
+      setIsStarting(false);
     }
   };
 
@@ -114,7 +139,7 @@ export function NewRunLayout({ projectId, initialDatasetId }: NewRunLayoutProps)
         <SimplifiedStartRun 
             dataset={dataset} 
             onStart={handleStartRun} 
-            isStarting={loading} // Actually managing loading state within SimplifiedStartRun internally via step if needed, but passed prop for button disabled
+            isStarting={isStarting} 
         />
       ) : (
         <RealTimeProgressDashboard 

@@ -128,7 +128,9 @@ export function RealTimeProgressDashboard({ runId, status, onComplete, onFail }:
                 <span>{isCompleted ? "Run Complete" : "Generating Synthetic Data..."}</span>
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Run ID: <code className="text-[10px] bg-muted px-1 rounded">{runId?.slice(0, 8)}...</code>
+                Run ID: <code className="text-[10px] bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 font-mono text-slate-500">
+                  {runId ? runId.slice(0, 8) : "Initializing..."}
+                </code>
               </p>
             </div>
             <Badge variant="outline" className="h-8 px-4 font-mono">

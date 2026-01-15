@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sparkles, ShieldCheck, Cpu, ChevronDown, ChevronUp, Settings2, Play, Activity } from "lucide-react";
+import { Sparkles, ShieldCheck, Cpu, ChevronDown, ChevronUp, Settings2, Play, Activity, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SimplifiedStartRunProps {
@@ -99,7 +99,10 @@ export function SimplifiedStartRun({ dataset, onStart, isStarting = false }: Sim
                     className="relative w-full h-16 text-lg font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-xl hover:shadow-2xl transition-all hover:-translate-y-0.5"
                 >
                     {isStarting ? (
-                        <>Processing...</>
+                        <>
+                          <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                          Processing...
+                        </>
                     ) : (
                         <><Play className="w-5 h-5 mr-2 fill-current" /> Start Generation</>
                     )}
