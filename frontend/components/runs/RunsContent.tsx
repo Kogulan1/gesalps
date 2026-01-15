@@ -299,7 +299,6 @@ export function RunsContent({ initialRunId }: RunsContentProps = {}) {
 
   const handleDownloadRun = async (runId: string, runName: string) => {
     try {
-      const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || process.env.BACKEND_API_BASE || 'http://localhost:8000';
       const supabase = createSupabaseBrowserClient();
       const { data: { session } } = await supabase.auth.getSession();
       
@@ -307,27 +306,25 @@ export function RunsContent({ initialRunId }: RunsContentProps = {}) {
         throw new Error('No authentication token available');
       }
 
-      const response = await fetch(`${base}/v1/runs/${runId}/download`, {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-        }
-      });
+      // Use signed URL for private bucket access
+      // Path relative to bucket root: {run_id}/report.pdf
+      const path = `${runId}/report.pdf`;
+      const { data, error } = await supabase.storage
+        .from('run_artifacts')
+        .createSignedUrl(path, 60);
 
-      if (!response.ok) {
-        throw new Error(`Failed to download run: ${response.status}`);
-      }
+      if (error || !data?.signedUrl) throw new Error('Failed to generate secure link');
 
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      // Trigger download
       const a = document.createElement('a');
-      a.href = url;
+      a.href = data.signedUrl;
       a.download = `${runName}-report.pdf`;
       document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
       console.error('Error downloading run:', error);
+      alert('Failed to download report. Artifact may not exist.');
     }
   };
 

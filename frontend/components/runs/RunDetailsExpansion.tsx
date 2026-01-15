@@ -28,6 +28,7 @@ import { AgentPlanTab } from "./AgentPlanTab";
 import { AgentTimeline } from "./AgentTimeline";
 import { ExecutionLogTab } from "./ExecutionLogTab";
 import { RealTimeLogsTab } from "./RealTimeLogsTab";
+import ReportView from "./ReportView";
 
 interface RunDetailsExpansionProps {
   runId: string;
@@ -223,7 +224,8 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
       if (!session?.access_token) return;
 
       // Use signed URL for private bucket access
-      const path = `run_artifacts/${results.id}/report.pdf`;
+      // Path relative to bucket root: {run_id}/report.pdf
+      const path = `${results.id}/report.pdf`;
       const { data, error } = await supabase.storage
         .from('run_artifacts')
         .createSignedUrl(path, 60); // 1 minute expiry
@@ -251,7 +253,8 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
       if (!session?.access_token) return;
 
       // Use signed URL for private bucket access
-      const path = `run_artifacts/${results.id}/synthetic.csv`;
+      // Path relative to bucket root: {run_id}/synthetic.csv
+      const path = `${results.id}/synthetic.csv`;
       const { data, error } = await supabase.storage
         .from('run_artifacts')
         .createSignedUrl(path, 60); // 1 minute expiry
@@ -373,6 +376,10 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
           <TabsList className="w-full justify-start overflow-x-auto border-b rounded-none">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="metrics">Metrics</TabsTrigger>
+            <TabsTrigger value="report" className="flex items-center space-x-1">
+              <FileText className="h-3 w-3" />
+              <span>Report</span>
+            </TabsTrigger>
             <TabsTrigger value="privacy">Privacy</TabsTrigger>
             <TabsTrigger value="utility">Utility</TabsTrigger>
             <TabsTrigger value="agent-plan" className="flex items-center space-x-1">
@@ -633,6 +640,37 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
                 finalMetrics={results?.metrics}
                 interventions={runData?.agent_interventions || null}
               />
+            </TabsContent>
+            <TabsContent value="report" className="mt-4">
+              <ReportView report={{
+                privacy: {
+                  mia_auc: results.metrics.privacy.mia_auc,
+                  dup_rate: results.metrics.privacy.dup_rate,
+                  k_anonymization: (runData?.config_json?.privacy || {}).k_anon,
+                  identifiability_score: results.scores.privacy_score, // Using score as proxy if actual metric missing
+                  dp_epsilon: results.scores.dp_epsilon,
+                  dp_effective: results.scores.dp_epsilon > 0
+                },
+                utility: {
+                  ks_mean: results.metrics.utility.ks_mean,
+                  corr_delta: results.metrics.utility.corr_delta,
+                  auroc: results.scores.auroc,
+                  c_index: results.scores.c_index
+                },
+                // Fairness not always present in basic results, try to get from runData if available
+                fairness: runData?.metrics?.fairness,
+                compliance: {
+                  passed: results.metrics.privacy_audit_passed && results.metrics.utility_audit_passed,
+                  privacy_passed: results.metrics.privacy_audit_passed,
+                  utility_passed: results.metrics.utility_audit_passed,
+                  score: (results.scores.privacy_score + results.scores.utility_score) / 2
+                },
+                meta: {
+                  n_real: runData?.metrics?.meta?.n_real || 0,
+                  n_synth: results.metrics.rows_generated,
+                  model: results.method
+                }
+              }} />
             </TabsContent>
           </div>
         </Tabs>

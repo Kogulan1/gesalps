@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { QuickConfigCard } from "./QuickConfigCard";
-import { AdvancedSettingsAccordion } from "./AdvancedSettingsAccordion";
+import { SimplifiedStartRun } from "./SimplifiedStartRun";
 import { RealTimeProgressDashboard } from "./RealTimeProgressDashboard";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
 import { useToast } from "@/components/toast/Toaster";
@@ -67,17 +66,27 @@ export function NewRunLayout({ projectId, initialDatasetId }: NewRunLayoutProps)
       
       if (!session) throw new Error("Not authenticated");
 
+      // Extract config params to top-level if needed by backend, or keep in config_json
+      // Backend expects: dataset_id, method (optional), mode, config_json, name
+      const payload = {
+        project_id: projectId,
+        dataset_id: dataset.id,
+        name: config.name,
+        mode: config.mode,
+        // Map advanced config keys
+        config_json: {
+           ...config.config,
+           privacy_level: config.privacy_level
+        }
+      };
+
       const response = await fetch(`${base}/v1/runs`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          project_id: projectId,
-          dataset_id: dataset.id,
-          ...config
-        })
+        body: JSON.stringify(payload)
       });
 
       if (!response.ok) {
@@ -102,13 +111,11 @@ export function NewRunLayout({ projectId, initialDatasetId }: NewRunLayoutProps)
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       {step === 'config' ? (
-        <div className="space-y-6">
-          <QuickConfigCard 
+        <SimplifiedStartRun 
             dataset={dataset} 
             onStart={handleStartRun} 
-          />
-          <AdvancedSettingsAccordion />
-        </div>
+            isStarting={loading} // Actually managing loading state within SimplifiedStartRun internally via step if needed, but passed prop for button disabled
+        />
       ) : (
         <RealTimeProgressDashboard 
           runId={runId} 
