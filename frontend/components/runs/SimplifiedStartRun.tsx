@@ -52,12 +52,13 @@ export function SimplifiedStartRun({ dataset, onStart, isStarting = false }: Sim
   return (
     <Card className="w-full max-w-3xl mx-auto shadow-2xl border-0 ring-1 ring-border/50 overflow-hidden bg-background/50 backdrop-blur-sm">
       {/* Hero Header */}
-      <div className="bg-gradient-to-b from-green-50/50 to-transparent dark:from-green-950/10 pt-8 pb-2">
+      {/* Hero Header */}
+      <div className="bg-gradient-to-b from-gray-50/50 to-transparent dark:from-gray-950/10 pt-8 pb-2">
         <CardHeader className="text-center pb-2 relative z-10">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900 rounded-2xl shadow-inner flex items-center justify-center mb-4 ring-4 ring-background">
-            <Sparkles className="w-8 h-8 text-green-600 dark:text-green-400" />
+          <div className="mx-auto w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-2xl shadow-sm flex items-center justify-center mb-4 ring-1 ring-black/5">
+            <Sparkles className="w-8 h-8 text-black fill-gray-300" strokeWidth={1.5} />
           </div>
-          <CardTitle className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-700 to-emerald-600 dark:from-green-400 dark:to-emerald-300">
+          <CardTitle className="text-3xl font-bold text-gray-900 dark:text-gray-100">
             Generate Synthetic Data
           </CardTitle>
           <CardDescription className="text-lg">
@@ -91,12 +92,12 @@ export function SimplifiedStartRun({ dataset, onStart, isStarting = false }: Sim
         {/* Primary Action Button */}
         <div className="space-y-4 max-w-md mx-auto">
              <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                <div className="absolute -inset-1 bg-gradient-to-r from-red-600 to-red-600 rounded-lg blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
                 <Button 
                     size="lg" 
                     onClick={handleStart}
                     disabled={isStarting}
-                    className="relative w-full h-16 text-lg font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-xl hover:shadow-2xl transition-all hover:-translate-y-0.5"
+                    className="relative w-full h-16 text-lg font-semibold bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 shadow-xl hover:shadow-2xl transition-all hover:-translate-y-0.5"
                 >
                     {isStarting ? (
                         <>
