@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { RenameModal } from "@/components/common/RenameModal";
 import { FileUploadModal } from "./FileUploadModal";
-// import { RunExecutionModal } from "./RunExecutionModal"; // Replaced by page navigation
+import { RunExecutionModal } from "./RunExecutionModal";
 import { ResultsModal } from "./ResultsModal";
 import { ViewModeToggle } from "@/components/common/ViewModeToggle";
 import { LoadingState, EmptyState, ErrorState } from "@/components/common/StateComponents";
@@ -105,6 +105,13 @@ export function DatasetsContent() {
     isOpen: false,
     runId: null,
     runName: ""
+  });
+  const [runModal, setRunModal] = useState<{
+    isOpen: boolean;
+    dataset: DemoDataset | null;
+  }>({
+    isOpen: false,
+    dataset: null
   });
   const [usingDemoData, setUsingDemoData] = useState(false);
   const [projects, setProjects] = useState<Array<{id: string; name: string}>>([]);
@@ -234,14 +241,7 @@ export function DatasetsContent() {
   };
 
   const handleStartRun = (dataset: DemoDataset) => {
-    // Redirect to the new simplified run page
-    if (dataset.project_id) {
-        router.push(`/en/projects/${dataset.project_id}/runs/new?datasetId=${dataset.id}`);
-    } else {
-        // Fallback or error if project_id missing
-        console.warn("Dataset has no project_id, cannot start run", dataset);
-        alert("This dataset is not associated with a project. Please assign it to a project first.");
-    }
+    setRunModal({ isOpen: true, dataset });
   };
 
   useEffect(() => {
@@ -777,6 +777,21 @@ export function DatasetsContent() {
           columns: previewModal.dataset.columns || 0
         } : null}
       />
+
+      {runModal.dataset && (
+        <RunExecutionModal
+          isOpen={runModal.isOpen}
+          onClose={() => setRunModal({ isOpen: false, dataset: null })}
+          onSuccess={() => {
+            setRunModal({ isOpen: false, dataset: null });
+            // Refresh logic if needed
+            fetchDatasets();
+          }}
+          dataset={runModal.dataset}
+          onViewResults={(runId, runName) => setResultsModal({ isOpen: true, runId, runName })}
+        />
+      )}
+
     </div>
   );
 }

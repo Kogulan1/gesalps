@@ -29,9 +29,11 @@ import {
 import { useTranslations } from "next-intl";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
 import { getUserFriendlyErrorMessage } from "@/lib/errorMessages";
+import { RunExecutionModal } from "@/components/datasets/RunExecutionModal";
 import { ResultsModal } from "@/components/runs/ResultsModal";
 import { DatasetPreviewModal } from "@/components/datasets/DatasetPreviewModal";
 import { downloadAllArtifactsZip } from "@/lib/api";
+import { LoadingState, ErrorState } from "@/components/common/StateComponents";
 
 interface Project {
   id: string;
@@ -95,6 +97,13 @@ export function ProjectDetailContent() {
     isOpen: false,
     runId: null,
     runName: ""
+  });
+  const [runModal, setRunModal] = useState<{
+    isOpen: boolean;
+    dataset: Dataset | null;
+  }>({
+    isOpen: false,
+    dataset: null
   });
 
   const projectId = params.id as string;
@@ -363,6 +372,18 @@ export function ProjectDetailContent() {
     }
   };
 
+  if (loading) {
+     return <LoadingState message={t('loading_project')} />;
+  }
+
+  if (error) {
+    return <ErrorState message={error} onRetry={fetchProjectData} />;
+  }
+
+  if (!project) {
+    return <ErrorState message="Project not found" onRetry={fetchProjectData} />;
+  }
+
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -550,7 +571,14 @@ export function ProjectDetailContent() {
               </Button>
               <Button 
                 className="bg-red-600 hover:bg-red-700 text-white"
-                onClick={() => router.push(`/en/datasets?project=${projectId}`)}
+                onClick={() => {
+                   const readyDataset = datasets.find(d => d.status === "Ready");
+                   if (readyDataset) {
+                     setRunModal({ isOpen: true, dataset: readyDataset });
+                   } else {
+                     alert("Please upload a dataset first.");
+                   }
+                }}
               >
                 <Play className="h-4 w-4 mr-2" />
                 Start Run
@@ -755,7 +783,7 @@ export function ProjectDetailContent() {
                           variant="outline" 
                           size="sm" 
                           className="text-gray-700 border-gray-300 hover:bg-gray-50"
-                          onClick={() => router.push(`/en/projects/${projectId}/runs/new?datasetId=${dataset.id}`)}
+                          onClick={() => setRunModal({ isOpen: true, dataset })}
                         >
                           <Play className="h-4 w-4 mr-2" />
                           Run
@@ -775,7 +803,15 @@ export function ProjectDetailContent() {
               <h3 className="text-lg font-semibold text-black">Runs in this project</h3>
               <Button 
                 className="bg-red-600 hover:bg-red-700 text-white"
-                onClick={() => router.push(`/en/datasets?project=${projectId}`)}
+                onClick={() => {
+                   // Open modal with the first ready dataset or show error
+                   const readyDataset = datasets.find(d => d.status === "Ready");
+                   if (readyDataset) {
+                     setRunModal({ isOpen: true, dataset: readyDataset });
+                   } else {
+                     alert("Please upload a dataset first.");
+                   }
+                }}
               >
                 <Play className="h-4 w-4 mr-2" />
                 Start New Run
@@ -951,6 +987,19 @@ export function ProjectDetailContent() {
         runId={resultsModal.runId}
         runName={resultsModal.runName}
       />
+
+      {runModal.dataset && (
+        <RunExecutionModal
+          isOpen={runModal.isOpen}
+          onClose={() => setRunModal({ isOpen: false, dataset: null })}
+          onSuccess={() => {
+            setRunModal({ isOpen: false, dataset: null });
+            fetchProjectData();
+          }}
+          dataset={runModal.dataset}
+          onViewResults={(runId, runName) => setResultsModal({ isOpen: true, runId, runName })}
+        />
+      )}
     </div>
   );
 }
