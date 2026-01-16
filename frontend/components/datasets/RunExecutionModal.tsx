@@ -57,7 +57,7 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
   const [method, setMethod] = useState("ddpm");
   const [privacyLevel, setPrivacyLevel] = useState("Medium");
   const [useAgentic, setUseAgentic] = useState(true); // Default to agent mode (GreenGuard)
-  const [useAllGreen, setUseAllGreen] = useState(false); // All Green Service mode
+  const [useAllGreen, setUseAllGreen] = useState(true); // All Green Service mode
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [showNameConfirm, setShowNameConfirm] = useState(false);
@@ -606,27 +606,28 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
       }
       
       // Retry logic for network errors
-      let response: Response;
+      let response: Response | null = null;
       const maxRetries = 3;
       let lastError: any = null;
       
       for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
-          // Add timeout to fetch (30 seconds)
+          // Add timeout to fetch (90 seconds)
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 30000);
+          const timeoutId = setTimeout(() => controller.abort(), 90000);
           
-          response = await fetch(`${base}/v1/runs`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json'
-        },
+          const currentResponse = await fetch(`${base}/v1/runs`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json'
+            },
             body: JSON.stringify(requestBody),
             signal: controller.signal
           });
           
           clearTimeout(timeoutId);
+          response = currentResponse;
           
           // If we got a response (even if not ok), break retry loop
           break;
@@ -635,14 +636,14 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
           
           // Don't retry on abort (timeout) or if it's not a network error
           if (fetchError.name === 'AbortError') {
-            throw new Error('Request timed out. Please check your connection and try again.');
+            throw new Error('Request timed out after 90 seconds. The dataset might be too large or the AI engine is cold-starting. Please try again or use Advanced Settings.');
           }
           
           // Only retry on network errors (TypeError), not on HTTP errors
           if (!(fetchError instanceof TypeError) || attempt === maxRetries - 1) {
             // Handle network errors (CORS, connection refused, etc.)
             if (fetchError instanceof TypeError && fetchError.message.includes('fetch')) {
-              throw new Error('Unable to connect to the server. Please check your internet connection and try again.');
+              throw new Error('Unable to connect to the server. Please ensure the backend API is running on port 8000.');
             }
             throw fetchError;
           }
@@ -653,12 +654,9 @@ export function RunExecutionModal({ isOpen, onClose, onSuccess, dataset, onViewR
         }
       }
       
-      // If we exhausted retries, throw the last error
-      if (!response && lastError) {
-        if (lastError instanceof TypeError && lastError.message.includes('fetch')) {
-          throw new Error('Unable to connect to the server after multiple attempts. Please check your internet connection and try again.');
-        }
-        throw lastError;
+      // If we exhausted retries or got no response
+      if (!response) {
+        throw lastError || new Error('Failed to reach the server.');
       }
 
       if (!response.ok) {
