@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, useParams } from "next/navigation";
 import { SimplifiedStartRun } from "./SimplifiedStartRun";
 import { RealTimeProgressDashboard } from "./RealTimeProgressDashboard";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
@@ -18,6 +18,8 @@ export type RunStep = 'config' | 'running' | 'completed' | 'failed';
 export function NewRunLayout({ projectId, initialDatasetId }: NewRunLayoutProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const params = useParams();
+  const locale = params?.locale || 'en';
   const { toast } = useToast();
   const [step, setStep] = useState<RunStep>('config');
   const [dataset, setDataset] = useState<any>(null);
@@ -110,13 +112,14 @@ export function NewRunLayout({ projectId, initialDatasetId }: NewRunLayoutProps)
 
       const result = await response.json();
       
-      // Update URL with runId so refresh/navigation works
-      const params = new URLSearchParams(searchParams.toString());
-      params.set('runId', result.run_id);
-      router.replace(`?${params.toString()}`, { scroll: false });
-
-      setRunId(result.run_id);
-      setStep('running');
+      // Redirect to Project Runs page as requested
+      toast({
+        title: "Run Started",
+        description: "Redirecting to project dashboard...",
+        variant: "default" // success/default
+      });
+      
+      router.push(`/${locale}/projects/${projectId}`);
     } catch (err) {
       // Stay on config step if failed, just show error
       // setStep('failed'); 
