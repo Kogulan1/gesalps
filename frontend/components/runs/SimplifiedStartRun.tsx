@@ -104,52 +104,43 @@ export function SimplifiedStartRun({ dataset, onStart, isStarting = false }: Sim
                           Processing...
                         </>
                     ) : (
-                        <><Play className="w-5 h-5 mr-2 fill-current" /> Start Generation</>
+                        <><Play className="w-5 h-5 mr-2 fill-current" /> Start All-Green Run</>
                     )}
                 </Button>
             </div>
-            <p className="text-center text-xs text-muted-foreground">
-                Estimated time: ~{(dataset?.rows ? Math.ceil(dataset.rows / 1000) : 5) + 2} minutes
+            <p className="text-center text-sm font-medium text-muted-foreground max-w-lg mx-auto leading-relaxed">
+                Guaranteed Privacy & Utility using GreenGuard Clinical Engine.
+                <br /><span className="text-xs opacity-75">Click to auto-generate synthetic data with optimal settings.</span>
             </p>
         </div>
 
-        {/* Separator */}
-        <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-muted" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Configuration</span>
-            </div>
-        </div>
-
-        {/* Configuration Area */}
-        <div className="space-y-4">
-             {/* Name Input - Minimalist */}
-             <div className="flex justify-center">
-                <div className="w-full max-w-sm">
-                    <Label htmlFor="runName" className="sr-only">Run Name</Label>
-                    <Input
-                        id="runName"
-                        placeholder={`Name (Optional) - e.g. ${dataset?.name?.split('.')[0]}_v1`}
-                        value={runName}
-                        onChange={(e) => setRunName(e.target.value)}
-                        className="text-center bg-transparent border-0 border-b border-border rounded-none focus-visible:ring-0 focus-visible:border-primary px-0 placeholder:text-muted-foreground/50"
-                    />
-                </div>
-             </div>
-
-             {/* Expert Toggle */}
+        {/* Advanced Settings Toggle */}
+        <div className="w-full max-w-lg mx-auto">
              <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
                 <CollapsibleTrigger asChild>
-                    <Button variant="ghost" size="sm" className="w-full flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground">
-                        {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                        <span className="text-xs font-medium">{isOpen ? "Hide Advanced Settings" : "Customize Settings (Expert Mode)"}</span>
-                    </Button>
+                    <div className="flex justify-center">
+                        <Button variant="ghost" size="sm" className="flex items-center gap-2 text-primary hover:text-primary/80">
+                            {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                            <span className="text-xs font-semibold uppercase tracking-wide">{isOpen ? "Hide Advanced Settings" : "Customize Settings (Expert Mode)"}</span>
+                        </Button>
+                    </div>
                 </CollapsibleTrigger>
                 
                 <CollapsibleContent className="space-y-6 pt-6 animate-in slide-in-from-top-4 duration-300">
-                    <div className="grid gap-6 sm:grid-cols-2 p-6 bg-muted/30 rounded-xl border border-border/50">
+                    <div className="space-y-4">
+                         {/* Name Input - Moved Inside */}
+                         <div>
+                            <Label htmlFor="runName" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 block">Run Name (Optional)</Label>
+                            <Input
+                                id="runName"
+                                placeholder={`e.g. ${dataset?.name?.split('.')[0]}_v1`}
+                                value={runName}
+                                onChange={(e) => setRunName(e.target.value)}
+                                className="bg-background"
+                            />
+                         </div>
+
+                         <div className="grid gap-6 sm:grid-cols-2 p-6 bg-muted/30 rounded-xl border border-border/50">
                         {/* Privacy Control */}
                         <div className="space-y-3">
                              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Privacy Guardrail</Label>
@@ -204,6 +195,7 @@ export function SimplifiedStartRun({ dataset, onStart, isStarting = false }: Sim
                                 <Switch id="auto-retry" checked={autoRetry} onCheckedChange={setAutoRetry} />
                              </div>
                         </div>
+                    </div>
                     </div>
                 </CollapsibleContent>
              </Collapsible>
