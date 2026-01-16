@@ -191,10 +191,10 @@ app.add_middleware(
 app.add_middleware(GZipMiddleware, minimum_size=1024)
 
 # --- One-Click Generation & Static Files ---
-from fastapi.staticfiles import StaticFiles
-import generation
+# from . import generation
+# import generation
 
-app.include_router(generation.router, prefix="/api/v1", tags=["generation"])
+# app.include_router(generation.router, prefix="/api/v1", tags=["generation"])
 
 tmp_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tmp")
 os.makedirs(tmp_dir, exist_ok=True)
