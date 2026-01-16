@@ -153,6 +153,15 @@ def _html_for_metrics(payload: Dict[str, Any]) -> str:
             violation_count = len(violations)
             compliance_badge = f'<div class="cert-warn"><span>⚠</span><span>Compliance: {violation_count} violation(s)</span></div>'
 
+    # Calculate score bar class
+    score_fill_class = "score-fill"
+    if compliance_result:
+        score = compliance_result.get("score", 0.0)
+        if score < 0.5:
+            score_fill_class = "score-fill-fail"
+        elif score < 0.7:
+            score_fill_class = "score-fill-warn"
+
     # Generate HTML with enhanced compliance information
     html = f"""
 <!doctype html>
@@ -245,7 +254,7 @@ def _html_for_metrics(payload: Dict[str, Any]) -> str:
       </div>
       {f'''
       <div class='score-bar'>
-        <div class='score-fill{"-warn" if compliance_result.get("score", 0.0) < 0.7 else "-fail" if compliance_result.get("score", 0.0) < 0.5 else ""}' style='width:{compliance_result.get("score", 0.0) * 100}%;'></div>
+        <div class='{score_fill_class}' style='width:{compliance_result.get("score", 0.0) * 100}%;'></div>
       </div>
       ''' if compliance_result.get("score") is not None else ''}
     </div>

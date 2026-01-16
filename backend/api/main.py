@@ -191,6 +191,7 @@ app.add_middleware(
 app.add_middleware(GZipMiddleware, minimum_size=1024)
 
 # --- One-Click Generation & Static Files ---
+from fastapi.staticfiles import StaticFiles
 # from . import generation
 # import generation
 
