@@ -533,6 +533,7 @@ def _compute_ml_utility(real: pd.DataFrame, synth: pd.DataFrame) -> Tuple[Option
                     target = col
         
         if not target:
+            print(f"[worker][ml-utility] Fallback failed. Candidates considered: {real.columns.tolist()[:5]}...")
             return 0.0, 0.0 # No suitable target found
             
         print(f"[worker][ml-utility] Selected target column: {target}")
@@ -620,7 +621,8 @@ def _utility_metrics_synthcity(real: pd.DataFrame, synth: pd.DataFrame) -> Optio
                 print(f"[debug-ks] Real target counts:\n{real['target'].value_counts().to_dict()}")
                 print(f"[debug-ks] Synth target counts:\n{synth['target'].value_counts().to_dict()}")
         except Exception as e:
-            print(f"[debug-ks] Failed to print distribution debug: {e}")
+            # Silence distribution debug
+            pass
 
         # Use Metrics().evaluate() API (correct way to call SynthCity evaluators)
         metrics_evaluator = Metrics()
@@ -658,6 +660,7 @@ def _utility_metrics_synthcity(real: pd.DataFrame, synth: pd.DataFrame) -> Optio
         # Extract metrics from DataFrame
         ks_mean = None
         corr_delta = None
+        js_dist = None
         
         for idx in metrics_df.index:
             metric_name = str(idx).lower()
@@ -667,18 +670,21 @@ def _utility_metrics_synthcity(real: pd.DataFrame, synth: pd.DataFrame) -> Optio
                 ks_mean = float(mean_val) if mean_val is not None else None
             elif "corr" in metric_name or "correlation" in metric_name:
                 corr_delta = float(mean_val) if mean_val is not None else None
+            elif "jensen" in metric_name:
+                js_dist = float(mean_val) if mean_val is not None else None
         
         # If manual KS is available and SynthCity reported an anomaly (>0.5), use manual
         if manual_ks_mean is not None:
             if ks_mean is None or ks_mean > 0.5:
-                print(f"[debug-ks] Overriding SynthCity KS ({ks_mean}) with Manual KS ({manual_ks_mean})")
-                ks_mean = manual_ks_mean
+                # Override logic
+                pass
 
         # Return if we got at least one valid metric
-        if ks_mean is not None or corr_delta is not None:
+        if ks_mean is not None or corr_delta is not None or js_dist is not None:
             return {
                 "ks_mean": ks_mean,
                 "corr_delta": corr_delta,
+                "jensenshannon_dist": js_dist,
                 "auroc": None,
                 "c_index": None,
             }
@@ -1131,6 +1137,8 @@ def _privacy_metrics_synthcity(real: pd.DataFrame, synth: pd.DataFrame) -> Optio
         # Extract metrics from DataFrame
         mia_auc = None
         dup_rate = None
+        k_anon = None
+        identifiability = None
         
         for idx in metrics_df.index:
             metric_name = str(idx).lower()
@@ -1141,18 +1149,21 @@ def _privacy_metrics_synthcity(real: pd.DataFrame, synth: pd.DataFrame) -> Optio
             elif "duplicate" in metric_name or "dup" in metric_name:
                 dup_rate = float(mean_val) if mean_val is not None else None
             elif "identifiability" in metric_name:
-                # Identifiability score can be used as a privacy metric
-                if mia_auc is None:
-                    mia_auc = float(mean_val) if mean_val is not None else None
+                identifiability = float(mean_val) if mean_val is not None else None
+            elif "k-anonymization" in metric_name or "k-anon" in metric_name:
+                k_anon = float(mean_val) if mean_val is not None else None
         
         # Return if we got at least one valid metric
-        if mia_auc is not None or dup_rate is not None:
+        if mia_auc is not None or dup_rate is not None or k_anon is not None or identifiability is not None:
             return {
                 "mia_auc": mia_auc,
                 "dup_rate": dup_rate,
+                "k_anonymization": k_anon,
+                "identifiability_score": identifiability,
             }
         
         return None
+
     except (ImportError, AttributeError, Exception) as e:
         # SynthCity not available or failed
         try:

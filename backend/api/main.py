@@ -178,6 +178,9 @@ if cors_origins and cors_origins != ["*"]:
 
 if not cors_origins:
     cors_origins = ["*"]
+
+print(f"[CONFIG] CORS Allowed Origins: {cors_origins}")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
