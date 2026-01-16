@@ -48,7 +48,7 @@ export function AdvancedSettingsAccordion({
   const [internalMaxIterations, setInternalMaxIterations] = useState(2000);
   const [internalAutoRetry, setInternalAutoRetry] = useState(true);
   const [internalClinicalPreprocessing, setInternalClinicalPreprocessing] = useState(true);
-  const [internalUseAllGreen, setInternalUseAllGreen] = useState(false);
+  const [internalUseAllGreen, setInternalUseAllGreen] = useState(true);
 
   const model = controlledModel ?? internalModel;
   const maxIterations = controlledMaxIterations ?? internalMaxIterations;
@@ -187,12 +187,12 @@ export function AdvancedSettingsAccordion({
               />
             </div>
 
-            <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
+            <div className="flex items-center justify-between p-3 bg-background rounded-lg border border-border/50">
               <div className="space-y-0.5">
                 <div className="flex items-center space-x-2">
                   <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
-                  <Label className="text-sm font-semibold text-green-900 dark:text-green-100">All Green Service</Label>
-                  <span className="text-[10px] bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 px-1.5 py-0.5 rounded">PROVEN</span>
+                  <Label className="text-sm font-semibold">All Green Service</Label>
+                  <span className="text-[10px] bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-1.5 py-0.5 rounded font-medium">PROVEN</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Use dedicated service with proven configuration (2000 epochs, guaranteed all green metrics).
