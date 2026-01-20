@@ -335,9 +335,90 @@ def get_project(project_id: str, user: Dict[str, Any] = Depends(require_user)):
     datasets_count = len(datasets)
     
     # Get runs count and details
-    runs_res = supabase.table("runs").select("id, name, status, started_at, finished_at, method").eq("project_id", project_id).order("started_at", desc=True).execute()
+    runs_res = supabase.table("runs").select("id, name, status, started_at, finished_at, method, config_json").eq("project_id", project_id).order("started_at", desc=True).execute()
     runs = runs_res.data or []
     runs_count = len(runs)
+    
+    # Fetch metrics for all runs in this project
+    run_ids = [r["id"] for r in runs]
+    metrics_map = {}
+    if run_ids:
+        try:
+            m_res = supabase.table("metrics").select("run_id, payload_json").in_("run_id", run_ids).execute()
+            if m_res.data:
+                for m in m_res.data:
+                    metrics_map[m["run_id"]] = m["payload_json"]
+        except Exception as e:
+            print(f"Error fetching metrics for project {project_id}: {e}")
+
+    # Enrich runs with metrics
+    for run in runs:
+        # Get scores from config_json if available (legacy/fallback)
+        scores = {
+            "auroc": 0.0,
+            "c_index": 0.0,
+            "mia_auc": 0.0,
+            "privacy_score": 0.0,
+            "utility_score": 0.0
+        }
+        if run.get("config_json") and isinstance(run["config_json"], dict):
+            config = run["config_json"]
+            scores.update({
+                "auroc": config.get("auroc", 0.0),
+                "c_index": config.get("c_index", 0.0),
+                "mia_auc": config.get("mia_auc", 0.0),
+                "privacy_score": config.get("privacy_score", 0.0),
+                "utility_score": config.get("utility_score", 0.0)
+            })
+            
+        # Initialize full metrics structure
+        metrics = {
+            "privacy": None,
+            "utility": None,
+            "fairness": None,
+            "compliance": None
+        }
+        
+        # Populate from real metrics if available
+        payload = metrics_map.get(run["id"])
+        if payload:
+            metrics["privacy"] = payload.get("privacy")
+            metrics["utility"] = payload.get("utility")
+            metrics["fairness"] = payload.get("fairness")
+            metrics["compliance"] = payload.get("compliance")
+            
+            # Update top-level scores if present in metrics
+            if metrics["utility"]:
+                scores["auroc"] = metrics["utility"].get("auroc") or scores["auroc"]
+                scores["c_index"] = metrics["utility"].get("c_index") or scores["c_index"]
+                
+                # Check for explicit utility score, otherwise calculate fallback
+                u_score = metrics["utility"].get("utility_score")
+                if not u_score and (metrics["utility"].get("ks_mean") is not None):
+                     ks = metrics["utility"].get("ks_mean", 0.0)
+                     cd = metrics["utility"].get("corr_delta", 0.0)
+                     # Fallback: 1 - average error
+                     u_score = max(0.0, 1.0 - ((ks + cd) / 2.0))
+                scores["utility_score"] = u_score or scores["utility_score"]
+
+            if metrics["privacy"]:
+                scores["mia_auc"] = metrics["privacy"].get("mia_auc") or scores["mia_auc"]
+                
+                # Check for explicit privacy score, otherwise calculate fallback
+                p_score = metrics["privacy"].get("privacy_score")
+                if not p_score and (metrics["privacy"].get("mia_auc") is not None):
+                    mia = metrics["privacy"].get("mia_auc", 0.5)
+                    dup = metrics["privacy"].get("dup_rate", 0.0)
+                    # Fallback logic
+                    penalty = 0.0
+                    if dup > 0: penalty += dup * 5.0
+                    if mia > 0.6: penalty += (mia - 0.6) * 2.0
+                    p_score = max(0.0, 1.0 - penalty)
+                scores["privacy_score"] = p_score or scores["privacy_score"]
+
+        run["scores"] = scores
+        run["metrics"] = metrics
+
     
     # Calculate last activity
     last_activity = "No activity yet"
@@ -1314,6 +1395,53 @@ def run_steps(run_id: str, user: Dict[str, Any] = Depends(require_user)):
         # Gracefully handle when the optional run_steps table hasn't been created yet
         # PGRST205: table not found in schema cache
         return []
+
+@app.get("/v1/runs/{run_id}/logs")
+def get_run_logs(run_id: str, tail: int = 500, user: Dict[str, Any] = Depends(require_user)):
+    """Get logs for a specific run."""
+    # Check access
+    r = supabase.table("runs").select("id,project_id,status").eq("id", run_id).single().execute()
+    if not r.data:
+        raise HTTPException(status_code=404, detail="Run not found")
+    
+    proj = supabase.table("projects").select("owner_id").eq("id", r.data["project_id"]).single().execute()
+    if not proj.data or proj.data.get("owner_id") != user["id"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    # Fetch logs
+    try:
+        logs_res = supabase.table("run_logs").select("*").eq("run_id", run_id).order("created_at", desc=True).limit(tail).execute()
+        logs = logs_res.data or []
+    except Exception as e:
+        print(f"Error fetching logs: {e}")
+        logs = []
+    
+    # Format raw logs
+    raw_logs = []
+    for l in logs:
+        ts = l.get('created_at', '')
+        lvl = l.get('level', 'INFO')
+        msg = l.get('message', '')
+        raw_logs.append(f"[{ts}] [{lvl}] {msg}")
+    
+    # Construct progress object
+    status = r.data.get("status", "unknown")
+    progress = {
+        "status": status,
+        "message": f"Run is {status}",
+        "current_step": None,
+        "progress_messages": [l.get('message', '') for l in logs[:5]],
+        "training_info": {},
+        "errors": [l.get('message', '') for l in logs if l.get('level') == 'ERROR'],
+        "warnings": [l.get('message', '') for l in logs if l.get('level') == 'WARNING']
+    }
+
+    return {
+        "run_id": run_id,
+        "raw_logs": raw_logs,
+        "progress": progress,
+        "log_count": len(logs)
+    }
 
 @app.post("/v1/runs/{run_id}/cancel")
 def cancel_run(run_id: str, user: Dict[str, Any] = Depends(require_user)):

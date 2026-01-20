@@ -4,47 +4,66 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
 export async function authedFetch(path: string, init: RequestInit = {}) {
   const supabase = createSupabaseBrowserClient();
   const { data, error } = await supabase.auth.getSession();
-  
+
   // Handle refresh token errors gracefully
   if (error && error.message?.includes('Refresh Token')) {
     console.warn('[API] Auth error, signing out:', error.message);
-    await supabase.auth.signOut().catch(() => {});
+    await supabase.auth.signOut().catch(() => { });
     // Redirect to sign in if we're in the browser
     if (typeof window !== 'undefined') {
       window.location.href = '/signin';
     }
     throw new Error('Authentication expired. Please sign in again.');
   }
-  
+
   const token = data?.session?.access_token;
   const base = process.env.NEXT_PUBLIC_BACKEND_API_BASE || "";
-  
+
   if (!base) {
     const errorMsg = 'Backend API URL not configured. Please set NEXT_PUBLIC_BACKEND_API_BASE environment variable.';
     console.error('[API] NEXT_PUBLIC_BACKEND_API_BASE is not set! Please configure it in Vercel environment variables.');
     // Return a rejected promise instead of throwing to prevent client-side crashes
     return Promise.reject(new Error(errorMsg));
   }
-  
+
   const headers = new Headers(init.headers);
   if (token) headers.set("Authorization", `Bearer ${token}`);
   // Disable caching to avoid stale metrics/artifacts during polling
   if (!headers.has("Cache-Control")) headers.set("Cache-Control", "no-store");
-  // Ensure Content-Type is set for JSON requests (but don't override if already set)
-  if (!headers.has("Content-Type") && (init.method === 'POST' || init.method === 'PUT' || init.method === 'PATCH')) {
+  // Ensure Content-Type is set for JSON requests (but don't override if already set, and don't set for FormData)
+  if (!headers.has("Content-Type") &&
+    (init.method === 'POST' || init.method === 'PUT' || init.method === 'PATCH') &&
+    !(init.body instanceof FormData)) {
     headers.set("Content-Type", "application/json");
   }
-  
+
   const url = `${base}${path}`;
   const method = init.method || 'GET';
   console.log(`[API] ${method} ${url}`);
-  
-  return fetch(url, { 
+
+  return fetch(url, {
     method,
-    cache: "no-store", 
-    ...init, 
-    headers 
+    cache: "no-store",
+    ...init,
+    headers
   });
+}
+
+export async function generateSyntheticData(file: File) {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const res = await authedFetch('/v1/generate', {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!res.ok) {
+    let msg = `HTTP ${res.status}`;
+    try { const j = await res.json(); msg = j?.detail || j?.message || msg; } catch { }
+    throw new Error(`Generation failed: ${msg}`);
+  }
+  return await res.json();
 }
 
 export async function previewDatasetCSV(datasetId: string) {
@@ -94,14 +113,14 @@ export async function getRunDetails(runId: string) {
   });
   if (!res.ok) {
     let msg = `HTTP ${res.status}`;
-    try { 
-      const j = await res.json(); 
-      msg = j?.detail || j?.message || msg; 
+    try {
+      const j = await res.json();
+      msg = j?.detail || j?.message || msg;
     } catch {
       // If response isn't JSON, use status text
       msg = res.statusText || `HTTP ${res.status}`;
     }
-    
+
     // Provide more specific error messages
     if (res.status === 405) {
       throw new Error(`Method Not Allowed: The server rejected the request. This may be a backend configuration issue.`);
@@ -112,7 +131,7 @@ export async function getRunDetails(runId: string) {
     if (res.status === 403) {
       throw new Error(`Access denied: You don't have permission to view this run.`);
     }
-    
+
     throw new Error(msg);
   }
   return await res.json();
@@ -124,7 +143,7 @@ export async function getRunMetrics(runId: string) {
     // 404 is expected for cancelled/failed runs, return empty object
     if (res.status === 404) return {};
     let msg = `HTTP ${res.status}`;
-    try { const j = await res.json(); msg = j?.detail || j?.message || msg; } catch {}
+    try { const j = await res.json(); msg = j?.detail || j?.message || msg; } catch { }
     throw new Error(msg);
   }
   return await res.json();
@@ -163,7 +182,7 @@ export async function ensureReportPDF(runId: string) {
   const res = await authedFetch(`/v1/runs/${runId}/report/pdf`, { method: 'POST' });
   if (!res.ok) {
     let msg = `HTTP ${res.status}`;
-    try { const j = await res.json(); msg = j?.detail || j?.message || msg; } catch {}
+    try { const j = await res.json(); msg = j?.detail || j?.message || msg; } catch { }
     throw new Error(msg);
   }
   return await res.json() as Promise<{ path: string; signedUrl?: string }>;
@@ -174,7 +193,7 @@ export async function downloadAllArtifactsZip(runId: string) {
   const res = await authedFetch(`/v1/runs/${runId}/download/all`);
   if (!res.ok) {
     let msg = `HTTP ${res.status}`;
-    try { const j = await res.json(); msg = j?.detail || j?.message || msg; } catch {}
+    try { const j = await res.json(); msg = j?.detail || j?.message || msg; } catch { }
     throw new Error(msg);
   }
   const blob = await res.blob();
@@ -191,21 +210,21 @@ export async function downloadAllArtifactsZip(runId: string) {
 // Optional typed helper for starting runs with explicit payload
 export type StartRunBody =
   | {
-      dataset_id: string;
-      method: 'ddpm'|'gc'|'ctgan'|'tvae';
-      mode: 'balanced'|'privacy-first'|'utility-first';
-      config_json: { sample_multiplier: number; max_synth_rows: number };
-    }
+    dataset_id: string;
+    method: 'ddpm' | 'gc' | 'ctgan' | 'tvae';
+    mode: 'balanced' | 'privacy-first' | 'utility-first';
+    config_json: { sample_multiplier: number; max_synth_rows: number };
+  }
   | {
-      dataset_id: string;
-      method: 'auto';
-      mode: 'agent';
-      config_json: {
-        sample_multiplier: number;
-        max_synth_rows: number;
-        agent: { provider: 'ollama'|'openrouter'; model: string; temperature: number; prompt?: string };
-      };
+    dataset_id: string;
+    method: 'auto';
+    mode: 'agent';
+    config_json: {
+      sample_multiplier: number;
+      max_synth_rows: number;
+      agent: { provider: 'ollama' | 'openrouter'; model: string; temperature: number; prompt?: string };
     };
+  };
 
 export async function startRunBody(body: StartRunBody & { name?: string }) {
   const res = await authedFetch('/v1/runs', {
@@ -215,7 +234,7 @@ export async function startRunBody(body: StartRunBody & { name?: string }) {
   });
   if (!res.ok) {
     let msg = `HTTP ${res.status}`;
-    try { const j = await res.json(); msg = j?.detail || j?.message || msg; } catch {}
+    try { const j = await res.json(); msg = j?.detail || j?.message || msg; } catch { }
     throw new Error(msg);
   }
   return res.json() as Promise<{ run_id: string }>;
@@ -229,7 +248,7 @@ export async function renameRun(runId: string, name: string) {
   });
   if (!res.ok) {
     let msg = `HTTP ${res.status}`;
-    try { const j = await res.json(); msg = j?.detail || j?.message || msg; } catch {}
+    try { const j = await res.json(); msg = j?.detail || j?.message || msg; } catch { }
     throw new Error(msg);
   }
   return await res.json();
@@ -289,7 +308,7 @@ export async function startRun(datasetId: string, opts: StartRunOptions = {}) {
 
   if (!res.ok) {
     let msg = `HTTP ${res.status}`;
-    try { const b = await res.json(); msg = b?.detail || b?.message || JSON.stringify(b); } catch {}
+    try { const b = await res.json(); msg = b?.detail || b?.message || JSON.stringify(b); } catch { }
     throw new Error(`startRun failed: ${msg}`);
   }
   return await res.json(); // { run_id }
