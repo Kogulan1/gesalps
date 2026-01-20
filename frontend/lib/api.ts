@@ -1,4 +1,5 @@
 "use client";
+// Utils for Gesalp API - Vercel Trigger Check
 import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
 
 export async function authedFetch(path: string, init: RequestInit = {}) {
