@@ -459,10 +459,10 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
                 <Shield className="h-3.5 w-3.5" />
                 <span>Compliance</span>
             </TabsTrigger>
-            <TabsTrigger value="console" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none pb-4 pt-4 px-8 text-xs uppercase tracking-widest font-bold text-slate-400 data-[state=active]:text-blue-600 flex items-center gap-2">
+            {/* <TabsTrigger value="console" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none pb-4 pt-4 px-8 text-xs uppercase tracking-widest font-bold text-slate-400 data-[state=active]:text-blue-600 flex items-center gap-2">
                 <Zap className="h-3.5 w-3.5" />
                 <span>Console</span>
-            </TabsTrigger>
+            </TabsTrigger> */}
             <TabsTrigger value="preview" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none pb-4 pt-4 px-8 text-xs uppercase tracking-widest font-bold text-slate-400 data-[state=active]:text-blue-600 flex items-center gap-2">
                 <Database className="h-3.5 w-3.5" />
                 <span>Data Preview</span>
@@ -604,7 +604,7 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
                </Card>
             </TabsContent>
 
-            <TabsContent value="console" className="p-8 space-y-6">
+            {/* <TabsContent value="console" className="p-8 space-y-6">
                <Card className="border-slate-100 shadow-sm overflow-hidden">
                   <CardHeader className="bg-slate-50/50 border-b border-slate-100">
                     <CardTitle className="text-sm font-bold">Engine Components</CardTitle>
@@ -663,7 +663,7 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
                      </Tabs>
                   </CardContent>
                </Card>
-            </TabsContent>
+            </TabsContent> */}
 
             <TabsContent value="preview" className="p-8">
                 <Card className="border-slate-100 shadow-sm">
