@@ -15,7 +15,8 @@ import {
   Filter,
   SortAsc,
   MoreHorizontal,
-  Eye,
+  ChevronDown,
+  ChevronUp,
   Download,
   Settings,
   Clock,
@@ -42,6 +43,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { RenameModal } from "@/components/common/RenameModal";
 import { RunDetailsExpansion } from "@/components/runs/RunDetailsExpansion";
+import { RunProgressTracker } from "@/components/runs/RunProgressTracker";
 import Progress from "@/components/ui/progress";
 
 interface Run {
@@ -1041,7 +1043,11 @@ export function RunsContent({ initialRunId }: RunsContentProps = {}) {
                       
                       return (
                       <div key={run.id} data-run-id={run.id}>
-                        <Card className="hover:shadow-md transition-shadow">
+                        <Card className={`transition-all duration-300 ${
+                          expandedRunId === run.id 
+                            ? 'shadow-lg border-blue-200 bg-blue-50/10 ring-1 ring-blue-500/20' 
+                            : 'hover:shadow-md hover:border-slate-300'
+                        }`}>
                           <CardContent className="py-3">
                             <div className="flex items-center justify-between">
                               {/* Left side: Run name and status */}
@@ -1097,7 +1103,7 @@ export function RunsContent({ initialRunId }: RunsContentProps = {}) {
                               </div>
 
                               {/* Right side: Action buttons */}
-                              <div className="flex items-center space-x-1">
+                              <div className="flex items-center space-x-1 pl-6 border-l border-slate-100/50">
                                 {isRunning && (
                                   <Button
                                     variant="ghost"
@@ -1116,11 +1122,17 @@ export function RunsContent({ initialRunId }: RunsContentProps = {}) {
                                   size="sm"
                                   onClick={(e) => handleViewResults(run.id, run.name, e)}
                                   data-view-button
-                                  className={`text-gray-600 hover:text-gray-900 h-7 w-7 p-0 ${
-                                    expandedRunId === run.id ? 'bg-blue-100' : ''
+                                  className={`text-gray-600 hover:text-gray-900 h-8 px-4 gap-2 transition-all duration-200 border border-transparent ${
+                                    expandedRunId === run.id ? 'bg-blue-50 text-blue-700 border-blue-200 ring-1 ring-blue-500/10' : 'hover:bg-slate-100 hover:border-slate-200'
                                   }`}
+                                  title={expandedRunId === run.id ? "Hide details" : "View details"}
                                 >
-                                  <Eye className="h-4 w-4" />
+                                  <span className="text-[10px] font-bold uppercase tracking-wide">
+                                    {expandedRunId === run.id ? 'Hide Details' : 'View Details'}
+                                  </span>
+                                  <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-300 ${
+                                    expandedRunId === run.id ? 'rotate-180' : ''
+                                  }`} />
                                 </Button>
                                 {!isRunning && (
                                   <Button
@@ -1155,21 +1167,27 @@ export function RunsContent({ initialRunId }: RunsContentProps = {}) {
                                 </DropdownMenu>
                               </div>
                             </div>
-                            {/* Progress bar and current step for active runs */}
-                            {isRunning && (
-                              <div className="mt-3 pt-3 border-t border-gray-200 space-y-2">
-                                <div className="flex items-center justify-between text-xs">
-                                  <span className="text-gray-600">Progress</span>
-                                  <span className="font-medium text-gray-900">{progress}%</span>
+                            {/* Live Engine Pulse: Contextual Engine Awareness */}
+                            <div className="mt-3 pt-3 border-t border-slate-100/50 flex items-center justify-between overflow-hidden">
+                              {isRunning ? (
+                                <div className="w-full">
+                                  <RunProgressTracker 
+                                    status={run.status} 
+                                    steps={steps} 
+                                    variant="minimal" 
+                                  />
                                 </div>
-                                <Progress value={progress} className="h-1.5" />
-                                {latestStep && (
-                                  <div className="text-xs text-gray-600 truncate">
-                                    <span className="font-medium">Current:</span> {latestStep.title || latestStep.step_name || 'Processing...'}
-                                  </div>
-                                )}
-                              </div>
-                            )}
+                              ) : (
+                                <div className="flex items-center gap-3 w-full justify-end">
+                                  <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-300">Engine Provenance</span>
+                                  <RunProgressTracker 
+                                    status={run.status} 
+                                    steps={steps} 
+                                    variant="micro" 
+                                  />
+                                </div>
+                              )}
+                            </div>
                           </CardContent>
                         </Card>
                         {/* Expandable details section */}

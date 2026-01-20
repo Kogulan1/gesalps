@@ -2,14 +2,33 @@
 
 import { createBrowserClient } from "@supabase/ssr";
 
-export const createSupabaseBrowserClient = () =>
-  createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+export const createSupabaseBrowserClient = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error('[Supabase] Missing environment variables. NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be set.');
+    // Return a mock client that will fail gracefully
+    // This prevents the app from crashing on load
+    return createBrowserClient(
+      'https://placeholder.supabase.co',
+      'placeholder-key',
+      {
+        cookies: {
+          getAll: () => [],
+          setAll: () => {},
+        },
+      }
+    );
+  }
+  
+  return createBrowserClient(
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() {
-          if (typeof document === "undefined") return null;
+          if (typeof document === "undefined") return [];
           if (!document.cookie) return [];
           return document.cookie.split("; ").map((pair) => {
             const index = pair.indexOf("=");
@@ -40,3 +59,4 @@ export const createSupabaseBrowserClient = () =>
       },
     }
   );
+};

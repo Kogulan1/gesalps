@@ -75,6 +75,9 @@ interface Run {
     mia_auc: number;
     privacy_score: number;
     utility_score: number;
+    ks_mean?: number;
+    corr_delta?: number;
+    dup_rate?: number;
   };
 }
 
@@ -307,26 +310,39 @@ export function ProjectDetailContent() {
       }));
 
       // Transform runs
-      const transformedRuns: Run[] = (projectData.runs || []).map((run: any) => ({
-        id: run.id,
-        name: run.name,
-        dataset_id: run.dataset_id,
-        dataset_name: run.dataset_name || "Unknown Dataset", // Use dataset_name from API
-        status: run.status === "succeeded" ? "Completed" : 
-                run.status === "running" ? "Running" :
-                run.status === "failed" ? "Failed" : "Queued",
-        started_at: run.started_at,
-        completed_at: run.completed_at || run.finished_at, // Use completed_at from API if available
-        duration: (run.completed_at || run.finished_at) && run.started_at ? 
-          Math.round((new Date(run.completed_at || run.finished_at).getTime() - new Date(run.started_at).getTime()) / 60000) : undefined,
-        scores: {
-          auroc: 0.0,
-          c_index: 0.0,
-          mia_auc: 0.0,
-          privacy_score: 0.0,
-          utility_score: 0.0
-        }
-      }));
+      const transformedRuns: Run[] = (projectData.runs || []).map((run: any) => {
+        // Extract metrics from the enriched API response
+        const metrics = run.metrics || {};
+        const privacy = metrics.privacy || {};
+        const utility = metrics.utility || {};
+        
+        // Use top-level scores or fall back to 0
+        const scores = run.scores || {};
+        
+        return {
+          id: run.id,
+          name: run.name,
+          dataset_id: run.dataset_id,
+          dataset_name: run.dataset_name || "Unknown Dataset",
+          status: run.status === "succeeded" ? "Completed" : 
+                  run.status === "running" ? "Running" :
+                  run.status === "failed" ? "Failed" : "Queued",
+          started_at: run.started_at,
+          completed_at: run.completed_at || run.finished_at,
+          duration: (run.completed_at || run.finished_at) && run.started_at ? 
+            Math.round((new Date(run.completed_at || run.finished_at).getTime() - new Date(run.started_at).getTime()) / 60000) : undefined,
+          scores: {
+            auroc: utility.auroc || scores.auroc || 0.0,
+            c_index: utility.c_index || scores.c_index || 0.0,
+            mia_auc: privacy.mia_auc || scores.mia_auc || 0.0,
+            privacy_score: privacy.privacy_score || scores.privacy_score || 0.0,
+            utility_score: utility.utility_score || scores.utility_score || 0.0,
+            ks_mean: utility.ks_mean || scores.ks_mean || 0.0,
+            corr_delta: utility.corr_delta || scores.corr_delta || 0.0,
+            dup_rate: privacy.dup_rate || scores.dup_rate || 0.0
+          }
+        };
+      });
 
       setProject(transformedProject);
       setDatasets(transformedDatasets);
@@ -849,26 +865,34 @@ export function ProjectDetailContent() {
                     {run.status === "Completed" && (
                       <div className="mb-4">
                         <h5 className="text-sm font-medium text-gray-700 mb-2">Performance Scores</h5>
-                        <div className="grid grid-cols-5 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                           <div className="text-center">
-                            <div className="text-lg font-bold text-red-600">{run.scores.auroc.toFixed(2)}</div>
+                            <div className="text-lg font-bold text-red-600">{run.scores.auroc ? run.scores.auroc.toFixed(2) : '-'}</div>
                             <div className="text-xs text-gray-500">AUROC</div>
                           </div>
                           <div className="text-center">
-                            <div className="text-lg font-bold text-blue-600">{run.scores.c_index.toFixed(2)}</div>
-                            <div className="text-xs text-gray-500">C-Index</div>
+                            <div className="text-lg font-bold text-blue-600">{run.scores.ks_mean ? run.scores.ks_mean.toFixed(3) : '-'}</div>
+                            <div className="text-xs text-gray-500">KS Mean</div>
                           </div>
                           <div className="text-center">
-                            <div className="text-lg font-bold text-green-600">{run.scores.mia_auc.toFixed(2)}</div>
+                            <div className="text-lg font-bold text-green-600">{run.scores.corr_delta ? run.scores.corr_delta.toFixed(3) : '-'}</div>
+                            <div className="text-xs text-gray-500">Corr Δ</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-lg font-bold text-yellow-600">{run.scores.mia_auc ? run.scores.mia_auc.toFixed(2) : '-'}</div>
                             <div className="text-xs text-gray-500">MIA AUC</div>
                           </div>
                           <div className="text-center">
-                            <div className="text-lg font-bold text-red-600">{run.scores.privacy_score.toFixed(2)}</div>
-                            <div className="text-xs text-gray-500">Privacy</div>
+                            <div className="text-lg font-bold text-purple-600">{run.scores.dup_rate !== undefined ? run.scores.dup_rate.toFixed(4) : '-'}</div>
+                            <div className="text-xs text-gray-500">Dup Rate</div>
                           </div>
                           <div className="text-center">
-                            <div className="text-lg font-bold text-blue-600">{run.scores.utility_score.toFixed(2)}</div>
-                            <div className="text-xs text-gray-500">Utility</div>
+                            <div className="text-lg font-bold text-gray-800">
+                                {run.scores.privacy_score && run.scores.utility_score 
+                                  ? ((run.scores.privacy_score + run.scores.utility_score) / 2).toFixed(2) 
+                                  : '-'}
+                            </div>
+                            <div className="text-xs text-gray-500">Overall</div>
                           </div>
                         </div>
                       </div>

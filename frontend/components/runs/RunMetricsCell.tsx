@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { authedFetch } from "@/lib/api";
 
 type Metrics = {
-  privacy?: { mia_auc?: number | null; dup_rate?: number | null; k_anon?: number | null; dp_epsilon?: number | null };
+  privacy?: { mia_auc?: number | null; dup_rate?: number | null; k_anon?: number | null; k_anonymization?: number | null; dp_epsilon?: number | null };
   utility?: { ks_mean?: number | null; corr_delta?: number | null; auroc?: number | null; c_index?: number | null };
 } | null;
 
@@ -100,7 +100,7 @@ export default function RunMetricsCell({ runId, status }: { runId: string; statu
   const cidx = metrics?.utility?.c_index ?? null;
   const mia = metrics?.privacy?.mia_auc ?? null;
   const dup = metrics?.privacy?.dup_rate ?? null;
-  const k = metrics?.privacy?.k_anon ?? null;
+  const k = metrics?.privacy?.k_anonymization ?? metrics?.privacy?.k_anon ?? null;
   const eps = metrics?.privacy?.dp_epsilon ?? null;
 
   const privacyBars = [

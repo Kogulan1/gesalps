@@ -15,16 +15,16 @@ import {
 
 interface MetricThreshold {
   utility?: {
-    ks_mean?: number;
-    corr_delta?: number;
+    ks_mean?: number | null;
+    corr_delta?: number | null;
   };
   privacy?: {
-    mia_auc?: number;
-    dup_rate?: number;
+    mia_auc?: number | null;
+    dup_rate?: number | null;
   };
   fairness?: {
-    rare_coverage?: number;
-    freq_skew?: number;
+    rare_coverage?: number | null;
+    freq_skew?: number | null;
   };
 }
 
