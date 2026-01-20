@@ -110,12 +110,36 @@ wait_for_health() {
     return 1
 }
 
+# Check and build base image if needed
+check_and_build_base() {
+    log_info "Checking for base image gesalps-ml-base:latest..."
+    
+    if ! docker image inspect gesalps-ml-base:latest &> /dev/null; then
+        log_warning "Base image not found. Building gesalps-ml-base..."
+        log_info "This may take 5-10 minutes (installing PyTorch, SynthCity, etc)..."
+        
+        if docker build -t gesalps-ml-base:latest -f synth_worker/Dockerfile.base .; then
+            log_success "Base image built successfully"
+        else
+            log_error "Failed to build base image"
+            exit 1
+        fi
+    else
+        log_success "Base image found"
+    fi
+}
+
 # Deploy a single service with zero-downtime
 deploy_service() {
     local service=$1
     local compose_cmd=$2
     
     log_info "Deploying service: $service"
+    
+    # Check base image for worker
+    if [[ "$service" == "synth-worker" || "$service" == "worker" ]]; then
+        check_and_build_base
+    fi
     
     # Build new image
     log_info "Building new image for $service..."
@@ -155,6 +179,7 @@ deploy_all() {
     
     # Deploy worker (independent)
     if $compose_cmd -f "$COMPOSE_FILE" ps synth-worker 2>/dev/null | grep -q "Up"; then
+        check_and_build_base
         deploy_service "synth-worker" "$compose_cmd"
     fi
     

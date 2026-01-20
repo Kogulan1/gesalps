@@ -75,6 +75,8 @@ services:
     depends_on:
       ollama:
         condition: service_healthy
+    volumes:
+      - ../.antigravity:/app/.antigravity
     restart: unless-stopped
     deploy:
       resources:
@@ -110,6 +112,8 @@ services:
     environment:
       - DP_BACKEND=custom
       - DP_STRICT_DEFAULT=false
+    volumes:
+      - ../.antigravity:/app/.antigravity
     restart: unless-stopped
     deploy:
       resources:
@@ -220,10 +224,10 @@ services:
     deploy:
       resources:
         limits:
-          memory: 8G  # Adjust based on your VPS RAM (leave 2-4GB for system)
+          memory: 6G  # Adjusted for 8GB-16GB VPS. 8GB is risky on 8GB node.
           cpus: '2.0'
         reservations:
-          memory: 4G
+          memory: 2G
           cpus: '1.0'
     logging:
       driver: "json-file"

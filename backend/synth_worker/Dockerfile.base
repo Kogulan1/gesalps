@@ -1,60 +1,74 @@
-# Base image with all dependencies (PyTorch, SynthCity, etc.)
-# Build this once and push to registry, then use in main Dockerfile
-# This avoids downloading 650-1000 MB of dependencies on every build
-
 FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies and uv
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential curl libgomp1 libglib2.0-0 && \
-    rm -rf /var/lib/apt/lists/*
+    build-essential \
+    curl \
+    libgomp1 \
+    libglib2.0-0 \
+    && curl -LsSf https://astral.sh/uv/install.sh | sh \
+    && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip and install build tools
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+ENV PATH="/root/.local/bin/:$PATH"
 
-# Install core dependencies first (required for building some packages like shap)
-RUN pip install --no-cache-dir numpy==1.26.4 pandas==1.5.3 scipy==1.13.1
+# Layer 1: Core System & Pip Tools
+# We use an older pip version (23.3) because newer versions (24.1+) 
+# reject legacy SynthCity dependencies with invalid PEP 440 metadata.
+RUN pip install --no-cache-dir "pip<24.1" setuptools wheel
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.local/bin/:$PATH"
 
-# Install shap separately (needs numpy available during build)
-# Pin to version with pre-built wheels to avoid compilation issues
-RUN pip install --no-cache-dir "shap>=0.45.0"
+# Layer 2: Numerical & Scikit-Learn (Very stable)
+RUN uv pip install --system --no-cache \
+    numpy==1.26.4 \
+    pandas==1.5.3 \
+    scipy==1.13.1 \
+    scikit-learn==1.4.2
 
-# Install CPU-only PyTorch wheels (no CUDA) from PyTorch index
-# Using torch 2.2.2 for compatibility with Opacus 1.5.4
-# This is the BIG one - ~650-1000 MB total
-RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu \
-    torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2
+# Layer 3: Pytorch CPU (The big one)
+RUN uv pip install --system --no-cache --index-url https://download.pytorch.org/whl/cpu \
+    torch==2.2.2
 
-# Copy requirements file (we need it for remaining dependencies)
-# Note: This is copied early so changes to requirements.txt trigger rebuild
-COPY synth_worker/requirements.txt /tmp/requirements.txt
+# Layer 4: SDV ecosystem
+RUN uv pip install --system --no-cache \
+    sdv==1.26.0 \
+    copulas>=0.11.0 \
+    ctgan>=0.9.1 \
+    deepecho>=0.5.0 \
+    rdt>=1.13.0
 
-# Install remaining dependencies
-# Explicitly install critical packages first to ensure they're available
-RUN pip install --no-cache-dir supabase==2.5.1 python-jose==3.3.0 httpx==0.27.2 \
-    sdv==1.26.0 scikit-learn==1.4.2 python-dateutil==2.9.0.post0
+# Layer 5: Synthcity Technical Sub-dependencies (Metadata compliance fix)
+# We pre-install these to avoid the backtracking loop caused by pytorch-lightning < 2.0
+RUN uv pip install --system --no-cache \
+    "pytorch-lightning<2.0.0" \
+    "joblib<1.4.0" \
+    "shap" "lifelines" "catboost" "xgboost" "lightgbm" \
+    "cloudpickle" "dill" "pydantic>=1.10.0"
 
-# Install remaining requirements
-RUN pip install --no-cache-dir -r /tmp/requirements.txt || \
-    (pip install --no-cache-dir $(grep -v "^#" /tmp/requirements.txt | grep -v "^$" | grep -v "shap" | tr '\n' ' ') && \
-     pip install --no-cache-dir synthcity --no-deps || pip install --no-cache-dir synthcity)
+# Layer 6: Final Synthcity & Opacus
+RUN uv pip install --system --no-cache opacus==1.5.4
+RUN uv pip install --system --no-cache synthcity --no-deps || pip install --no-cache-dir "synthcity<1.0.0" --no-deps
 
-# Patch Opacus to work with torch 2.2.2 (RMSNorm doesn't exist in torch <2.3)
-# Copy patch file
+# Layer 7: Utility & Connector dependencies
+RUN uv pip install --system --no-cache \
+    "numpy<2.0.0" \
+    supabase==2.5.1 \
+    httpx==0.27.2 \
+    python-jose==3.3.0 \
+    python-dateutil==2.9.0.post0 \
+    statsmodels>=0.14.0 \
+    python-dotenv
+
+# Final Layer: Opacus & Patching (Project-agnostic parts)
+# Note: We rely on the runtime Dockerfile to install the project-specific requirements.txt
+# this prevents the massive dependency resolver hang during base image baking.
+
+# Patch Opacus (RMSNorm fix for torch 2.2.2)
 COPY synth_worker/patch_opacus.py /tmp/patch_opacus.py
 RUN python /tmp/patch_opacus.py && rm /tmp/patch_opacus.py
 
-# Verify critical packages are installed
-RUN pip list | grep -E "(supabase|synthcity|torch|opacus)" || echo "Warning: Some packages may be missing"
-
-# Clean up temporary files
-RUN rm -f /tmp/requirements.txt
-
-# Set environment variables
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
-
-# This base image is ready - it contains all dependencies
-# Main Dockerfile will use this as base and only copy application code
+# Labeling for easier management
+LABEL project="gesalps"
+LABEL type="ml-base"

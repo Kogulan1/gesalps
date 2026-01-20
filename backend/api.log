@@ -1,0 +1,407 @@
+INFO:     Will watch for changes in these directories: ['/Users/kogulan/Desktop/gesalps/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [15769] using WatchFiles
+[INFO] Note: NumExpr detected 14 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 8.
+[INFO] NumExpr defaulting to 8 threads.
+INFO:     Started server process [15814]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [15814]
+[INFO] Note: NumExpr detected 14 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 8.
+[INFO] NumExpr defaulting to 8 threads.
+INFO:     Started server process [27806]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [27806]
+[INFO] Note: NumExpr detected 14 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 8.
+[INFO] NumExpr defaulting to 8 threads.
+INFO:     Started server process [29546]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [29546]
+[INFO] Note: NumExpr detected 14 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 8.
+[INFO] NumExpr defaulting to 8 threads.
+INFO:     Started server process [29552]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'synth_worker/generation_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [29552]
+[INFO] Note: NumExpr detected 14 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 8.
+[INFO] NumExpr defaulting to 8 threads.
+INFO:     Started server process [32247]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'synth_worker/generation_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [32247]
+[INFO] Note: NumExpr detected 14 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 8.
+[INFO] NumExpr defaulting to 8 threads.
+INFO:     Started server process [37843]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [37843]
+[INFO] Note: NumExpr detected 14 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 8.
+[INFO] NumExpr defaulting to 8 threads.
+INFO:     Started server process [37854]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'synth_worker/generation_service.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [37854]
+[INFO] Note: NumExpr detected 14 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 8.
+[INFO] NumExpr defaulting to 8 threads.
+INFO:     Started server process [41134]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [41134]
+[INFO] Note: NumExpr detected 14 cores but "NUMEXPR_MAX_THREADS" not set, so enforcing safe limit of 8.
+[INFO] NumExpr defaulting to 8 threads.
+INFO:     Started server process [60579]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [60579]
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'api/main.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'api/main.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'api/main.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'api/main.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'api/main.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'report_service/main.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'report_service/main.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'report_service/main.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/optimizer.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/optimizer.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>
+WARNING:  WatchFiles detected changes in 'synth_worker/worker.py'. Reloading...
+Fatal Python error: init_sys_streams: can't initialize sys standard streams
+Python runtime state: core initialized
+OSError: [Errno 9] Bad file descriptor
+
+Current thread 0x000000020421a240 (most recent call first):
+  <no Python frame>

@@ -22,6 +22,7 @@ class FailureType(Enum):
     HYPERPARAM_MISMATCH = "hyperparam_mismatch"
     INSUFFICIENT_ITERATIONS = "insufficient_iterations"
     HIGH_MIA = "high_mia"
+    HIGH_RED_TEAM_ATTACK = "high_red_team_attack"
     HIGH_DUP_RATE = "high_dup_rate"
     HIGH_KS = "high_ks"
     HIGH_CORR_DELTA = "high_corr_delta"
@@ -98,48 +99,48 @@ class SyntheticDataOptimizer:
             except ImportError:
                 pass
     
-    def should_pivot_to_tvae(
+    def recommend_next_step(
         self,
         method: str,
         dataset_size: Tuple[int, int],
         metrics: Optional[Dict[str, Any]] = None,
         retry_count: int = 0
-    ) -> bool:
+    ) -> Tuple[str, Dict[str, Any]]:
         """
-        Determine if we should pivot from TabDDPM to TVAE based on GreenGuard findings.
+        Autonomously determine the next best action (Method + Params) for the engine.
         
-        GreenGuard Benchmark Findings:
-        - TabDDPM plateaus on small-N clinical data (<1000 rows)
-        - Utility peaks at ~9,000-10,000 iterations for N=569
-        - Beyond 30,000 iterations, utility degrades (overfitting to Gaussian noise)
-        - TVAE handles small-N numeric data with higher stability
-        
-        Args:
-            method: Current method (ddpm/tabddpm)
-            dataset_size: (n_rows, n_cols)
-            metrics: Current metrics (if available)
-            retry_count: Number of retries already attempted
-            
-        Returns:
-            True if should pivot to TVAE
+        Architectural Intelligence:
+        1.  **TVAE -> TabDDPM**: If TVAE hits a fidelity wall (KS > 0.15) after Attempt #2.
+        2.  **TabDDPM -> TVAE**: If TabDDPM is unstable on tiny datasets (<1000 rows).
+        3.  **Scaling**: Scaled params for the recommended method.
         """
-        n_rows, _ = dataset_size
+        n_rows, n_cols = dataset_size
+        next_method = method
         
-        # Pivot conditions based on GreenGuard research:
-        # 1. Small-N clinical data (<1000 rows) with TabDDPM
-        if method in ("ddpm", "tabddpm") and n_rows < 1000:
-            # 2. After 2+ retries with TabDDPM (indicates plateau)
-            if retry_count >= 2:
-                return True
-            
-            # 3. If KS Mean is still high (>0.20) after preprocessing
-            if metrics:
-                utility = metrics.get("utility", {})
-                ks_mean = utility.get("ks_mean")
-                if ks_mean and ks_mean > 0.20:
-                    return True
+        # 🟢 Architectural Pivot Logic
+        if method == "tvae":
+            # If TVAE plateaus after Attempt #2 (retry_count 1 or 2)
+            if retry_count >= 1 and metrics:
+                ks_mean = metrics.get("utility", {}).get("ks_mean", 1.0)
+                if ks_mean > 0.15:
+                    print(f"[optimizer] TVAE PLATEAU detected (KS {ks_mean:.3f}). Pivoting to TABDDPM.")
+                    next_method = "ddpm"
+                    
+        elif method in ("ddpm", "tabddpm"):
+            # If TabDDPM is unstable on tiny datasets
+            if n_rows < 1000 and (retry_count >= 2 or (metrics and metrics.get("utility", {}).get("ks_mean", 1.0) > 0.40)):
+                print(f"[optimizer] TabDDPM instability detected on small-N dataset. Pivoting to TVAE.")
+                next_method = "tvae"
         
-        return False
+        # 🟠 Generate Parameters for the Recommended Method
+        next_params = self.suggest_hyperparameters(
+            method=next_method,
+            dataset_size=dataset_size,
+            previous_metrics=metrics,
+            retry_count=retry_count + 1 # Increment for more aggressive scaling
+        )
+        
+        return next_method, next_params
     
     def analyze_failure(
         self,
@@ -166,6 +167,7 @@ class SyntheticDataOptimizer:
         ks = utility.get("ks_mean")
         corr_delta = utility.get("corr_delta")
         mia = privacy.get("mia_auc")
+        attack_rate = privacy.get("attack_success_rate")
         dup_rate = privacy.get("dup_rate")
         
         n_rows, n_cols = dataset_size
@@ -178,6 +180,8 @@ class SyntheticDataOptimizer:
             failures.append((FailureType.HIGH_CORR_DELTA, f"Corr Δ {corr_delta:.3f} > {self.CORR_MAX}"))
         if mia is not None and mia > self.MIA_MAX:
             failures.append((FailureType.HIGH_MIA, f"MIA AUC {mia:.3f} > {self.MIA_MAX}"))
+        if attack_rate is not None and attack_rate > 0.05: # 5% hard limit (Red Teamer)
+            failures.append((FailureType.HIGH_RED_TEAM_ATTACK, f"Red Team Attack {attack_rate:.1%} > 5%"))
         if dup_rate is not None and dup_rate > self.DUP_MAX:
             failures.append((FailureType.HIGH_DUP_RATE, f"Dup rate {dup_rate:.3f} > {self.DUP_MAX}"))
         
@@ -274,6 +278,14 @@ class SyntheticDataOptimizer:
                 suggestions.append("Consider switching to TabDDPM which has better privacy by default")
             else:
                 suggestions.append("Switch to TabDDPM or enable DP for better privacy")
+                
+        elif primary_type == FailureType.HIGH_RED_TEAM_ATTACK:
+            root_cause = f"Privacy failure: Adversarial Linkage Attack succeeded ({primary_msg})."
+            suggestions.append("CRITICAL: Privacy Breach Detected. Enable Differential Privacy (DP) immediately.")
+            suggestions.append("If DP is on, lower epsilon (e.g., from 10.0 to 1.0).")
+            if method == "ctgan":
+                suggestions.append("Switch to TabDDPM (better distributional privacy).")
+            suggestions.append("Increase sample_multiplier to dilute unique records.")
         
         elif primary_type == FailureType.HIGH_DUP_RATE:
             root_cause = f"Privacy failure: Too many duplicate rows in synthetic data."

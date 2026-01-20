@@ -6,7 +6,7 @@ import site
 
 # Find opacus installation path
 opacus_path = None
-for site_pkg in site.getsitepackages():
+for site_pkg in site.getsitepackages() + ['/usr/local/lib/python3.11/site-packages', '/usr/lib/python3/dist-packages']:
     test_path = os.path.join(site_pkg, 'opacus')
     if os.path.exists(test_path):
         opacus_path = test_path

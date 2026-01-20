@@ -30,6 +30,7 @@ services:
     restart: unless-stopped
 
   synth-worker:
+    pull_policy: never
     build:
       context: .
       dockerfile: synth_worker/Dockerfile
@@ -46,6 +47,8 @@ services:
     depends_on:
       ollama:
         condition: service_healthy         # 👈 wait for Ollama health
+    volumes:
+      - ../.antigravity:/app/.antigravity
     restart: unless-stopped
 
   report-service:

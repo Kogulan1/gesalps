@@ -166,15 +166,31 @@ app = FastAPI(
     version="1.0.0"
 )
 # Build CORS origin list with sensible defaults for local dev.
-cors_env = os.getenv("CORS_ALLOW_ORIGINS") or "*"
+# Build CORS origin list with robust defaults
+cors_env = os.getenv("CORS_ALLOW_ORIGINS") or ""
 cors_origins = [o.strip() for o in cors_env.split(",") if o.strip()]
 
-# Always allow localhost dev origins when not using wildcard.
-if cors_origins and cors_origins != ["*"]:
-    dev_origins = {"http://localhost:3000", "https://localhost:3000", "http://localhost:3001", "https://localhost:3001"}
-    for origin in dev_origins:
-        if origin not in cors_origins:
-            cors_origins.append(origin)
+# CRITICAL: Always allow these origins regardless of env var
+# This fixes the persistent "real data not showing" issue on local/vercel
+always_allow = [
+    "http://localhost:3000", 
+    "https://localhost:3000", 
+    "http://localhost:3001", 
+    "https://localhost:3001",
+    "https://gesalpai.ch",
+    "https://www.gesalpai.ch",
+    "http://gesalpai.ch",
+    "http://www.gesalpai.ch",
+]
+
+for origin in always_allow:
+    if origin not in cors_origins:
+        cors_origins.append(origin)
+
+# Add wildcard for Vercel preview deployments if not present
+# (FastAPI middleware checks allow_origins first, then allow_origin_regex)
+# We handle Vercel dynamically in regex below if needed, but adding known ones helps.
+# For now, let's just make sure we don't accidentally restrict it to nothing.
 
 if not cors_origins:
     cors_origins = ["*"]
@@ -184,6 +200,7 @@ print(f"[CONFIG] CORS Allowed Origins: {cors_origins}")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
+    allow_origin_regex=r"https://gesalps.*\.vercel\.app",  # Allow all Vercel preview deployments
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

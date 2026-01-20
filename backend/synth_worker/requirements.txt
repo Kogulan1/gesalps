@@ -12,8 +12,6 @@ python-jose==3.3.0
 # Using torch 2.2.2 (compatible with SynthCity <2.3 requirement)
 # Opacus 1.5.4 is patched to work with torch 2.2.2 (rms_norm.py handles missing RMSNorm)
 torch==2.2.2
-torchvision==0.17.2
-torchaudio==2.2.2
 opacus==1.5.4
 
 # Pin statsmodels to avoid Cython compilation issues (SynthCity dependency)
@@ -21,3 +19,5 @@ opacus==1.5.4
 statsmodels>=0.14.0
 
 synthcity
+python-dotenv
+
