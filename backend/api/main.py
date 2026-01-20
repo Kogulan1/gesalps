@@ -1197,7 +1197,8 @@ def get_run(run_id: str, user: Dict[str, Any] = Depends(require_user)):
         raise HTTPException(status_code=404, detail="Run not found")
     
     # Ownership check
-    proj = supabase.table("projects").select("owner_id").eq("id", r.data["project_id"]).single().execute()
+    # Ownership check
+    proj = supabase.table("projects").select("owner_id,name").eq("id", r.data["project_id"]).single().execute()
     if not proj.data or proj.data.get("owner_id") != user["id"]:
         raise HTTPException(status_code=403, detail="Forbidden")
     
@@ -1207,6 +1208,16 @@ def get_run(run_id: str, user: Dict[str, Any] = Depends(require_user)):
         raise HTTPException(status_code=404, detail="Run not found")
     
     run = dict(run_data.data)
+    run["project_name"] = proj.data.get("name")
+    
+    # Fetch dataset name
+    if run.get("dataset_id"):
+        try:
+            ds = supabase.table("datasets").select("name").eq("id", run["dataset_id"]).single().execute()
+            if ds.data:
+                run["dataset_name"] = ds.data.get("name")
+        except Exception:
+            pass # Graceful fallback if dataset deleted
     
     # Analyze which method succeeded (from method field or metrics)
     config_json = run.get("config_json") or {}
