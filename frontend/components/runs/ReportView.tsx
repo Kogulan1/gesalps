@@ -553,10 +553,29 @@ function MetricRow({ label, value, target, status, note }: { label: string, valu
          
          {/* Right Column: Value & Status */}
          <div className="flex flex-col items-end text-right">
-            <div className="text-base font-bold mb-1.5" style={{ color: C.slate900 }}>{value}</div>
+            <div className="text-base font-bold mb-1.5" style={{ color: status === null ? C.slate400 : C.slate900 }}>{value}</div>
             <div className="flex items-center justify-end gap-3 w-full">
                <span className="text-[10px] font-medium whitespace-nowrap min-w-[80px] text-right" style={{ color: C.slate400 }}>Target: {target}</span>
-               {status !== null && (
+               
+               {status === null ? (
+                    <div 
+                    style={{ 
+                        backgroundColor: C.slate100, 
+                        color: C.slate500,
+                        minWidth: '50px',
+                        height: '22px', 
+                        lineHeight: '22px', 
+                        borderRadius: '6px',
+                        fontSize: '10px',
+                        fontWeight: 'bold',
+                        textAlign: 'center',
+                        display: 'inline-block',
+                        paddingTop: '1px'
+                    }}
+                  >
+                     N/A
+                  </div>
+               ) : (
                   <div 
                     style={{ 
                         backgroundColor: status ? C.green100 : C.red100, 
@@ -583,17 +602,31 @@ function MetricRow({ label, value, target, status, note }: { label: string, valu
 
 // Table-style row for the Privacy Matrix
 function RiskRow({ label, value, threshold, pass, note }: { label: string, value: string, threshold: string, pass: boolean | null, note: string }) {
+    if (pass === null) {
+         return (
+            <div className="grid grid-cols-[2fr_1fr_1fr_1fr_2fr] gap-4 py-3 border-b last:border-0 items-center hover:bg-slate-100/50 transition-colors opacity-70" style={{ borderColor: C.slate200 }}>
+                 <div className="text-sm font-semibold" style={{ color: C.slate500 }}>{label}</div>
+                 <div className="text-sm font-mono text-right" style={{ color: C.slate500 }}>N/A</div>
+                 <div className="text-xs text-slate-400 text-right font-mono">{threshold}</div>
+                 <div className="flex justify-center">
+                    <Badge variant="outline" className="bg-slate-100 text-slate-500 border-slate-200 text-[10px] h-5">
+                        N/A
+                    </Badge>
+                 </div>
+                 <div className="text-[10px] text-slate-400 leading-tight italic">Data unavailable</div>
+            </div>
+        );
+    }
+    
     return (
         <div className="grid grid-cols-[2fr_1fr_1fr_1fr_2fr] gap-4 py-3 border-b last:border-0 items-center hover:bg-slate-100/50 transition-colors" style={{ borderColor: C.slate200 }}>
              <div className="text-sm font-semibold" style={{ color: C.slate700 }}>{label}</div>
              <div className="text-sm font-mono text-right" style={{ color: C.slate900 }}>{value}</div>
              <div className="text-xs text-slate-500 text-right font-mono">{threshold}</div>
              <div className="flex justify-center">
-                 {pass !== null && (
-                    <Badge variant="outline" className={`${pass ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'} text-[10px] h-5`}>
-                        {pass ? 'PASS' : 'FAIL'}
-                    </Badge>
-                 )}
+                <Badge variant="outline" className={`${pass ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'} text-[10px] h-5`}>
+                    {pass ? 'PASS' : 'FAIL'}
+                </Badge>
              </div>
              <div className="text-[10px] text-slate-500 leading-tight italic">{note}</div>
         </div>
@@ -605,10 +638,16 @@ function TechnicalRow({ label, value, limit, status }: { label: string, value: s
         <div className="flex justify-between items-center text-sm">
             <span style={{ color: C.slate600 }}>{label}</span>
             <div className="text-right">
-                <div className="font-mono font-bold" style={{ color: C.slate900 }}>{value}</div>
-                <div className="text-[9px] uppercase" style={{ color: status ? C.green600 : C.red600 }}>
-                    {status ? 'Pass' : 'Limit Exceeded'} ({limit})
-                </div>
+                <div className="font-mono font-bold" style={{ color: status === null ? C.slate400 : C.slate900 }}>{value}</div>
+                {status === null ? (
+                     <div className="text-[9px] uppercase" style={{ color: C.slate400 }}>
+                        Data Unavailable
+                     </div>
+                ) : (
+                     <div className="text-[9px] uppercase" style={{ color: status ? C.green600 : C.red600 }}>
+                        {status ? 'Pass' : 'Limit Exceeded'} ({limit})
+                     </div>
+                )}
             </div>
         </div>
     );

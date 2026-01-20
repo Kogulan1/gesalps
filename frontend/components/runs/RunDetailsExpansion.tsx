@@ -749,8 +749,8 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
                             meta: {
                                 n_synth: results.metrics.rows_generated,
                                 model: results.method,
-                                project_name: runData?.project_name || "ETH Health Data", 
-                                dataset_name: runData?.dataset_name || "diabetes.csv",    
+                                project_name: runData?.project_name || "Unknown Project", 
+                                dataset_name: runData?.dataset_name || "Unknown Dataset",    
                                 run_name: results.name,
                                 run_id: results.id
                             }
