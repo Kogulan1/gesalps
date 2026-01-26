@@ -62,6 +62,20 @@ if not SUPABASE_URL or not (SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY):
     raise RuntimeError("Missing SUPABASE_URL and/or SUPABASE_SERVICE_ROLE_KEY/NEXT_PUBLIC_SUPABASE_ANON_KEY")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY)
 
+def get_omop_mapper():
+    global OMOP_MAPPER
+    if OMOP_MAPPER is None:
+        try:
+            print("[OMOP] Initializing ProductionMapper (Lazy Load)...")
+            from services.omop_engine.src.mapper import ProductionMapper
+            # Use default paths relative to container root (/app)
+            OMOP_MAPPER = ProductionMapper()
+            print("[OMOP] Mapper initialized successfully.")
+        except Exception as e:
+            print(f"[OMOP] Failed to initialize mapper: {e}")
+            OMOP_MAPPER = None
+    return OMOP_MAPPER
+
 REPORT_SERVICE_BASE = os.getenv("REPORT_SERVICE_BASE", "http://localhost:8010")
 MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "10"))
 APP_JWKS_CACHE: Dict[str, Any] = {}
@@ -340,7 +354,7 @@ def create_project(p: CreateProject, user: Dict[str, Any] = Depends(require_user
 def get_project(project_id: str, user: Dict[str, Any] = Depends(require_user)):
     """Get a specific project with detailed information."""
     # Get project details
-    res = supabase.table("projects").select("id, name, owner_id, created_at, updated_at").eq("id", project_id).eq("owner_id", user["id"]).single().execute()
+    res = supabase.table("projects").select("id, name, owner_id, created_at").eq("id", project_id).eq("owner_id", user["id"]).single().execute()
     if res.data is None:
         raise HTTPException(status_code=404, detail="Project not found")
     
@@ -542,7 +556,7 @@ def list_datasets(user: Dict[str, Any] = Depends(require_user)):
         return []
     
     # Get all datasets for these projects
-    datasets_res = supabase.table("datasets").select("id, name, project_id, file_url, rows_count, cols_count, created_at").in_("project_id", project_ids).order("created_at", desc=True).execute()
+    datasets_res = supabase.table("datasets").select("id, name, project_id, file_url, rows_count, cols_count, created_at, omop_mapping").in_("project_id", project_ids).order("created_at", desc=True).execute()
     if datasets_res.data is None:
         raise HTTPException(status_code=500, detail=str(datasets_res.error))
     
@@ -613,6 +627,60 @@ def get_dataset(dataset_id: str, user: Dict[str, Any] = Depends(require_user)):
     except Exception as e:
         if isinstance(e, HTTPException): raise e
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/v1/omop/mapping/{dataset_id}")
+def get_omop_mapping(dataset_id: str, user: Dict[str, Any] = Depends(require_user)):
+    """
+    Get OMOP mapping for the latest successful run of a dataset.
+    Returns: { "mapping": { "source_col": { "concept_id": ..., "concept_name": ..., "similarity": ... } } }
+    """
+    try:
+        # 1. Verify access to dataset
+        ds_res = supabase.table("datasets").select("project_id").eq("id", dataset_id).single().execute()
+        if not ds_res.data:
+            raise HTTPException(status_code=404, detail="Dataset not found")
+        
+        proj_res = supabase.table("projects").select("owner_id").eq("id", ds_res.data["project_id"]).single().execute()
+        if not proj_res.data or proj_res.data.get("owner_id") != user["id"]:
+            raise HTTPException(status_code=403, detail="Not authorized")
+
+        # 2. Get latest successful run
+        run_res = supabase.table("runs")\
+            .select("id")\
+            .eq("dataset_id", dataset_id)\
+            .eq("status", "succeeded")\
+            .order("created_at", desc=True)\
+            .limit(1)\
+            .execute()
+        
+        if not run_res.data:
+            # No successful run yet, return empty mapping
+            return {"mapping": {}, "status": "no_run"}
+
+        run_id = run_res.data[0]["id"]
+
+        # 3. Get metrics for that run
+        metrics_res = supabase.table("metrics").select("payload_json").eq("run_id", run_id).single().execute()
+        
+        if not metrics_res.data or not metrics_res.data.get("payload_json"):
+             return {"mapping": {}, "status": "no_metrics"}
+             
+        payload = metrics_res.data["payload_json"]
+        
+        # 4. Extract OMOP mapping
+        mapping = {}
+        if "omop_mapping" in payload:
+            mapping = payload["omop_mapping"]
+        elif "compliance" in payload and "omop_mapping" in payload["compliance"]:
+             mapping = payload["compliance"]["omop_mapping"]
+             
+        return {"mapping": mapping, "run_id": run_id, "status": "found"}
+
+    except Exception as e:
+        logger.error(f"Error fetching OMOP mapping: {e}")
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=str(e))
 @app.post("/v1/datasets/upload")
 async def upload_dataset(project_id: str = Form(...), file: UploadFile = File(...), user: Dict[str, Any] = Depends(require_user)):
     ensure_bucket("datasets")
@@ -644,6 +712,34 @@ async def upload_dataset(project_id: str = Form(...), file: UploadFile = File(..
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Storage upload failed: {e}")
 
+    # Run OMOP Mapping (Synchronous)
+    omop_result = {}
+    try:
+        mapper = get_omop_mapper()
+        if mapper:
+            print(f"[OMOP] Mapping {cols_count} columns for {file.filename}...")
+            # map_columns expects a list of column names
+            omop_result = mapper.map_columns(df.columns.tolist())
+            print("[OMOP] Mapping complete.")
+        else:
+            print("[OMOP] Mapper not available, returning blank template.")
+            # Create blank template for manual mapping
+            for col in df.columns:
+                omop_result[str(col)] = {
+                    "status": "UNKNOWN",
+                    "confidence": 0.0, 
+                    "details": "Mapper unavailable - manual mapping required"
+                }
+    except Exception as e:
+        print(f"[OMOP] Mapping failed during upload: {e}")
+        # Create blank template with error note
+        for col in df.columns:
+            omop_result[str(col)] = {
+                "status": "UNKNOWN", 
+                "confidence": 0.0,
+                "details": f"Mapping failed: {str(e)}"
+            }
+
     dataset_row = {
         "project_id": project_id,
         "name": file.filename or "dataset.csv",
@@ -651,11 +747,12 @@ async def upload_dataset(project_id: str = Form(...), file: UploadFile = File(..
         "rows_count": rows_count,
         "cols_count": cols_count,
         "schema_json": schema,
+        "omop_mapping": omop_result  # Save mapping to DB
     }
     ins = supabase.table("datasets").insert(dataset_row).execute()
     if ins.data is None:
         raise HTTPException(status_code=500, detail=str(ins.error))
-    return {"dataset_id": ins.data[0]["id"], "schema": schema}
+    return {"dataset_id": ins.data[0]["id"], "schema": schema, "omop_mapping": omop_result}
 
 @app.get("/v1/datasets/{dataset_id}/preview")
 def dataset_preview(dataset_id: str, user: Dict[str, Any] = Depends(require_user)):
@@ -719,6 +816,38 @@ def rename_dataset(dataset_id: str, body: RenameBody, user: Dict[str, Any] = Dep
     if res.data is None:
         raise HTTPException(status_code=500, detail=str(res.error))
     return {"message": "Dataset renamed successfully"}
+
+class MappingUpdate(BaseModel):
+    mapping: Dict[str, Any]
+
+@app.put("/v1/datasets/{dataset_id}/mapping")
+def update_dataset_mapping(dataset_id: str, body: MappingUpdate, user: Dict[str, Any] = Depends(require_user)):
+    """
+    Update the OMOP mapping for a dataset (Review & Save).
+    Performs validation and saves to the database.
+    """
+    # 1. Verify access
+    ds = supabase.table("datasets").select("id,project_id").eq("id", dataset_id).single().execute()
+    if not ds.data:
+        raise HTTPException(status_code=404, detail="Dataset not found")
+    
+    proj = supabase.table("projects").select("owner_id").eq("id", ds.data["project_id"]).single().execute()
+    if not proj.data or proj.data.get("owner_id") != user["id"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    # 2. Extract mapping
+    mapping = body.mapping
+    if not mapping or not isinstance(mapping, dict):
+         raise HTTPException(status_code=400, detail="Invalid mapping format. Expected JSON object.")
+
+    # 3. Save to DB
+    # We update the source of truth 'omop_mapping' column
+    res = supabase.table("datasets").update({"omop_mapping": mapping}).eq("id", dataset_id).execute()
+    
+    if res.data is None:
+        raise HTTPException(status_code=500, detail=f"Failed to save mapping: {res.error}")
+        
+    return {"ok": True, "message": "Mapping saved successfully"}
 
 # ---------- Runs ----------
 @app.get("/v1/runs")
@@ -915,6 +1044,18 @@ def start_run(body: StartRun, user: Dict[str, Any] = Depends(require_user)):
         raise HTTPException(status_code=404, detail="Dataset not found")
 
     project_id = rows[0]["project_id"]
+
+    # FORCE-CHECK: Valid OMOP Mapping Required
+    # User must have "Reviewed & Saved" (or at least valid initial mapping exists)
+    # Refetch dataset with omop_mapping to check
+    ds_check = supabase.table("datasets").select("omop_mapping").eq("id", body.dataset_id).single().execute()
+    if ds_check.data:
+        mapping = ds_check.data.get("omop_mapping")
+        if not mapping:
+             raise HTTPException(status_code=400, detail="Dataset has no semantic mapping. Please view the dataset and verify/save the 'Global DNA Map' before running.")
+        if "error" in mapping:
+             raise HTTPException(status_code=400, detail=f"Dataset mapping failed previously ({mapping.get('error')}). Please fix the mapping in the 'Global DNA Map' tab.")
+
 
     # Quota: max 3 runs per project (free tier)
     if not is_enterprise(user):
