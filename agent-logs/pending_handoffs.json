@@ -1760,6 +1760,14 @@
         "source_path": "agent-logs/2026-01-09-Base-Image-Build-Optimization-Announcement-MainAgent.md",
         "timestamp": "2026-01-09T22:27:43.274065",
         "status": "pending"
+      },
+      {
+        "agent": "FrontendDeveloper",
+        "task": "Review the implementation and verify UI/UX consistency",
+        "source_log": "2026-01-13-Runs-Page-Navigation-Fix-FullStackDeveloper.md",
+        "source_path": "agent-logs/2026-01-13-Runs-Page-Navigation-Fix-FullStackDeveloper.md",
+        "timestamp": "2026-01-13T07:47:55.851042",
+        "status": "pending"
       }
     ],
     "EndUserTester": [
@@ -1945,6 +1953,14 @@
         "source_log": "2026-01-09-Quality-Test-Final-DevOpsAgent.md",
         "source_path": "agent-logs/2026-01-09-Quality-Test-Final-DevOpsAgent.md",
         "timestamp": "2026-01-10T11:18:09.984978",
+        "status": "pending"
+      },
+      {
+        "agent": "EndUserTester",
+        "task": "Please test the complete flow from dataset page play button to runs page navigation",
+        "source_log": "2026-01-13-Runs-Page-Navigation-Fix-FullStackDeveloper.md",
+        "source_path": "agent-logs/2026-01-13-Runs-Page-Navigation-Fix-FullStackDeveloper.md",
+        "timestamp": "2026-01-13T07:47:55.851009",
         "status": "pending"
       }
     ],
@@ -2461,7 +2477,9 @@
     "2026-01-10-Smart-Preprocessing-Rollout-Plan-MainAgent.md",
     "2026-01-10-Universal-Preprocessing-Handler-Complete-SyntheticDataSpecialist.md",
     "2026-01-10-VPS-Update-Script-Created-BackendAgent.md",
+    "2026-01-11-All-Green-Status-Report-SyntheticDataSpecialist.md",
     "2026-01-11-CTO-All-Green-Action-Plan-MainAgent.md",
+    "2026-01-11-Container-Rebuild-Complete-SyntheticDataSpecialist.md",
     "2026-01-11-Metrics-and-CTGAN-Fixes-Complete-SyntheticDataSpecialist.md",
     "2026-01-11-OpenRouter-API-Fix-Complete-DevOpsAgent.md",
     "2026-01-11-Phase-1-Blocker-Fixes-Complete-DevOpsAgent.md",
@@ -2469,6 +2487,15 @@
     "2026-01-11-Phase-2-Test-Results-and-Blockers-SyntheticDataSpecialist.md",
     "2026-01-11-Preprocessing-Service-Initial-Design-PreprocessingAgent.md",
     "2026-01-11-VPS-Disk-Space-Cleanup-DevOpsAgent.md",
+    "2026-01-12-ClinicalPreprocessor-Backward-Compatibility-Verification-DevOpsAgent.md",
+    "2026-01-12-ClinicalPreprocessor-Frontend-Integration-Status-DevOpsAgent.md",
+    "2026-01-12-ClinicalPreprocessor-Production-Deployment-DevOpsAgent.md",
+    "2026-01-12-GreenGuard-Recommendations-Implemented-SyntheticDataSpecialist.md",
+    "2026-01-12-GreenGuard-v18-Deployment-DevOpsAgent.md",
+    "2026-01-12-GreenGuard-v18-Final-Summary-DevOpsAgent.md",
+    "2026-01-12-GreenGuard-v18-Testing-Complete-DevOpsAgent.md",
+    "2026-01-12-Run-UI-Redesign-Proposal-FrontendRunUIOptimizationAgent.md",
+    "2026-01-13-Runs-Page-Navigation-Fix-FullStackDeveloper.md",
     "AGENT_AUTOMATION_PROPOSAL.md",
     "HOW_IT_WORKS.md",
     "README.md",

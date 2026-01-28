@@ -8,7 +8,7 @@ type ProgressProps = {
   className?: string;
 };
 
-export default function Progress({ value = 0, indeterminate, label, className }: ProgressProps) {
+export function Progress({ value = 0, indeterminate, label, className }: ProgressProps) {
   const cl = `w-full bg-gray-200 dark:bg-neutral-800 rounded-full h-2 overflow-hidden ${className||""}`;
   const pct = Math.max(0, Math.min(100, value));
   return (

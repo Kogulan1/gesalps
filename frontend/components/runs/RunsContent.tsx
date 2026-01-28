@@ -44,7 +44,7 @@ import {
 import { RenameModal } from "@/components/common/RenameModal";
 import { RunDetailsExpansion } from "@/components/runs/RunDetailsExpansion";
 import { RunProgressTracker } from "@/components/runs/RunProgressTracker";
-import Progress from "@/components/ui/progress";
+import { Progress } from "@/components/ui/progress";
 
 interface Run {
   id: string;

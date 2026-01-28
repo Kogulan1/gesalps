@@ -65,6 +65,7 @@ type DemoDataset = {
     created_at: string;
     privacy_level: string;
   }>;
+  omop_mapping?: Record<string, any>;
 };
 
 export function DatasetsContent() {
@@ -774,7 +775,8 @@ export function DatasetsContent() {
           file_path: previewModal.dataset.file_name || "",
           size: previewModal.dataset.size || "0",
           rows: previewModal.dataset.rows || 0,
-          columns: previewModal.dataset.columns || 0
+          columns: previewModal.dataset.columns || 0,
+          omop_mapping: previewModal.dataset.omop_mapping
         } : null}
       />
 

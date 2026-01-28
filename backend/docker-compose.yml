@@ -27,6 +27,8 @@ services:
       timeout: 5s
       retries: 6
       start_period: 10s
+    volumes:
+      - ./services/omop_engine:/app/services/omop_engine
     restart: unless-stopped
 
   synth-worker:
@@ -49,6 +51,11 @@ services:
         condition: service_healthy         # 👈 wait for Ollama health
     volumes:
       - ../.antigravity:/app/.antigravity
+      - ./services/omop_engine/models:/app/services/omop_engine/models
+      # Hot-swap code for Project Chimera
+      - ./synth_worker/worker.py:/app/worker.py
+      - ./synth_worker/generation_service.py:/app/generation_service.py
+      - ./services/omop_engine/src/mapper.py:/app/services/omop_engine/src/mapper.py
     restart: unless-stopped
 
   report-service:

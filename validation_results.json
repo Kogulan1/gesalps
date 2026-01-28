@@ -1,0 +1,284 @@
+[
+  {
+    "name": "Heart Disease",
+    "steps": [
+      {
+        "step": "Cleaner",
+        "elapsed": 0.0009450912475585938,
+        "status": "COMPLETE"
+      },
+      {
+        "step": "Architect",
+        "status": "COMPLETE"
+      },
+      {
+        "step": "Generator",
+        "elapsed": 28.778167963027954,
+        "status": "COMPLETE",
+        "method": "tvae"
+      },
+      {
+        "step": "Red Teamer",
+        "elapsed": 0.053822994232177734,
+        "status": "COMPLETE",
+        "risk": 0.0
+      }
+    ],
+    "final_metrics": {
+      "utility": {
+        "ks_mean": 0.08774834437086093,
+        "corr_delta": 0.12280807537848536,
+        "auroc": null,
+        "c_index": null
+      },
+      "privacy": {
+        "attack_success_rate": 0.0,
+        "identifiability_score": 0.0,
+        "dup_rate": 0.0,
+        "attack_type": "Linkage Simulation",
+        "status": "PASS"
+      }
+    },
+    "verdict": "FAIL",
+    "reasons": [
+      "KS 0.088 (OK)",
+      "Corr \u0394 0.123 > 0.1 (FAIL)",
+      "Red Team Linkage 0.0% (OK)"
+    ]
+  },
+  {
+    "name": "Pima Diabetes",
+    "steps": [
+      {
+        "step": "Cleaner",
+        "elapsed": 0.00014400482177734375,
+        "status": "COMPLETE"
+      },
+      {
+        "step": "Architect",
+        "status": "COMPLETE"
+      },
+      {
+        "step": "Generator",
+        "elapsed": 64.66607689857483,
+        "status": "COMPLETE",
+        "method": "tvae"
+      },
+      {
+        "step": "Red Teamer",
+        "elapsed": 0.04521822929382324,
+        "status": "COMPLETE",
+        "risk": 0.0
+      }
+    ],
+    "final_metrics": {
+      "utility": {
+        "ks_mean": 0.07277199074074076,
+        "corr_delta": 0.12555178046289475,
+        "auroc": null,
+        "c_index": null
+      },
+      "privacy": {
+        "attack_success_rate": 0.0,
+        "identifiability_score": 0.0,
+        "dup_rate": 0.0,
+        "attack_type": "Linkage Simulation",
+        "status": "PASS"
+      }
+    },
+    "verdict": "FAIL",
+    "reasons": [
+      "KS 0.073 (OK)",
+      "Corr \u0394 0.126 > 0.1 (FAIL)",
+      "Red Team Linkage 0.0% (OK)"
+    ]
+  },
+  {
+    "name": "Breast Cancer",
+    "steps": [
+      {
+        "step": "Cleaner",
+        "elapsed": 0.00021696090698242188,
+        "status": "COMPLETE"
+      },
+      {
+        "step": "Architect",
+        "status": "COMPLETE"
+      },
+      {
+        "step": "Generator",
+        "elapsed": 125.68601298332214,
+        "status": "COMPLETE",
+        "method": "tvae"
+      },
+      {
+        "step": "Red Teamer",
+        "elapsed": 0.059056997299194336,
+        "status": "COMPLETE",
+        "risk": 0.0
+      }
+    ],
+    "final_metrics": {
+      "utility": {
+        "ks_mean": 0.08231759170020979,
+        "corr_delta": 0.10136653722557082,
+        "auroc": null,
+        "c_index": null
+      },
+      "privacy": {
+        "attack_success_rate": 0.0,
+        "identifiability_score": 0.0,
+        "dup_rate": 0.0,
+        "attack_type": "Linkage Simulation",
+        "status": "PASS"
+      }
+    },
+    "verdict": "FAIL",
+    "reasons": [
+      "KS 0.082 (OK)",
+      "Corr \u0394 0.101 > 0.1 (FAIL)",
+      "Red Team Linkage 0.0% (OK)"
+    ]
+  },
+  {
+    "name": "Hepatitis C (HCV)",
+    "steps": [
+      {
+        "step": "Cleaner",
+        "elapsed": 0.0008749961853027344,
+        "status": "COMPLETE"
+      },
+      {
+        "step": "Architect",
+        "status": "COMPLETE"
+      },
+      {
+        "step": "Generator",
+        "elapsed": 66.12571907043457,
+        "status": "COMPLETE",
+        "method": "tvae"
+      },
+      {
+        "step": "Red Teamer",
+        "elapsed": 0.06401801109313965,
+        "status": "COMPLETE",
+        "risk": 0.0
+      }
+    ],
+    "final_metrics": {
+      "utility": {
+        "ks_mean": 0.0762185132342743,
+        "corr_delta": 0.12184687057862992,
+        "auroc": null,
+        "c_index": null
+      },
+      "privacy": {
+        "attack_success_rate": 0.0,
+        "identifiability_score": 0.0,
+        "dup_rate": 0.0,
+        "attack_type": "Linkage Simulation",
+        "status": "PASS"
+      }
+    },
+    "verdict": "FAIL",
+    "reasons": [
+      "KS 0.076 (OK)",
+      "Corr \u0394 0.122 > 0.1 (FAIL)",
+      "Red Team Linkage 0.0% (OK)"
+    ]
+  },
+  {
+    "name": "Chronic Kidney Disease",
+    "steps": [
+      {
+        "step": "Cleaner",
+        "elapsed": 0.002526998519897461,
+        "status": "COMPLETE"
+      },
+      {
+        "step": "Architect",
+        "status": "COMPLETE"
+      },
+      {
+        "step": "Generator",
+        "elapsed": 53.79511380195618,
+        "status": "COMPLETE",
+        "method": "tvae"
+      },
+      {
+        "step": "Red Teamer",
+        "elapsed": 0.10077810287475586,
+        "status": "COMPLETE",
+        "risk": 0.0
+      }
+    ],
+    "final_metrics": {
+      "utility": {
+        "ks_mean": 0.1898446703058321,
+        "corr_delta": 0.14698481812170566,
+        "auroc": null,
+        "c_index": null
+      },
+      "privacy": {
+        "attack_success_rate": 0.0,
+        "identifiability_score": 0.0,
+        "dup_rate": 0.0,
+        "attack_type": "Linkage Simulation",
+        "status": "PASS"
+      }
+    },
+    "verdict": "FAIL",
+    "reasons": [
+      "KS 0.190 > 0.1 (FAIL)",
+      "Corr \u0394 0.147 > 0.1 (FAIL)",
+      "Red Team Linkage 0.0% (OK)"
+    ]
+  },
+  {
+    "name": "Hepatitis",
+    "steps": [
+      {
+        "step": "Cleaner",
+        "elapsed": 0.001940011978149414,
+        "status": "COMPLETE"
+      },
+      {
+        "step": "Architect",
+        "status": "COMPLETE"
+      },
+      {
+        "step": "Generator",
+        "elapsed": 15.05165696144104,
+        "status": "COMPLETE",
+        "method": "tvae"
+      },
+      {
+        "step": "Red Teamer",
+        "elapsed": 0.06432485580444336,
+        "status": "COMPLETE",
+        "risk": 0.0
+      }
+    ],
+    "final_metrics": {
+      "utility": {
+        "ks_mean": 0.2082056026645359,
+        "corr_delta": 0.13164102652761744,
+        "auroc": null,
+        "c_index": null
+      },
+      "privacy": {
+        "attack_success_rate": 0.0,
+        "identifiability_score": 0.0,
+        "dup_rate": 0.0,
+        "attack_type": "Linkage Simulation",
+        "status": "PASS"
+      }
+    },
+    "verdict": "FAIL",
+    "reasons": [
+      "KS 0.208 > 0.1 (FAIL)",
+      "Corr \u0394 0.132 > 0.1 (FAIL)",
+      "Red Team Linkage 0.0% (OK)"
+    ]
+  }
+]

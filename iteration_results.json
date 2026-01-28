@@ -1,0 +1,139 @@
+[
+  {
+    "attempt": 1,
+    "method": "tvae",
+    "hparams": {},
+    "metrics": {
+      "utility": {
+        "ks_mean": 0.26385233417400017,
+        "corr_delta": NaN,
+        "auroc": null,
+        "c_index": null
+      },
+      "privacy": {
+        "attack_success_rate": 0.0,
+        "identifiability_score": 0.0,
+        "dup_rate": 0.0,
+        "attack_type": "Linkage Simulation",
+        "status": "PASS"
+      }
+    },
+    "status": "FAIL"
+  },
+  {
+    "attempt": 2,
+    "method": "ddpm",
+    "hparams": {
+      "n_iter": 50000,
+      "batch_size": 64
+    },
+    "metrics": {
+      "utility": {
+        "ks_mean": 0.21106796237771341,
+        "corr_delta": 0.17683161218910307,
+        "auroc": null,
+        "c_index": null
+      },
+      "privacy": {
+        "attack_success_rate": 0.0,
+        "identifiability_score": 0.0,
+        "dup_rate": 0.0,
+        "attack_type": "Linkage Simulation",
+        "status": "PASS"
+      }
+    },
+    "status": "FAIL"
+  },
+  {
+    "attempt": 3,
+    "method": "tvae",
+    "hparams": {
+      "num_epochs": 7000,
+      "batch_size": 32,
+      "embedding_dim": 512,
+      "compress_dims": [
+        256,
+        256
+      ],
+      "decompress_dims": [
+        256,
+        256
+      ],
+      "verbose": true
+    },
+    "metrics": {
+      "utility": {
+        "ks_mean": 0.1738171145309498,
+        "corr_delta": 0.12819401949233378,
+        "auroc": null,
+        "c_index": null
+      },
+      "privacy": {
+        "attack_success_rate": 0.0,
+        "identifiability_score": 0.0,
+        "dup_rate": 0.0,
+        "attack_type": "Linkage Simulation",
+        "status": "PASS"
+      }
+    },
+    "status": "FAIL"
+  },
+  {
+    "attempt": 4,
+    "method": "ddpm",
+    "hparams": {
+      "n_iter": 50000,
+      "batch_size": 64
+    },
+    "metrics": {
+      "utility": {
+        "ks_mean": 0.21106796237771341,
+        "corr_delta": 0.17683161218910307,
+        "auroc": null,
+        "c_index": null
+      },
+      "privacy": {
+        "attack_success_rate": 0.0,
+        "identifiability_score": 0.0,
+        "dup_rate": 0.0,
+        "attack_type": "Linkage Simulation",
+        "status": "PASS"
+      }
+    },
+    "status": "FAIL"
+  },
+  {
+    "attempt": 5,
+    "method": "tvae",
+    "hparams": {
+      "num_epochs": 9000,
+      "batch_size": 32,
+      "embedding_dim": 512,
+      "compress_dims": [
+        256,
+        256
+      ],
+      "decompress_dims": [
+        256,
+        256
+      ],
+      "verbose": true
+    },
+    "metrics": {
+      "utility": {
+        "ks_mean": 0.176216597776875,
+        "corr_delta": 0.14109617872053695,
+        "auroc": null,
+        "c_index": null
+      },
+      "privacy": {
+        "attack_success_rate": 0.0,
+        "identifiability_score": 0.0,
+        "dup_rate": 0.0,
+        "attack_type": "Linkage Simulation",
+        "status": "PASS"
+      }
+    },
+    "status": "FAIL"
+  }
+]

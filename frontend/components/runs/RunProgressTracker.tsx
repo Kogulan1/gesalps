@@ -52,22 +52,25 @@ export function RunProgressTracker({ status, steps, metrics, variant = 'default'
         maxStep = Math.max(maxStep, STEP_ARCHITECT);
       }
       if (title.includes("architect") || title.includes("preprocessing") || detail.includes("selecting model") || detail.includes("hyperparameter")) {
-        completed.add(STEP_CLEANER); // Implies cleaner is done
-        completed.add(STEP_ARCHITECT);
-        maxStep = Math.max(maxStep, STEP_GENERATOR);
+        completed.add(STEP_CLEANER);
+        maxStep = Math.max(maxStep, STEP_ARCHITECT); // Architect is Active
       }
       if (title.includes("training") || detail.includes("epoch") || detail.includes("generating")) {
         completed.add(STEP_CLEANER);
         completed.add(STEP_ARCHITECT);
-        maxStep = Math.max(maxStep, STEP_RED_TEAM); // Training implies generator is active
+        maxStep = Math.max(maxStep, STEP_GENERATOR); // Engine is Active
       }
       if (title.includes("red team") || detail.includes("attack") || detail.includes("linkage")) {
-        completed.add(STEP_GENERATOR); // Implies generation done
-        maxStep = Math.max(maxStep, STEP_SENTINEL);
+        completed.add(STEP_CLEANER);
+        completed.add(STEP_ARCHITECT);
+        completed.add(STEP_GENERATOR);
+        maxStep = Math.max(maxStep, STEP_RED_TEAM); // Auditor is Active
       }
       if (title.includes("privacy") || detail.includes("mia") || detail.includes("audit")) {
-         completed.add(STEP_RED_TEAM); // Implies attacks done
-         maxStep = Math.max(maxStep, 5);
+         completed.add(STEP_CLEANER);
+         completed.add(STEP_ARCHITECT);
+         completed.add(STEP_GENERATOR);
+         maxStep = Math.max(maxStep, STEP_RED_TEAM); // Auditor is Active
       }
     });
 

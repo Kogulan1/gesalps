@@ -15,3 +15,9 @@ Docs and pictures/
 
 #Ignore vscode AI rules
 .github/instructions/codacy.instructions.md
+
+# Local Environment
+.venv/
+
+# Large OMOP Data
+backend/services/omop_engine/data/raw/

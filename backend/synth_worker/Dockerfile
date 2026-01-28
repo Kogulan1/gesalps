@@ -7,6 +7,11 @@ WORKDIR /app
 RUN pip uninstall -y fpdf && pip install --no-cache-dir fpdf2
 COPY synth_worker/ /app/
 COPY libs/ /app/libs/
+COPY services/ /app/services/
+COPY requirements.txt /app/requirements.txt
+
+# Install new dependencies (OMOP Engine)
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
 # Re-apply patch if code changed (safeguard)
 RUN python patch_opacus.py || echo "Patching skipped"

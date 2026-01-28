@@ -24,6 +24,7 @@ export default function StartRun({ datasetId, defaultAgentEnabled, defaultModel,
   const locale = useLocale();
   const [agentEnabled, setAgentEnabled] = useState<boolean>(true);
   const [customize, setCustomize] = useState<boolean>(false);
+  const [omopEnabled, setOmopEnabled] = useState<boolean>(true);
   const [mode, setMode] = useState<Mode>(defaultMode);
   const [method, setMethod] = useState<Method>(defaultMethod);
   const [prompt, setPrompt] = useState<string>("");
@@ -71,7 +72,8 @@ export default function StartRun({ datasetId, defaultAgentEnabled, defaultModel,
           mode: 'agent',
           name: (runName||'').trim() || undefined,
           config_json: {
-            preference: { tradeoff: 'balanced' }
+            preference: { tradeoff: 'balanced' },
+            omop_enabled: omopEnabled
           }
         };
       } else if (customize && agentEnabled) {
@@ -85,7 +87,8 @@ export default function StartRun({ datasetId, defaultAgentEnabled, defaultModel,
             preference: { tradeoff: mode },
             prompt: (prompt||'').trim() || undefined,
             goal: (goal||'').trim() || undefined,
-            agent: { provider, model, temperature }
+            agent: { provider, model, temperature },
+            omop_enabled: omopEnabled
           }
         };
       } else {
@@ -104,7 +107,8 @@ export default function StartRun({ datasetId, defaultAgentEnabled, defaultModel,
           config_json: {
             hyperparams: hp,
             dp: { enabled: false },
-            agent: { enabled: false }
+            agent: { enabled: false },
+            omop_enabled: omopEnabled
           }
         };
       }

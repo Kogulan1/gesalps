@@ -30,6 +30,7 @@ import { ExecutionLogTab } from "./ExecutionLogTab";
 import { RealTimeLogsTab } from "./RealTimeLogsTab";
 import ReportView from "./ReportView";
 import { RunProgressTracker } from "./RunProgressTracker";
+import { MappingMatrix } from "@/components/MappingMatrix";
 
 interface RunDetailsExpansionProps {
   runId: string;
@@ -80,6 +81,7 @@ interface RunResults {
       ks_mean: number;
       corr_delta: number;
     };
+    omop_mapping?: Record<string, any>;
   };
 }
 
@@ -266,7 +268,8 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
             corr_delta: metricsData?.utility?.corr_delta || 0
           },
           certification_seal: metricsData?.certification_seal,
-          regulatory_audit: metricsData?.regulatory_audit
+          regulatory_audit: metricsData?.regulatory_audit,
+          omop_mapping: metricsData?.omop_mapping
         }
       };
 
@@ -458,6 +461,10 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
             <TabsTrigger value="compliance" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none pb-4 pt-4 px-8 text-xs uppercase tracking-widest font-bold text-slate-400 data-[state=active]:text-blue-600 flex items-center gap-2">
                 <Shield className="h-3.5 w-3.5" />
                 <span>Compliance</span>
+            </TabsTrigger>
+            <TabsTrigger value="omop" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-purple-600 rounded-none pb-4 pt-4 px-8 text-xs uppercase tracking-widest font-bold text-slate-400 data-[state=active]:text-purple-600 flex items-center gap-2">
+                <Brain className="h-3.5 w-3.5" />
+                <span>Semantic Map</span>
             </TabsTrigger>
             {/* <TabsTrigger value="console" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-blue-600 rounded-none pb-4 pt-4 px-8 text-xs uppercase tracking-widest font-bold text-slate-400 data-[state=active]:text-blue-600 flex items-center gap-2">
                 <Zap className="h-3.5 w-3.5" />

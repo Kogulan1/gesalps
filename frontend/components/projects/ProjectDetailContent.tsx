@@ -58,6 +58,7 @@ interface Dataset {
   created_at: string;
   status: "Uploaded" | "Processing" | "Ready" | "Failed";
   runs_count: number;
+  omop_mapping?: Record<string, any>;
 }
 
 interface Run {
@@ -92,7 +93,19 @@ export function ProjectDetailContent() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
   const [usingMockData, setUsingMockData] = useState(false);
-  const [previewModal, setPreviewModal] = useState<{ isOpen: boolean; dataset: Dataset | null }>({
+  const [previewModal, setPreviewModal] = useState<{ 
+    isOpen: boolean; 
+    dataset: {
+      id: string;
+      name: string;
+      description: string;
+      file_path: string;
+      size: string;
+      rows: number;
+      columns: number;
+      omop_mapping?: Record<string, any>;
+    } | null 
+  }>({
     isOpen: false,
     dataset: null
   });
@@ -111,11 +124,7 @@ export function ProjectDetailContent() {
 
   const projectId = params.id as string;
 
-  useEffect(() => {
-    if (projectId) {
-      fetchProjectData();
-    }
-  }, [projectId]);
+  
 
   const fetchMockProjectData = () => {
     // Mock data for demo when project doesn't exist in database
@@ -223,6 +232,12 @@ export function ProjectDetailContent() {
     setRuns(mockRuns);
   };
 
+  useEffect(() => {
+    if (projectId) {
+      fetchProjectData();
+    }
+  }, [projectId]);
+
   const fetchProjectData = async () => {
     try {
       setLoading(true);
@@ -306,7 +321,8 @@ export function ProjectDetailContent() {
         columns: ds.columns || 0,
         created_at: ds.created_at,
         status: ds.status || "Ready",
-        runs_count: 0 // This would need to be calculated separately
+        runs_count: 0,
+        omop_mapping: ds.omop_mapping
       }));
 
       // Transform runs
@@ -789,7 +805,19 @@ export function ProjectDetailContent() {
                           size="sm" 
                           className="text-gray-700 border-gray-300 hover:bg-gray-50"
                           onClick={() => {
-                            setPreviewModal({ isOpen: true, dataset });
+                            setPreviewModal({ 
+                              isOpen: true, 
+                              dataset: {
+                                id: dataset.id,
+                                name: dataset.name,
+                                description: "", // Description not available in this view
+                                file_path: dataset.file_name,
+                                size: formatFileSize(dataset.file_size),
+                                rows: dataset.rows,
+                                columns: dataset.columns,
+                                omop_mapping: dataset.omop_mapping
+                              }
+                            });
                           }}
                         >
                           <Eye className="h-4 w-4 mr-2" />

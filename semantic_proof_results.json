@@ -1,0 +1,27 @@
+[
+    {
+        "Dataset": "Kidney",
+        "Semantic Score": 1.0,
+        "Logic Failures": [],
+        "Triple Crown Status": "\u2705 ALL GREEN"
+    },
+    {
+        "Dataset": "Heart",
+        "Semantic Score": 0.5666666666666667,
+        "Logic Failures": [
+            "Biological plausibility issues found in multiple lab results.",
+            "Inconsistent demographic values"
+        ],
+        "Triple Crown Status": "\u26a0\ufe0f SEMANTIC WARNING"
+    },
+    {
+        "Dataset": "Diabetes",
+        "Semantic Score": 0.39999999999999997,
+        "Logic Failures": [
+            "Age mismatch with Pregnancies and Insulin levels suggesting a more plausible age for the given values",
+            "SkinThickness and Insulin values are impossible (should be non-negative)",
+            "Demographic mismatch: Patient is 21 years old, but has a high BMI of 42.1 and is pregnant (Pregnancies = 0.0)"
+        ],
+        "Triple Crown Status": "\u26a0\ufe0f SEMANTIC WARNING"
+    }
+]

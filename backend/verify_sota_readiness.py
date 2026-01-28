@@ -159,22 +159,18 @@ def verify_production_skills():
         # actually Auditor runs separately usually or puts verdict in report?
         # Let's check Red Team Linkage first.
         
-        # Check Linkage Rate (from Red Teamer)
-        linkage = metrics.get('linkage_attack_success')
-        seal = metrics.get('certification_seal') # Only if I added it to top-level metric in worker
-        
-        # In worker.py I mapped red_teamer -> red_team_metrics
-        # Did I map auditor? 
-        # Let's check if 'linkage_attack_success' key exists.
-        
-        print("\n-------------------------------------------")
-        print("🔍 SOTA FEATURE VERIFICATION")
-        print("-------------------------------------------")
+        # Check Linkage Rate (Red Teamer) - V2 Key
+        linkage = metrics.get('privacy', {}).get('identifiability_score')
         
         if linkage is not None:
-             logger.info(f"✅ RED TEAM ACTIVE | Linkage Success: {linkage}")
+             logger.info(f"✅ RED TEAM ACTIVE | Linkage (Identifiability): {linkage}")
         else:
-             logger.error("❌ RED TEAM MISSING in Metrics")
+             # Fallback
+             linkage = metrics.get('linkage_attack_success')
+             if linkage is not None:
+                  logger.info(f"✅ RED TEAM ACTIVE | Linkage: {linkage}")
+             else:
+                  logger.error("❌ RED TEAM MISSING in Metrics (Checked 'privacy.identifiability_score')")
              
         # Check for Run Steps logs for "Regulatory Audit"
         r = httpx.get(f"{SUPABASE_URL}/rest/v1/run_steps?run_id=eq.{run_id}&select=detail,title", headers=HEADERS)
@@ -187,7 +183,13 @@ def verify_production_skills():
                 break
         
         if not seal_found:
-             logger.warning("⚠️ Certification Seal log not found (Might need check worker logic if it logs a step)")
+             # Check if it failed compliance (Seal is only for PASS)
+             comp = metrics.get('compliance', {})
+             if comp:
+                 status_str = "PASS" if comp.get('passed') else "FAIL"
+                 logger.info(f"✅ COMPLIANCE SYSTEM ACTIVE | Status: {status_str} (Seal not expected on FAIL)")
+             else:
+                 logger.warning("⚠️ Certification Seal log not found and Compliance object missing")
              
         # Check for Artifacts
         r = httpx.get(f"{SUPABASE_URL}/rest/v1/run_artifacts?run_id=eq.{run_id}&select=kind", headers=HEADERS)

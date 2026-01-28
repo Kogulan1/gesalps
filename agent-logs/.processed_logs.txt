@@ -103,6 +103,7 @@
 2026-01-11-CTO-All-Green-Action-Plan-MainAgent.md
 2026-01-11-Phase-2-Test-Results-and-Blockers-SyntheticDataSpecialist.md
 2026-01-11-Preprocessing-Service-Initial-Design-PreprocessingAgent.md
+2026-01-13-Runs-Page-Navigation-Fix-FullStackDeveloper.md
 HOW_IT_WORKS.md
 SETUP_GUIDE.md
 USAGE_GUIDE.md

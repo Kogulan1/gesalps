@@ -204,6 +204,7 @@ export function FileUploadWithProgress({
                     <Progress value={uploadFile.progress} className="w-full" />
                     <p className="text-xs text-gray-500 text-center">
                       {Math.round(uploadFile.progress)}% uploaded
+                      {uploadFile.progress > 80 && " - Mapping OMOP Concepts..."}
                     </p>
                   </div>
                 )}

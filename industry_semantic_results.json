@@ -1,0 +1,37 @@
+[
+    {
+        "Domain": "Kidney",
+        "Ground Truth Score": 0.4,
+        "Synthetic Score": 0.3,
+        "LLM Verdict": "LOGIC FAILED",
+        "Critical Failure Detected": "Multiple inconsistencies and implausible values: 1. Blood pressure of 80.0 mmHg is extremely low and incompatible with life. 2. Specific gravity of 1.025 is within normal range, but given the classification of CKD, it should be higher. 3. Albumin (al) of 0.0 is not possible in a living human. 4. Blood urea (bu) of 33.0 is not consistent with normal blood glucose (bgr) of 93.0. 5. Serum creatinine (sc) of 0.9 is not consistent with CKD. 6. Hemoglobin (hemo) of 13.3 and PCV of 52 are not consistent with CKD. 7. WBC of 8100 is within normal range, but given the classification of CKD, it should be higher. 8. RBC of 5.2 is not consistent with CKD. 9. Sodium (sod) of 144.0 and Potassium (pot) of 4.5 are within normal range, but given the classification of CKD, they should be abnormal. 10. The presence of 'nan' values for su, rbc, and pc is not consistent with a complete medical record. 11. The classification of CKD is not consistent with the normal values of most labs."
+    },
+    {
+        "Domain": "Hepatitis",
+        "Ground Truth Score": 0.2,
+        "Synthetic Score": 0.7,
+        "LLM Verdict": "LOGIC FAILED",
+        "Critical Failure Detected": "The patient data contains several inconsistencies and potential hallucinations. The liver is described as both 'big' and 'firm' with a value of 1, which is not a standard medical scale. The spleen is described as 'palpable' with a value of 1, which is also not a standard medical scale. The protime value is listed as 'nan', which is not a valid medical value. The bilirubin level of 0.9 is within normal range, but the alk_phosphate level of 85.0 and sgot level of 60.0 are slightly elevated, which could indicate liver issues. The class value of 2 is not clearly defined in the context provided. Additionally, the absence of symptoms like fatigue, malaise, and anorexia despite liver abnormalities is inconsistent with typical presentations of liver disease."
+    },
+    {
+        "Domain": "Diabetes",
+        "Ground Truth Score": 0.2,
+        "Synthetic Score": 0.4,
+        "LLM Verdict": "LOGIC FAILED",
+        "Critical Failure Detected": "The patient's age of 25 with 3 pregnancies is highly unlikely. Additionally, a blood pressure of 58.0 mmHg is extremely low and not physiologically possible for a living person. The skin thickness of 31.0 mm is also outside the normal range. The insulin level of 18.0 is unusually high for a non-diabetic patient, and the BMI of 34.3 indicates obesity, which is inconsistent with a normal glucose level of 83.0 and a non-diabetic outcome."
+    },
+    {
+        "Domain": "HCV / HepC",
+        "Ground Truth Score": 0.5,
+        "Synthetic Score": 0.6,
+        "LLM Verdict": "LOGIC FAILED",
+        "Critical Failure Detected": "The patient's creatinine (CREA) level of 78.0 is significantly elevated, which is indicative of severe kidney dysfunction. However, the albumin (ALB) level of 36.3 g/L is within the normal range (35-50 g/L), which is inconsistent with severe kidney disease. Additionally, the alkaline phosphatase (ALP) level of 78.6 U/L is slightly elevated, which could be due to liver or bone issues, but it does not correlate well with the other liver enzymes (ALT and AST) which are within normal ranges. The cholesterol (CHOL) level of 5.38 mmol/L is also within the normal range, which is unusual for a patient with elevated creatinine levels. These inconsistencies suggest potential issues with the data."
+    },
+    {
+        "Domain": "Breast Cancer",
+        "Ground Truth Score": 0.0,
+        "Synthetic Score": 0.2,
+        "LLM Verdict": "LOGIC FAILED",
+        "Critical Failure Detected": "The mean radius of 100.0 is not consistent with the worst radius of 13.11. Additionally, the mean area of 10.0 is not consistent with the worst area of 525.1. These values suggest a contradiction in the measurements, indicating potential errors or inconsistencies in the data."
+    }
+]

@@ -20,3 +20,10 @@ opacus==1.5.4
 
 
 scipy<1.13
+
+# OMOP Engine
+sentence-transformers==2.2.2
+huggingface-hub==0.19.4
+faiss-cpu==1.7.4
+# pandas>=2.0.0 (Already satisfied by pandas==2.2.2 above)
+sdmetrics>=0.14.0
