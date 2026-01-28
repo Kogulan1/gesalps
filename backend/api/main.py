@@ -363,13 +363,14 @@ def get_project(project_id: str, user: Dict[str, Any] = Depends(require_user)):
     project = res.data
     
     # Get datasets count and details
-    datasets_res = supabase.table("datasets").select("id, name, file_url, rows:rows_count, columns:cols_count, created_at, status").eq("project_id", project_id).order("created_at", desc=True).execute()
+    datasets_res = supabase.table("datasets").select("id, name, file_url, rows:rows_count, columns:cols_count, created_at").eq("project_id", project_id).order("created_at", desc=True).execute()
     datasets = datasets_res.data or []
     
     # Post-process datasets to add derived fields
     for d in datasets:
         d["file_name"] = d.get("file_url", "").split("/")[-1] if d.get("file_url") else "unknown.csv"
         d["file_size"] = 0  # Not in schema yet
+        d["status"] = "Ready"  # Default status (column does not exist)
     
     # Get runs count and details
     runs_res = supabase.table("runs").select("id, name, status, started_at, finished_at, method, config_json").eq("project_id", project_id).order("started_at", desc=True).execute()

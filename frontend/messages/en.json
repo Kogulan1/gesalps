@@ -63,12 +63,7 @@
     "toSignup": "New here? Create an account",
     "forgot": "Forgot your password?"
   },
-  "dashboard": {
-    "title": "Dashboard",
-    "upload": "Upload dataset (CSV)",
-    "recent": "Recent jobs",
-    "api": "API status"
-  },
+
   "footer": {
     "privacy": "Privacy",
     "terms": "Terms",
@@ -97,6 +92,11 @@
   },
   "status": {"queued": "Queued", "running": "Running", "succeeded": "Succeeded", "failed": "Failed"  },
   "dashboard": {
+    "title": "Dashboard",
+    "upload": "Upload dataset (CSV)",
+    "recent": "Recent jobs",
+    "api": "API status",
+    "loading_project": "Loading project...",
     "header": {
       "searchPlaceholder": "Q Find...",
       "feedback": "Feedback",
