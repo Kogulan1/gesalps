@@ -365,6 +365,7 @@ def get_project(project_id: str, user: Dict[str, Any] = Depends(require_user)):
     # Get datasets count and details
     datasets_res = supabase.table("datasets").select("id, name, file_url, rows:rows_count, columns:cols_count, created_at").eq("project_id", project_id).order("created_at", desc=True).execute()
     datasets = datasets_res.data or []
+    datasets_count = len(datasets)
     
     # Post-process datasets to add derived fields
     for d in datasets:
