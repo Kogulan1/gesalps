@@ -363,7 +363,7 @@ def get_project(project_id: str, user: Dict[str, Any] = Depends(require_user)):
     project = res.data
     
     # Get datasets count and details
-    datasets_res = supabase.table("datasets").select("id, name, file_name, file_size, rows, columns, created_at, status").eq("project_id", project_id).order("created_at", desc=True).execute()
+    datasets_res = supabase.table("datasets").select("id, name, file_name, file_size, rows:rows_count, columns:cols_count, created_at, status").eq("project_id", project_id).order("created_at", desc=True).execute()
     datasets = datasets_res.data or []
     datasets_count = len(datasets)
     
