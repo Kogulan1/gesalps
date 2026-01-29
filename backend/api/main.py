@@ -286,6 +286,119 @@ def capabilities():
         "dp": bool(dp_enabled),
     }
 
+# ---------- Dashboard ----------
+@app.get("/v1/activities")
+def get_activities(user: Dict[str, Any] = Depends(require_user)):
+    """Unified activity feed for dashboard."""
+    try:
+        # 1. Projects
+        p_res = supabase.table("projects").select("id, name, created_at").eq("owner_id", user["id"]).order("created_at", desc=True).limit(5).execute()
+        projects = p_res.data or []
+
+        # 2. Get Project IDs for subsequent queries
+        # Optimization: if no projects, return empty
+        if not projects:
+            return []
+            
+        # We need all project IDs to fetch related resources safely
+        all_p_res = supabase.table("projects").select("id").eq("owner_id", user["id"]).execute()
+        p_ids = [x["id"] for x in (all_p_res.data or [])]
+        
+        datasets = []
+        runs = []
+        
+        if p_ids:
+            # 3. Datasets
+            d_res = supabase.table("datasets").select("id, name, created_at, project_id").in_("project_id", p_ids).order("created_at", desc=True).limit(5).execute()
+            datasets = d_res.data or []
+            
+            # 4. Runs
+            r_res = supabase.table("runs").select("id, name, status, started_at, finished_at, project_id").in_("project_id", p_ids).order("started_at", desc=True).limit(10).execute()
+            runs = r_res.data or []
+
+        # Combine
+        activities = []
+        
+        for p in projects:
+            activities.append({
+                "id": p["id"],
+                "type": "project",
+                "title": f"Project Created: {p['name']}",
+                "description": "New project initialized",
+                "timestamp": p["created_at"],
+                "link": f"/projects/{p['id']}"
+            })
+            
+        for d in datasets:
+            activities.append({
+                "id": d["id"],
+                "type": "dataset",
+                "title": f"Dataset Uploaded: {d['name']}",
+                "description": "Ready for processing",
+                "timestamp": d["created_at"],
+                "link": f"/datasets?project={d['project_id']}"
+            })
+            
+        for r in runs:
+            status = r.get("status", "unknown")
+            desc = f"Run {status}"
+            ts = r.get("finished_at") or r.get("started_at")
+            activities.append({
+                "id": r["id"],
+                "type": "run",
+                "title": f"Run {r.get('name', 'Unnamed')}: {status}",
+                "description": desc,
+                "timestamp": ts,
+                "link": f"/runs?id={r['id']}"
+            })
+            
+        # Sort desc
+        activities.sort(key=lambda x: x.get("timestamp") or "", reverse=True)
+        return activities[:20]
+        
+    except Exception as e:
+        print(f"Error fetching activities: {e}")
+        return []
+
+@app.get("/v1/usage/stats")
+def get_usage_stats(user: Dict[str, Any] = Depends(require_user)):
+    """Aggregated usage statistics."""
+    try:
+        # Get all projects
+        p_res = supabase.table("projects").select("id").eq("owner_id", user["id"]).execute()
+        projects = p_res.data or []
+        p_ids = [p["id"] for p in projects]
+        
+        total_datasets = 0
+        total_rows = 0
+        total_runs = 0
+        
+        if p_ids:
+            # Datasets stats
+            d_res = supabase.table("datasets").select("id, rows_count").in_("project_id", p_ids).execute()
+            datasets = d_res.data or []
+            total_datasets = len(datasets)
+            total_rows = sum((d.get("rows_count") or 0) for d in datasets)
+            
+            # Runs stats
+            r_res = supabase.table("runs").select("id", count="exact").in_("project_id", p_ids).execute()
+            total_runs = r_res.count or 0
+        
+        return {
+            "total_projects": len(projects),
+            "total_datasets": total_datasets,
+            "total_runs": total_runs,
+            "total_rows_managed": total_rows
+        }
+    except Exception as e:
+        print(f"Error fetching usage stats: {e}")
+        return {
+            "total_projects": 0,
+            "total_datasets": 0,
+            "total_runs": 0,
+            "total_rows_managed": 0
+        }
+
 # ---------- Projects ----------
 class CreateProject(BaseModel):
     name: str
