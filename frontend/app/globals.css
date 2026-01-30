@@ -292,3 +292,9 @@ button.relative.h-8.w-8 div[class*="avatar-fallback"] {
   --ges-fg: #F8FAFC;         /* near-white text */
   --ges-fg-muted: #CBD5E1;   /* slate-300 for readability on dark */
 }
+
+/* Ensure our progress track is always light gray */
+.bg-\[\#F3F4F6\] {
+  background-color: #F3F4F6 !important;
+  background-image: none !important;
+}

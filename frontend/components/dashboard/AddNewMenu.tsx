@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Plus, ChevronDown, Database, Play, FileText, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { CreateProjectModal } from "./CreateProjectModal";
+import { CreateProjectModal } from "../projects/CreateProjectModal";
 import { FileUploadModal } from "../datasets/FileUploadModal";
 
 interface AddNewMenuProps {
@@ -81,7 +81,7 @@ export function AddNewMenu({ onProjectCreated, onDatasetUploaded, projects = [] 
     <>
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger asChild>
-          <Button className="bg-black hover:bg-gray-800 text-white">
+          <Button className="bg-[#E30613] hover:bg-[#C60012] text-white">
             <Plus className="h-4 w-4 mr-2" />
             Add New...
             <ChevronDown className="h-4 w-4 ml-2" />
@@ -111,7 +111,7 @@ export function AddNewMenu({ onProjectCreated, onDatasetUploaded, projects = [] 
       <CreateProjectModal
         isOpen={showCreateProject}
         onClose={() => setShowCreateProject(false)}
-        onCreate={handleProjectCreated}
+        onSuccess={handleProjectCreated}
       />
 
       <FileUploadModal

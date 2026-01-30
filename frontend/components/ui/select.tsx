@@ -30,7 +30,9 @@ interface SelectValueProps {
 
 const SelectContext = React.createContext<{
   value?: string
+  label?: React.ReactNode
   onValueChange?: (value: string) => void
+  setLabel?: (label: React.ReactNode) => void
   isOpen: boolean
   setIsOpen: (open: boolean) => void
 }>({
@@ -40,9 +42,10 @@ const SelectContext = React.createContext<{
 
 const Select = ({ value, onValueChange, children }: SelectProps) => {
   const [isOpen, setIsOpen] = React.useState(false)
+  const [label, setLabel] = React.useState<React.ReactNode>(null)
 
   return (
-    <SelectContext.Provider value={{ value, onValueChange, isOpen, setIsOpen }}>
+    <SelectContext.Provider value={{ value, onValueChange, isOpen, setIsOpen, label, setLabel }}>
       <div className="relative">
         {children}
       </div>
@@ -98,10 +101,18 @@ const SelectContent = ({ children, className }: SelectContentProps) => {
 
 const SelectItem = React.forwardRef<HTMLDivElement, SelectItemProps>(
   ({ className, value, children, ...props }, ref) => {
-    const { value: selectedValue, onValueChange, setIsOpen } = React.useContext(SelectContext)
+    const { value: selectedValue, onValueChange, setIsOpen, setLabel } = React.useContext(SelectContext)
+
+    // Set initial label if this item is selected on mount/update
+    React.useEffect(() => {
+      if (selectedValue === value && setLabel) {
+        setLabel(children)
+      }
+    }, [selectedValue, value, children, setLabel])
 
     const handleClick = () => {
       onValueChange?.(value)
+      setLabel?.(children)
       setIsOpen(false)
     }
 
@@ -124,8 +135,8 @@ const SelectItem = React.forwardRef<HTMLDivElement, SelectItemProps>(
 SelectItem.displayName = "SelectItem"
 
 const SelectValue = ({ placeholder }: SelectValueProps) => {
-  const { value } = React.useContext(SelectContext)
-  return <span>{value || placeholder}</span>
+  const { label } = React.useContext(SelectContext)
+  return <span>{label || placeholder}</span>
 }
 
 export {

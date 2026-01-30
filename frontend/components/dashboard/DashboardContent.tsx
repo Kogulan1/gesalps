@@ -13,7 +13,7 @@ import { MoreHorizontal, ExternalLink, Github, Activity } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
 import { useRouter } from "next/navigation";
-import { DEMO_PROJECTS } from "@/lib/constants/demoData";
+
 
 export function DashboardContent() {
   const t = useTranslations('dashboard');
@@ -23,7 +23,7 @@ export function DashboardContent() {
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [usingDemoData, setUsingDemoData] = useState(false);
+
   const [renameModal, setRenameModal] = useState<{
     isOpen: boolean;
     projectId: string | null;
@@ -178,7 +178,6 @@ export function DashboardContent() {
       }
 
       setProjects(data);
-      setUsingDemoData(false);
       setError(null);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch projects';
@@ -188,13 +187,12 @@ export function DashboardContent() {
       
       // Only use demo data for actual network failures, not for API errors
       if (isNetworkError && !errorMessage.includes('401') && !errorMessage.includes('403')) {
-        console.warn('Dashboard projects API unavailable, falling back to demo data:', err);
-        setProjects(DEMO_PROJECTS);
-        setUsingDemoData(true);
+        console.error('Dashboard projects API unavailable:', err);
+        setError("Cannot connect to backend API. Please check your connection.");
+        setProjects([]);
       } else {
         // API errors (401, 403) or other errors - show error state
         setError(errorMessage);
-        setUsingDemoData(false);
         setProjects([]);
       }
     } finally {
@@ -236,18 +234,14 @@ export function DashboardContent() {
     return <LoadingState message="Loading dashboard..." />;
   }
 
-  if (error && projects.length === 0 && !usingDemoData) {
+  if (error && projects.length === 0) {
     return <ErrorState message={error} onRetry={fetchProjects} />;
   }
 
   return (
     <div className="flex-1 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {usingDemoData && (
-          <div className="mb-6 rounded-md border border-dashed border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600">
-            Showing demo projects while the backend API is unavailable.
-          </div>
-        )}
+
         {/* Main Content Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
@@ -291,12 +285,12 @@ export function DashboardContent() {
                     <Progress 
                       value={item.percentage} 
                       className="h-2" 
-                      indicatorClassName="bg-[#E0342C]" 
+                      indicatorColor="#E0342C" 
                     />
                   </div>
                 ))}
                 <Button 
-                  className="w-full bg-black hover:bg-gray-800 text-white"
+                  className="w-full bg-[#E30613] hover:bg-[#C60012] text-white"
                   onClick={() => {
                     router.push('/en#pricing');
                   }}

@@ -134,8 +134,8 @@ export function FileUploadModal({ isOpen, onClose, onSuccess, projects }: FileUp
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className={step === "review" ? "max-w-6xl max-h-[90vh] overflow-hidden flex flex-col" : "sm:max-w-md"}>
-        <DialogHeader>
+      <DialogContent className={step === "review" ? "max-w-6xl max-h-[90vh] overflow-hidden flex flex-col p-6" : "sm:max-w-md p-6"}>
+        <DialogHeader className="mb-6">
           <DialogTitle>
              {step === "upload" ? "Upload Dataset" : 
               step === "processing" ? "Processing Dataset" : 

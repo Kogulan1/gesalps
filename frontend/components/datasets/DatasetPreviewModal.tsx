@@ -197,8 +197,8 @@ export function DatasetPreviewModal({ isOpen, onClose, dataset }: DatasetPreview
     <Dialog 
       open={isOpen} 
       onOpenChange={onClose}
-      className="max-w-[85vw] w-full h-[85vh] flex flex-col p-0 overflow-hidden rounded-xl"
     >
+      <DialogContent className="max-w-[85vw] w-full h-[85vh] flex flex-col p-0 overflow-hidden rounded-xl">
       {/* Custom Header - Replaces DialogHeader which swallows styles */}
       <div className="flex-none px-8 py-6 border-b bg-white z-10 flex items-center justify-between">
             <div>
@@ -325,6 +325,7 @@ export function DatasetPreviewModal({ isOpen, onClose, dataset }: DatasetPreview
             </Button>
           </div>
         </div>
+      </DialogContent>
     </Dialog>
   );
 }

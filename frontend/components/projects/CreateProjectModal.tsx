@@ -91,8 +91,8 @@ export function CreateProjectModal({ isOpen, onClose, onSuccess }: CreateProject
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-md p-6">
+        <DialogHeader className="mb-6">
           <DialogTitle>Create New Project</DialogTitle>
           <DialogDescription>
             Create a new project to organize your datasets and runs
