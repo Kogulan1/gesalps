@@ -175,6 +175,75 @@ async def require_user_dev(request: Request) -> Dict[str, Any]:
     # For development, return a mock user with valid UUID
     return {"id": "00000000-0000-0000-0000-000000000001", "email": "dev@example.com"}
 
+# ---------- Auth / Profile ----------
+class ProfileUpdate(BaseModel):
+    full_name: Optional[str] = None
+    phone: Optional[str] = None
+    location: Optional[str] = None
+    company: Optional[str] = None
+
+@app.get("/v1/auth/me")
+def get_my_profile(user: Dict[str, Any] = Depends(require_user)):
+    """Get current user profile with metadata."""
+    try:
+        # Fetch fresh user data from Supabase Auth to get latest metadata
+        u = supabase.auth.admin.get_user_by_id(user["id"])
+        if not u or not u.user:
+             raise HTTPException(status_code=404, detail="User not found")
+        
+        # Extract metadata
+        meta = u.user.user_metadata or {}
+        
+        return {
+            "id": u.user.id,
+            "email": u.user.email,
+            "full_name": meta.get("full_name"),
+            "phone": meta.get("phone"),
+            "location": meta.get("location"),
+            "company": meta.get("company"),
+            "avatar_url": meta.get("avatar_url"),
+            "created_at": u.user.created_at,
+            "raw_user_meta_data": meta
+        }
+    except Exception as e:
+        print(f"Error fetching user profile: {e}")
+        # Fallback to basic info from token if admin fetch fails
+        return {
+            "id": user["id"],
+            "email": user.get("email"),
+            "full_name": "User",
+            "raw_user_meta_data": {}
+        }
+
+@app.put("/v1/auth/profile")
+def update_profile(body: ProfileUpdate, user: Dict[str, Any] = Depends(require_user)):
+    """Update user profile metadata."""
+    try:
+        # 1. Fetch current metadata to merge (safer than blind overwrite)
+        u = supabase.auth.admin.get_user_by_id(user["id"])
+        if not u or not u.user:
+            raise HTTPException(status_code=404, detail="User not found")
+            
+        current_meta = (u.user.user_metadata or {}).copy()
+        
+        # 2. Update with new values (filter out Nones if desired, or let None unset them?)
+        # Typically frontend sends only what it wants to change or current values.
+        # Let's update only non-Null values from request to allow partial updates
+        updates = {k: v for k, v in body.dict().items() if v is not None}
+        if not updates:
+            return {"message": "No changes requested"}
+            
+        current_meta.update(updates)
+        
+        # 3. Save back to Supabase
+        res = supabase.auth.admin.update_user_by_id(user["id"], {"user_metadata": current_meta})
+        if not res or not res.user:
+            raise HTTPException(status_code=500, detail="Failed to update profile")
+            
+        return {"message": "Profile updated successfully", "user_metadata": res.user.user_metadata}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ---------- FastAPI app & CORS ----------
 app = FastAPI(
     title="GESALP AI API",
