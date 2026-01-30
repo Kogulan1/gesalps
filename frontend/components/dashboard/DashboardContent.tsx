@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { AddNewMenu } from "./AddNewMenu";
 import { ProjectCard } from "./ProjectCard";
 import { RenameModal } from "@/components/ui/rename-modal";
@@ -287,12 +288,11 @@ export function DashboardContent() {
                       <span className="text-gray-600">{item.label}</span>
                       <span className="font-medium">{item.used} / {item.total}</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-[#E0342C] h-2 rounded-full" 
-                        style={{ width: `${item.percentage}%` }}
-                      ></div>
-                    </div>
+                    <Progress 
+                      value={item.percentage} 
+                      className="h-2" 
+                      indicatorClassName="bg-[#E0342C]" 
+                    />
                   </div>
                 ))}
                 <Button 
