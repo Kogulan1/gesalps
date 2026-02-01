@@ -12,10 +12,11 @@ const Tabs = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & {
     value?: string;
+    defaultValue?: string;
     onValueChange?: (value: string) => void;
   }
->(({ className, value, onValueChange, children, ...props }, ref) => {
-  const [selectedValue, setSelectedValue] = React.useState(value || "");
+>(({ className, value, defaultValue, onValueChange, children, ...props }, ref) => {
+  const [selectedValue, setSelectedValue] = React.useState(value || defaultValue || "");
 
   const handleValueChange = (newValue: string) => {
     setSelectedValue(newValue);

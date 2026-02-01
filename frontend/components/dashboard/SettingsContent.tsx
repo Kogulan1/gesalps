@@ -14,10 +14,14 @@ import {
   AlertTriangle,
   Loader2,
   CheckCircle2,
-  Save
+  Save,
+  LogOut,
+  Laptop
 } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
 import { useToast } from "@/components/toast/Toaster";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { scorePassword } from "@/lib/password";
 
 interface UserProfile {
   id: string;
@@ -38,8 +42,29 @@ export function SettingsContent() {
     full_name: "",
     phone: "",
     location: "",
-    company: ""
+    company: "",
+    notifications: {
+      email_notifications: true,
+      run_completed: true,
+      marketing: false
+    }
   });
+  
+  // API Key State
+  const [apiKey, setApiKey] = useState<string | null>(null);
+  const [generatingKey, setGeneratingKey] = useState(false);
+  
+  // Delete Account State
+  const [deletingAccount, setDeletingAccount] = useState(false);
+
+  // Password State
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [savingPassword, setSavingPassword] = useState(false);
+  const strength = scorePassword(password);
+
+  // Session State
+  const [signingOutAll, setSigningOutAll] = useState(false);
   
   const supabase = createSupabaseBrowserClient();
   const { toast } = useToast();
@@ -54,34 +79,139 @@ export function SettingsContent() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
+      // Initialize with Supabase session data first (fallback/optimistic)
+      const sessionUser = session.user;
+      const metadata = sessionUser.user_metadata || {};
+      
+      const initialData = {
+        full_name: metadata.full_name || "",
+        phone: metadata.phone || "",
+        location: metadata.location || "",
+        company: metadata.company || "",
+        notifications: {
+          email_notifications: metadata.notifications?.email_notifications ?? true,
+          run_completed: metadata.notifications?.run_completed ?? true,
+          marketing: metadata.notifications?.marketing ?? false
+        }
+      };
+
+      setUser({
+        id: sessionUser.id,
+        email: sessionUser.email || "",
+        created_at: sessionUser.created_at,
+        ...initialData
+      });
+      setFormData(initialData);
+
       const token = session.access_token;
       const apiBase = process.env.NEXT_PUBLIC_BACKEND_API_BASE || 'http://localhost:8000';
       
-      const res = await fetch(`${apiBase}/v1/auth/me`, {
-        headers: {
-          Authorization: `Bearer ${token}`
+      // Try to fetch deeper profile data from backend, but don't block on it
+      try {
+        const res = await fetch(`${apiBase}/v1/auth/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setUser(prev => ({ ...prev, ...data }));
+          setFormData(prev => ({
+            full_name: data.full_name || prev.full_name,
+            phone: data.phone || prev.phone,
+            location: data.location || prev.location,
+            company: data.company || prev.company,
+            notifications: {
+              email_notifications: data.raw_user_meta_data?.notifications?.email_notifications ?? prev.notifications.email_notifications,
+              run_completed: data.raw_user_meta_data?.notifications?.run_completed ?? prev.notifications.run_completed,
+              marketing: data.raw_user_meta_data?.notifications?.marketing ?? prev.notifications.marketing
+            }
+          }));
         }
-      });
+      } catch (apiError) {
+        console.warn("Backend profile fetch failed, using session defaults", apiError);
+        // We suppress the toast here because we already showed the session data, 
+        // causing less friction for the user.
+      }
 
-      if (!res.ok) throw new Error("Failed to fetch profile");
-
-      const data = await res.json();
-      setUser(data);
-      setFormData({
-        full_name: data.full_name || "",
-        phone: data.phone || "",
-        location: data.location || "",
-        company: data.company || ""
-      });
     } catch (error) {
       console.error("Error loading profile:", error);
       toast({
-        title: "Error loading profile",
-        description: "Could not fetch your settings. Please try again.",
+        title: "Error looking up session",
+        description: "Please try reloading the page.",
         variant: "error"
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleNotificationChange = (key: string, checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      notifications: {
+        ...prev.notifications,
+        [key]: checked
+      }
+    }));
+    // Auto-save triggers on next render or we can debounce. 
+    // Ideally we'd debounce, but for simplicity we'll just let the user hit Save 
+    // OR we trigger a save immediately. Let's trigger save immediately for better UX.
+    // However, handleSave reads from state, so we need to pass the new state or wait.
+    // For this implementation, we will update the state and prompt the user to "Save Changes" 
+    // effectively treating it like the profile form.
+  };
+
+  const handleRegenerateKey = async () => {
+    try {
+      setGeneratingKey(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      
+      const token = session.access_token;
+      const apiBase = process.env.NEXT_PUBLIC_BACKEND_API_BASE || 'http://localhost:8000';
+      
+      const res = await fetch(`${apiBase}/v1/auth/api-keys`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (!res.ok) throw new Error("Failed to generate key");
+      
+      const data = await res.json();
+      setApiKey(data.api_key);
+      toast({ title: "API Key Generated", description: "Copy it now, you won't see it again!", variant: "success" });
+    } catch (error) {
+       toast({ title: "Failed to generate key", variant: "error" });
+    } finally {
+      setGeneratingKey(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!window.confirm("Are you ABSOLUTELY SURE? This cannot be undone.")) return;
+    
+    try {
+      setDeletingAccount(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      
+      const token = session.access_token;
+      const apiBase = process.env.NEXT_PUBLIC_BACKEND_API_BASE || 'http://localhost:8000';
+      
+      const res = await fetch(`${apiBase}/v1/auth/me`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (!res.ok) throw new Error("Failed to delete account");
+      
+      await supabase.auth.signOut();
+      window.location.href = '/';
+    } catch (error) {
+       toast({ title: "Failed to delete account", variant: "error" });
+       setDeletingAccount(false);
     }
   };
 
@@ -150,179 +280,273 @@ export function SettingsContent() {
         <p className="text-gray-600">Manage your account and preferences</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Profile Settings */}
-        <Card className="border-gray-200 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-black flex items-center space-x-2">
-              <User className="h-5 w-5" />
-              <span>Profile</span>
-            </CardTitle>
-            <CardDescription>Update your personal information</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="full_name">Full Name</Label>
-              <Input 
-                id="full_name" 
-                value={formData.full_name}
-                onChange={handleChange}
-                placeholder="Your Name"
-                className="border-gray-300"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="company">Company / Organization</Label>
-              <Input 
-                id="company" 
-                value={formData.company}
-                onChange={handleChange}
-                placeholder="Gesalp AI"
-                className="border-gray-300"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                value={user?.email || ""} 
-                className="border-gray-300 bg-gray-50"
-                disabled
-              />
-              <p className="text-xs text-gray-500">Email cannot be changed via profile settings.</p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
-              <Input 
-                id="phone" 
-                type="tel" 
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="+1 (555) 123-4567" 
-                className="border-gray-300"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="location">Location</Label>
-              <Input 
-                id="location" 
-                value={formData.location}
-                onChange={handleChange}
-                placeholder="San Francisco, CA" 
-                className="border-gray-300"
-              />
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button onClick={handleSave} disabled={saving} className="w-full bg-black hover:bg-gray-800 text-white">
-              {saving ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4 mr-2" />
-                  Save Changes
-                </>
-              )}
-            </Button>
-          </CardFooter>
-        </Card>
+      <Tabs defaultValue="general" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="general">General</TabsTrigger>
+          <TabsTrigger value="security">Security</TabsTrigger>
+          <TabsTrigger value="notifications">Notifications</TabsTrigger>
+          <TabsTrigger value="api">API Keys</TabsTrigger>
+        </TabsList>
 
-        <div className="space-y-6">
-            {/* Notification Settings */}
-            <Card className="border-gray-200 shadow-sm">
+        <TabsContent value="general" className="space-y-4">
+          <Card className="border-gray-200 shadow-sm">
             <CardHeader>
-                <CardTitle className="text-black flex items-center space-x-2">
-                <Bell className="h-5 w-5" />
-                <span>Notifications</span>
-                </CardTitle>
+              <CardTitle className="text-black flex items-center space-x-2">
+                <User className="h-5 w-5" />
+                <span>Profile</span>
+              </CardTitle>
+              <CardDescription>Update your personal information</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                    <Label>Email Notifications</Label>
-                    <p className="text-sm text-gray-500">Receive updates via email</p>
+              <div className="grid gap-4 md:grid-cols-2">
+                 <div className="space-y-2">
+                  <Label htmlFor="full_name">Full Name</Label>
+                  <Input 
+                    id="full_name" 
+                    value={formData.full_name}
+                    onChange={handleChange}
+                    placeholder="Your Name"
+                    className="border-gray-300"
+                  />
                 </div>
-                <Switch defaultChecked />
-                </div>
-                <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                    <Label>Run Completed</Label>
-                    <p className="text-sm text-gray-500">Notify when runs finish</p>
-                </div>
-                <Switch defaultChecked />
-                </div>
-                <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                    <Label>Marketing</Label>
-                    <p className="text-sm text-gray-500">Product updates and tips</p>
-                </div>
-                <Switch />
-                </div>
-            </CardContent>
-            </Card>
-
-            {/* API Settings */}
-            <Card className="border-gray-200 shadow-sm">
-            <CardHeader>
-                <CardTitle className="text-black flex items-center space-x-2">
-                <Key className="h-5 w-5" />
-                <span>API Keys</span>
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
                 <div className="space-y-2">
-                <Label>Current API Key</Label>
-                <div className="flex items-center space-x-2">
-                    <Input 
-                    value="ges_sk_********************" 
-                    className="border-gray-300 font-mono text-sm"
-                    readOnly
-                    type="password"
-                    />
-                    <Button variant="outline" size="sm">
-                    View
-                    </Button>
+                  <Label htmlFor="company">Company / Organization</Label>
+                  <Input 
+                    id="company" 
+                    value={formData.company}
+                    onChange={handleChange}
+                    placeholder="Gesalp AI"
+                    className="border-gray-300"
+                  />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    value={user?.email || ""} 
+                    className="border-gray-300 bg-gray-50"
+                    disabled
+                  />
+                  <p className="text-xs text-gray-500">Email cannot be changed via profile settings.</p>
                 </div>
-                <div className="flex space-x-2">
-                <Button variant="outline" className="flex-1">
-                    Regenerate Key
-                </Button>
-                <Button variant="outline" className="flex-1">
-                    View Docs
-                </Button>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input 
+                    id="phone" 
+                    type="tel" 
+                    value={formData.phone}
+                    onChange={handleChange}
+                    placeholder="+1 (555) 123-4567" 
+                    className="border-gray-300"
+                  />
                 </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="location">Location</Label>
+                  <Input 
+                    id="location" 
+                    value={formData.location}
+                    onChange={handleChange}
+                    placeholder="San Francisco, CA" 
+                    className="border-gray-300"
+                  />
+                </div>
+              </div>
             </CardContent>
-            </Card>
-
-            {/* Danger Zone */}
-            <Card className="border-red-200 shadow-sm bg-red-50/10">
+            <CardFooter>
+              <Button onClick={handleSave} disabled={saving} className="bg-black hover:bg-gray-800 text-white">
+                {saving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Changes
+                  </>
+                )}
+              </Button>
+            </CardFooter>
+          </Card>
+           
+          {/* Danger Zone */}
+          <Card className="border-red-200 shadow-sm bg-red-50/10">
             <CardHeader>
-                <CardTitle className="text-red-600 flex items-center space-x-2">
+              <CardTitle className="text-red-600 flex items-center space-x-2">
                 <AlertTriangle className="h-5 w-5" />
                 <span>Danger Zone</span>
-                </CardTitle>
+              </CardTitle>
             </CardHeader>
             <CardContent>
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h4 className="font-medium text-red-900">Delete Account</h4>
-                        <p className="text-sm text-red-700">
-                        Permanently delete your account and all data.
-                        </p>
-                    </div>
-                    <Button variant="outline" className="border-red-300 text-red-600 hover:bg-red-50">
-                        Delete
-                    </Button>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium text-red-900">Delete Account</h4>
+                  <p className="text-sm text-red-700">
+                    Permanently delete your account and all data.
+                  </p>
                 </div>
+                <Button 
+                   variant="outline" 
+                   className="border-red-300 text-red-600 hover:bg-red-50"
+                   onClick={handleDeleteAccount}
+                   disabled={deletingAccount}
+                >
+                  {deletingAccount ? "Deleting..." : "Delete"}
+                </Button>
+              </div>
             </CardContent>
-            </Card>
-        </div>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="security" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-black flex items-center space-x-2">
+                <Shield className="h-5 w-5" />
+                <span>Password</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label>New password</Label>
+                <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                <div className="mt-1 text-xs text-neutral-600 dark:text-neutral-300">
+                  Strength: {(["Very weak","Weak","Fair","Good","Strong"] as const)[strength.score]}
+                </div>
+              </div>
+              <div>
+                <Label>Confirm password</Label>
+                <Input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+              </div>
+              <Button
+                onClick={async () => {
+                  if (password !== confirm) { toast({ title: "Passwords don't match", variant: "error" }); return; }
+                  if (strength.score < 2) { toast({ title: "Password too weak", description: "Improve strength before saving.", variant: "error" }); return; }
+                  setSavingPassword(true);
+                  const { error } = await supabase.auth.updateUser({ password });
+                  setSavingPassword(false);
+                  if (error) toast({ title: "Couldn't update password", description: error.message, variant: "error" });
+                  else toast({ title: "Password updated", variant: "success" });
+                  setPassword(""); setConfirm("");
+                }}
+                disabled={savingPassword || !password}
+              >
+                {savingPassword ? "Saving…" : "Update password"}
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-black flex items-center space-x-2">
+                 <Laptop className="h-5 w-5" />
+                 <span>Sessions</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="text-sm text-neutral-600 dark:text-neutral-300">
+                Sign out from this and all other devices.
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  disabled={signingOutAll}
+                  onClick={async () => {
+                    setSigningOutAll(true);
+                    const { error } = await supabase.auth.signOut({ scope: "global" as any });
+                    setSigningOutAll(false);
+                    if (error) toast({ title: "Failed to sign out everywhere", description: error.message, variant: "error" });
+                    else window.location.href = `/signin`;
+                  }}
+                >
+                  {signingOutAll ? "Signing out…" : "Sign out everywhere"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="notifications" className="space-y-4">
+          <Card className="border-gray-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-black flex items-center space-x-2">
+                <Bell className="h-5 w-5" />
+                <span>Notifications</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Email Notifications</Label>
+                  <p className="text-sm text-gray-500">Receive updates via email</p>
+                </div>
+                <Switch 
+                  checked={formData.notifications.email_notifications}
+                  onCheckedChange={(c) => handleNotificationChange('email_notifications', c)}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Run Completed</Label>
+                  <p className="text-sm text-gray-500">Notify when runs finish</p>
+                </div>
+                <Switch 
+                  checked={formData.notifications.run_completed}
+                  onCheckedChange={(c) => handleNotificationChange('run_completed', c)}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label>Marketing</Label>
+                  <p className="text-sm text-gray-500">Product updates and tips</p>
+                </div>
+                <Switch 
+                  checked={formData.notifications.marketing}
+                  onCheckedChange={(c) => handleNotificationChange('marketing', c)}
+                />
+              </div>
+              <div className="pt-4 border-t border-gray-100">
+                <Button onClick={handleSave} disabled={saving}>
+                  {saving ? "Saving..." : "Save Preferences"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="api" className="space-y-4">
+           <Card className="border-gray-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-black flex items-center space-x-2">
+                <Key className="h-5 w-5" />
+                <span>API Keys</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Your API Key</Label>
+                <div className="flex items-center space-x-2">
+                  <Input 
+                    value={apiKey || "Click regenerate to get a key"} 
+                    className="border-gray-300 font-mono text-sm"
+                    readOnly
+                    type={apiKey ? "text" : "password"}
+                  />
+                </div>
+              </div>
+              <div className="flex space-x-2">
+                <Button variant="outline" className="flex-1" onClick={handleRegenerateKey} disabled={generatingKey}>
+                  {generatingKey ? "Generating..." : "Regenerate Key"}
+                </Button>
+                <Button variant="outline" className="flex-1" onClick={() => window.open('/docs', '_blank')}>
+                  View Docs
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
       </div>
-    </div>
   );
 }

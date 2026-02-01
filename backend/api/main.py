@@ -181,6 +181,7 @@ class ProfileUpdate(BaseModel):
     phone: Optional[str] = None
     location: Optional[str] = None
     company: Optional[str] = None
+    notifications: Optional[Dict[str, bool]] = None
 
 @app.get("/v1/auth/me")
 def get_my_profile(user: Dict[str, Any] = Depends(require_user)):
@@ -214,6 +215,49 @@ def get_my_profile(user: Dict[str, Any] = Depends(require_user)):
             "full_name": "User",
             "raw_user_meta_data": {}
         }
+
+@app.post("/v1/auth/api-keys")
+def generate_api_key(user: Dict[str, Any] = Depends(require_user)):
+    """Generate a long-lived API key for the user."""
+    # Create a JWT with a long expiration (e.g., 10 years)
+    payload = {
+        "sub": user["id"],
+        "email": user.get("email"),
+        "role": "authenticated",
+        "iss": "supabase",
+        "iat": int(datetime.now(timezone.utc).timestamp()),
+        "exp": int((datetime.now(timezone.utc) + timedelta(days=3650)).timestamp())
+    }
+    
+    # Sign with the Supabase JWT secret
+    try:
+        secret = SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY
+        token = jwt.encode(payload, secret, algorithm="HS256")
+        return {"api_key": f"ges_sk_{token}"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate key: {str(e)}")
+
+@app.delete("/v1/auth/me")
+def delete_account(user: Dict[str, Any] = Depends(require_user)):
+    """Permanently delete the authenticated user."""
+    try:
+        # Use Supabase Admin to delete the user
+        res = supabase.auth.admin.delete_user(user["id"])
+        if not res:
+             # If no response, it might still have worked, or failed silently. 
+             # We check if we can fetch them.
+             try:
+                 u = supabase.auth.admin.get_user_by_id(user["id"])
+                 if u and u.user:
+                     raise HTTPException(status_code=500, detail="Failed to delete user")
+             except Exception:
+                 # If fetching failed, they are likely gone.
+                 pass
+                 
+        return {"message": "Account deleted successfully"}
+    except Exception as e:
+        print(f"Error deleting user {user.get('id')}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.put("/v1/auth/profile")
 def update_profile(body: ProfileUpdate, user: Dict[str, Any] = Depends(require_user)):
