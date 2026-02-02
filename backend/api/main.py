@@ -175,6 +175,65 @@ async def require_user_dev(request: Request) -> Dict[str, Any]:
     # For development, return a mock user with valid UUID
     return {"id": "00000000-0000-0000-0000-000000000001", "email": "dev@example.com"}
 
+# ---------- FastAPI app & CORS ----------
+app = FastAPI(
+    title="GESALP AI API",
+    description="Clinical-grade synthetic data generation API",
+    version="1.0.0"
+)
+# Build CORS origin list with sensible defaults for local dev.
+# Build CORS origin list with robust defaults
+cors_env = os.getenv("CORS_ALLOW_ORIGINS") or ""
+cors_origins = [o.strip() for o in cors_env.split(",") if o.strip()]
+
+# CRITICAL: Always allow these origins regardless of env var
+# This fixes the persistent "real data not showing" issue on local/vercel
+always_allow = [
+    "http://localhost:3000", 
+    "https://localhost:3000", 
+    "http://localhost:3001", 
+    "https://localhost:3001",
+    "https://gesalpai.ch",
+    "https://www.gesalpai.ch",
+    "http://gesalpai.ch",
+    "http://www.gesalpai.ch",
+]
+
+for origin in always_allow:
+    if origin not in cors_origins:
+        cors_origins.append(origin)
+
+# Add wildcard for Vercel preview deployments if not present
+# (FastAPI middleware checks allow_origins first, then allow_origin_regex)
+# We handle Vercel dynamically in regex below if needed, but adding known ones helps.
+# For now, let's just make sure we don't accidentally restrict it to nothing.
+
+if not cors_origins:
+    cors_origins = ["*"]
+
+print(f"[CONFIG] CORS Allowed Origins: {cors_origins}")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins,
+    allow_origin_regex=r"https://gesalps.*\.vercel\.app",  # Allow all Vercel preview deployments
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+app.add_middleware(GZipMiddleware, minimum_size=1024)
+
+# --- One-Click Generation & Static Files ---
+from fastapi.staticfiles import StaticFiles
+# from . import generation
+# import generation
+
+# app.include_router(generation.router, prefix="/api/v1", tags=["generation"])
+
+tmp_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tmp")
+os.makedirs(tmp_dir, exist_ok=True)
+app.mount("/tmp", StaticFiles(directory=tmp_dir), name="tmp")
+
 # ---------- Auth / Profile ----------
 class ProfileUpdate(BaseModel):
     full_name: Optional[str] = None
@@ -288,64 +347,7 @@ def update_profile(body: ProfileUpdate, user: Dict[str, Any] = Depends(require_u
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# ---------- FastAPI app & CORS ----------
-app = FastAPI(
-    title="GESALP AI API",
-    description="Clinical-grade synthetic data generation API",
-    version="1.0.0"
-)
-# Build CORS origin list with sensible defaults for local dev.
-# Build CORS origin list with robust defaults
-cors_env = os.getenv("CORS_ALLOW_ORIGINS") or ""
-cors_origins = [o.strip() for o in cors_env.split(",") if o.strip()]
 
-# CRITICAL: Always allow these origins regardless of env var
-# This fixes the persistent "real data not showing" issue on local/vercel
-always_allow = [
-    "http://localhost:3000", 
-    "https://localhost:3000", 
-    "http://localhost:3001", 
-    "https://localhost:3001",
-    "https://gesalpai.ch",
-    "https://www.gesalpai.ch",
-    "http://gesalpai.ch",
-    "http://www.gesalpai.ch",
-]
-
-for origin in always_allow:
-    if origin not in cors_origins:
-        cors_origins.append(origin)
-
-# Add wildcard for Vercel preview deployments if not present
-# (FastAPI middleware checks allow_origins first, then allow_origin_regex)
-# We handle Vercel dynamically in regex below if needed, but adding known ones helps.
-# For now, let's just make sure we don't accidentally restrict it to nothing.
-
-if not cors_origins:
-    cors_origins = ["*"]
-
-print(f"[CONFIG] CORS Allowed Origins: {cors_origins}")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=cors_origins,
-    allow_origin_regex=r"https://gesalps.*\.vercel\.app",  # Allow all Vercel preview deployments
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-app.add_middleware(GZipMiddleware, minimum_size=1024)
-
-# --- One-Click Generation & Static Files ---
-from fastapi.staticfiles import StaticFiles
-# from . import generation
-# import generation
-
-# app.include_router(generation.router, prefix="/api/v1", tags=["generation"])
-
-tmp_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tmp")
-os.makedirs(tmp_dir, exist_ok=True)
-app.mount("/tmp", StaticFiles(directory=tmp_dir), name="tmp")
 
 # ---------- Utils ----------
 def ensure_bucket(name: str) -> None:
