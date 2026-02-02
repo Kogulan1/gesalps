@@ -299,7 +299,7 @@ export function DashboardHeader() {
           >
             Settings
           </Link>
-          <Link 
+          {/* <Link 
             href={`/${locale}/generate`} 
             className={`py-4 px-1 border-b-2 text-sm font-medium ${
               getActiveTab('/generate') 
@@ -308,7 +308,7 @@ export function DashboardHeader() {
             }`}
           >
             Generate
-          </Link>
+          </Link> */}
         </nav>
       </div>
     </div>

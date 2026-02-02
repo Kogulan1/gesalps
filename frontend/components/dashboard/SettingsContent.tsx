@@ -16,7 +16,8 @@ import {
   CheckCircle2,
   Save,
   LogOut,
-  Laptop
+  Laptop,
+  Copy
 } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browserClient";
 import { useToast } from "@/components/toast/Toaster";
@@ -285,7 +286,7 @@ export function SettingsContent() {
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="api">API Keys</TabsTrigger>
+          {/* <TabsTrigger value="api">API Keys</TabsTrigger> */}
         </TabsList>
 
         <TabsContent value="general" className="space-y-4">
@@ -515,6 +516,7 @@ export function SettingsContent() {
           </Card>
         </TabsContent>
 
+        {/* 
         <TabsContent value="api" className="space-y-4">
            <Card className="border-gray-200 shadow-sm">
             <CardHeader>
@@ -533,6 +535,18 @@ export function SettingsContent() {
                     readOnly
                     type={apiKey ? "text" : "password"}
                   />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      if (!apiKey) return;
+                      navigator.clipboard.writeText(apiKey);
+                      toast({ title: "Copied to clipboard", variant: "success" });
+                    }}
+                    disabled={!apiKey}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
               <div className="flex space-x-2">
@@ -545,7 +559,8 @@ export function SettingsContent() {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        </TabsContent> 
+        */}
       </Tabs>
       </div>
   );

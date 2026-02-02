@@ -4,7 +4,7 @@ import { Slot } from "@radix-ui/react-slot";
 import { cn } from "@/lib/utils";
 
 type Variant = "default" | "secondary" | "ghost" | "outline" | "destructive";
-type Size = "sm" | "md" | "lg";
+type Size = "sm" | "md" | "lg" | "icon";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
@@ -24,6 +24,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             "h-9 px-3 text-sm": size === "sm",
             "h-10 px-4 text-sm": size === "md", 
             "h-12 px-6 text-base": size === "lg",
+            "h-10 w-10": size === "icon",
           },
           {
             "bg-[#E0342C] text-white hover:bg-[#E0342C]/90": variant === "default",
