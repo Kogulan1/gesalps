@@ -5,6 +5,8 @@ from datetime import datetime
 from typing import Any, Dict, Optional, Tuple
 from contextlib import contextmanager
 
+from pdf_report import generate_report
+
 import numpy as np
 import pandas as pd
 from pandas.api.types import (
@@ -169,7 +171,7 @@ DP_STRICT_DEFAULT = (os.getenv("DP_STRICT_DEFAULT", "false").strip().lower() in 
 MAX_SYNTH_ROWS = int(os.getenv("MAX_SYNTH_ROWS", "5000"))
 SAMPLE_MULTIPLIER = float(os.getenv("SAMPLE_MULTIPLIER", "1.0"))  # 1.0 => same size as source
 SDV_METHOD = (os.getenv("SDV_METHOD", "") or "").strip().lower()  # "gc" | "ctgan" | "tvae"
-ARTIFACT_BUCKET = "artifacts"
+ARTIFACT_BUCKET = "run_artifacts"
 DATASET_BUCKET = "datasets"
 POLL_SECONDS = float(os.getenv("POLL_SECONDS", "2.0"))
 # Thresholds to consider an attempt acceptable (env-configurable)
@@ -1558,7 +1560,38 @@ def _make_artifacts(run_id: str, synth_df: pd.DataFrame, metrics: Dict[str, Any]
     rep_path = f"{run_id}/report.json"
     _upload_bytes(rep_path, json.dumps(metrics, ensure_ascii=False).encode(), "application/json")
 
-    return {"synthetic_csv": syn_path, "report_json": rep_path}
+    # [NEW] Generate and Upload PDF Report
+    pdf_path = f"/tmp/{run_id}_report.pdf"
+    try:
+        # Determine all_green status
+        p_met = metrics.get("privacy", {})
+        u_met = metrics.get("utility", {})
+        mia = p_met.get("mia_auc")
+        dup = p_met.get("dup_rate")
+        ks = u_met.get("ks_mean")
+        cd = u_met.get("corr_delta")
+        
+        all_green = True
+        if mia is not None and mia > 0.60: all_green = False
+        if dup is not None and dup > 0.05: all_green = False
+        if ks is not None and ks > 0.15: all_green = False
+        if cd is not None and cd > 0.10: all_green = False
+        
+        generate_report(metrics.get("utility", {}), metrics.get("privacy", {}), all_green, pdf_path)
+        
+        with open(pdf_path, 'rb') as f:
+            pdf_bytes = f.read()
+            
+        report_storage_path = f"{run_id}/report.pdf"
+        _upload_bytes(report_storage_path, pdf_bytes, "application/pdf")
+        os.remove(pdf_path) # cleanup
+        print(f"[worker][artifacts] Generated and uploaded report.pdf to {report_storage_path}")
+        
+    except Exception as e:
+        print(f"[worker][artifacts] Failed to generate PDF report: {e}")
+        report_storage_path = None
+
+    return {"synthetic_csv": syn_path, "report_json": rep_path, "report_pdf": report_storage_path}
 
 
 # -------------------- Agent helpers --------------------

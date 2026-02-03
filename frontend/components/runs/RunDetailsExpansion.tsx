@@ -759,7 +759,8 @@ export function RunDetailsExpansion({ runId, runName, onClose }: RunDetailsExpan
                                 project_name: runData?.project_name || "Unknown Project", 
                                 dataset_name: runData?.dataset_name || "Unknown Dataset",    
                                 run_name: results.name,
-                                run_id: results.id
+                                run_id: results.id,
+                                completed_at: results.finished_at
                             }
                         }} 
                     />
