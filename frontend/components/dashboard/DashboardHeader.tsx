@@ -20,8 +20,14 @@ export function DashboardHeader() {
   const pathname = usePathname();
   const t = useTranslations('dashboard');
   
-  // Check if we're on the dashboard page
-  const isDashboardPage = pathname.includes('/dashboard');
+  // Check if we're on a dashboard page (including sub-pages)
+  const isDashboardPage = pathname.includes('/dashboard') || 
+                         pathname.includes('/settings') || 
+                         pathname.includes('/projects') || 
+                         pathname.includes('/datasets') || 
+                         pathname.includes('/runs') || 
+                         pathname.includes('/activity') || 
+                         pathname.includes('/usage');
   const [user, setUser] = useState<any>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -175,29 +181,7 @@ export function DashboardHeader() {
                         </div>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
-                      <div className="flex items-center gap-3">
-                        <Plus className="h-4 w-4" />
-                        <span>Create Team</span>
-                      </div>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
-                      <div className="flex items-center gap-3">
-                        <Command className="h-4 w-4" />
-                        <span>Command Menu</span>
-                        <span className="ml-auto text-xs text-gray-400">⌘K</span>
-                      </div>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
-                      <div className="flex items-center gap-3">
-                        <Sun className="h-4 w-4" />
-                        <span>Theme</span>
-                        <div className="flex gap-1 ml-auto">
-                          <Sun className="h-3 w-3" />
-                          <Moon className="h-3 w-3" />
-                        </div>
-                      </div>
-                    </DropdownMenuItem>
+
                     {isDashboardPage && (
                       <DropdownMenuItem className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
                         <Link href={`/${locale}`} className="w-full flex items-center">
@@ -217,9 +201,9 @@ export function DashboardHeader() {
                   </div>
               
               <div className="p-3 border-t border-gray-100">
-                <button className="w-full bg-black text-white text-sm font-medium py-2 px-4 rounded hover:bg-gray-800 transition-colors">
+                <Link href={`/${locale}/settings`} className="w-full bg-[#E0342C] text-white text-sm font-medium py-2 px-4 rounded hover:bg-[#E0342C]/90 transition-colors text-center block" style={{ color: 'white' }}>
                   Upgrade to Pro
-                </button>
+                </Link>
               </div>
             </DropdownMenuContent>
           </DropdownMenu>

@@ -280,31 +280,7 @@ export function GlobalHeader() {
                         </div>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
-                      <Link href={`/${locale}/teams`} className="w-full flex items-center">
-                        <div className="flex items-center gap-3">
-                          <Plus className="h-4 w-4" />
-                          <span>Create Team</span>
-                        </div>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
-                      <div className="flex items-center gap-3">
-                        <Command className="h-4 w-4" />
-                        <span>Command Menu</span>
-                        <span className="ml-auto text-xs text-gray-400">⌘K</span>
-                      </div>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
-                      <div className="flex items-center gap-3">
-                        <Sun className="h-4 w-4" />
-                        <span>Theme</span>
-                        <div className="flex gap-1 ml-auto">
-                          <Sun className="h-3 w-3" />
-                          <Moon className="h-3 w-3" />
-                        </div>
-                      </div>
-                    </DropdownMenuItem>
+
                     <DropdownMenuItem className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer" onClick={handleLogout}>
                       <div className="flex items-center gap-3">
                         <LogOut className="h-4 w-4" />
@@ -314,9 +290,9 @@ export function GlobalHeader() {
                   </div>
                   
                   <div className="p-3 border-t border-gray-100">
-                    <button className="w-full bg-black text-white text-sm font-medium py-2 px-4 rounded hover:bg-gray-800 transition-colors">
+                    <Link href={`/${locale}/settings`} className="w-full bg-[#E0342C] text-white text-sm font-medium py-2 px-4 rounded hover:bg-[#E0342C]/90 transition-colors text-center block" style={{ color: 'white' }}>
                       Upgrade to Pro
-                    </button>
+                    </Link>
                   </div>
                 </DropdownMenuContent>
               </DropdownMenu>
