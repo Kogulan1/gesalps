@@ -126,19 +126,31 @@ def execute_allgreen_pipeline(run_id: str, dataset_id: str) -> Dict[str, Any]:
         DATASET_BUCKET = "datasets"
         import io
         try:
-            # file_url is a path, not a full URL - use Supabase storage API
-            b = supabase.storage.from_(DATASET_BUCKET).download(file_url)
-            raw = b if isinstance(b, (bytes, bytearray)) else b.read()
-            real_df = pd.read_csv(io.BytesIO(raw))
-        except Exception as e:
-            # Fallback: try as full URL if it's already a URL
+            # Smart path handling
+            # file_url logic:
+            # 1. If http/https, try downloading directly
+            # 2. If it looks like a path (folder/file), try downloading from bucket
+            # 3. If it is just a filename, download from bucket
+            
             if file_url.startswith("http"):
-                import requests
-                response = requests.get(file_url, timeout=60)
-                response.raise_for_status()
-                real_df = pd.read_csv(io.StringIO(response.text))
+                 import requests
+                 print(f"[allgreen-worker] Downloading from URL: {file_url}")
+                 response = requests.get(file_url, timeout=60)
+                 response.raise_for_status()
+                 real_df = pd.read_csv(io.StringIO(response.text))
             else:
-                raise ValueError(f"Failed to download dataset: {e}")
+                 # Clean path: "datasets/foo.csv" -> "foo.csv" if bucket is 'datasets'
+                 clean_path = file_url
+                 if clean_path.startswith(f"{DATASET_BUCKET}/"):
+                     clean_path = clean_path[len(DATASET_BUCKET)+1:]
+                 
+                 print(f"[allgreen-worker] Downloading from Storage: {DATASET_BUCKET}/{clean_path}")
+                 b = supabase.storage.from_(DATASET_BUCKET).download(clean_path)
+                 raw = b if isinstance(b, (bytes, bytearray)) else b.read()
+                 real_df = pd.read_csv(io.BytesIO(raw))
+
+        except Exception as e:
+            raise ValueError(f"Failed to download dataset ({file_url}): {e}")
         
         print(f"[allgreen-worker] Loaded dataset: {len(real_df)} rows, {len(real_df.columns)} columns")
         
@@ -315,6 +327,7 @@ def execute_allgreen_pipeline(run_id: str, dataset_id: str) -> Dict[str, Any]:
         }
         
     except Exception as e:
+        import traceback
         error_msg = f"Pipeline failed: {str(e)}"
         print(f"[allgreen-worker] ❌ {error_msg}")
         print(traceback.format_exc())
