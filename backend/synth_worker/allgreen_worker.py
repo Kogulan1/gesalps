@@ -22,6 +22,9 @@ from sdv.metadata import SingleTableMetadata
 
 # Import from existing worker
 sys.path.insert(0, os.path.dirname(__file__))
+# Add parent directory to path to reach 'libs'
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
 from clinical_preprocessor import ClinicalPreprocessor
 from models.sdv_models import TVAESynthesizer
 from worker import (
@@ -33,6 +36,24 @@ from worker import (
     ARTIFACT_BUCKET,
     ensure_bucket,
 )
+
+# ----- NEW IMPORTS FOR AUDIT -----
+try:
+    from libs.skills.regulatory_auditor import RegulatoryAuditor, RedTeamer
+    AUDITOR_AVAILABLE = True
+    print("[allgreen-worker] Loaded RegulatoryAuditor & RedTeamer")
+except ImportError as e:
+    print(f"[allgreen-worker] WARNING: RegulatoryAuditor missing: {e}")
+    # Try alternate import path if running from root
+    try:
+         from backend.libs.skills.regulatory_auditor import RegulatoryAuditor, RedTeamer
+         AUDITOR_AVAILABLE = True
+         print("[allgreen-worker] Loaded RegulatoryAuditor & RedTeamer (abs path)")
+    except ImportError:
+         AUDITOR_AVAILABLE = False
+         RegulatoryAuditor = None
+         RedTeamer = None
+# ---------------------------------
 
 # Configuration - EXACT values from proven local setup
 ALL_GREEN_CONFIG = {
@@ -227,6 +248,38 @@ def execute_allgreen_pipeline(run_id: str, dataset_id: str) -> Dict[str, Any]:
         
         log_step(run_id, step_no, "metrics", metrics_detail, metrics)
         
+        # Start Step 8.5: Full Regulatory Audit (from Standard Worker)
+        # ----------------------------------------------------------------
+        if AUDITOR_AVAILABLE and RegulatoryAuditor and RedTeamer:
+             print("[allgreen-worker][audit] Starting Full Regulatory Audit Step...", flush=True)
+             step_no += 1
+             log_step(run_id, step_no, "audit", "Running Red Team Attack & Regulatory Auditor")
+             
+             try:
+                 # A. Red Team (Linkage Attack Simulation)
+                 # We need to run this to get the 'red_team_report' for the auditor
+                 print("[allgreen-worker][audit] Running Red Teamer linkage attack...", flush=True)
+                 attacker = RedTeamer()
+                 rt_res = attacker.execute(real_df, synth_df)
+                 metrics["linkage_attack_success"] = rt_res.get("overall_success_rate", 0.0)
+                 metrics["red_team_report"] = rt_res
+                 
+                 # B. Regulatory Auditor (Text Generation)
+                 print("[allgreen-worker][audit] Running Regulatory Auditor certification...", flush=True)
+                 auditor = RegulatoryAuditor(run_id=run_id)
+                 audit_report = auditor.evaluate(metrics, semantic_score=0.85) # Default semantic score for now
+                 metrics["regulatory_audit"] = audit_report
+                 metrics["certification_seal"] = auditor.get_seal(audit_report)
+                 
+                 print(f"[allgreen-worker][audit] Audit Complete. Seal: {metrics.get('certification_seal')}")
+                 
+             except Exception as e:
+                 print(f"[allgreen-worker][audit] FAILED: {e}")
+                 import traceback
+                 traceback.print_exc()
+                 # Don't fail the whole run, just allow partial metrics (robustness)
+        # ----------------------------------------------------------------
+
         # Step 9: Save artifacts
         log_step(run_id, step_no, "artifacts", "Saving synthetic data and artifacts...")
         step_no += 1

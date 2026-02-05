@@ -60,16 +60,15 @@ function cell(v: number | string | null | undefined, digits = 3) {
 
 // Starburst Seal Component matching PDF logic (40 points, 45/40 radii)
 function CertifiedSeal() {
-  // Generate the starburst path
   const points = 40;
   const outerRadius = 45;
   const innerRadius = 40;
-  const center = 50; // SVG viewBox 0-100, so center is 50,50
+  const center = 50; 
   
   let d = "";
   for (let i = 0; i < points * 2; i++) {
     const angle = (Math.PI * i) / points;
-    const radius = urlRadiusToSvgRadius(i % 2 === 0 ? outerRadius : innerRadius);
+    const radius = i % 2 === 0 ? outerRadius : innerRadius;
     const x = center + radius * Math.cos(angle);
     const y = center + radius * Math.sin(angle);
     if (i === 0) d += `M${x} ${y}`;
@@ -77,22 +76,13 @@ function CertifiedSeal() {
   }
   d += "Z";
 
-  // Helper to scale PDF coords (approx 90-100 units wide) to SVG 100x100
-  function urlRadiusToSvgRadius(r: number) {
-      return r;
-  }
-
   return (
     <div className="relative w-32 h-32 flex items-center justify-center scale-110">
       <svg viewBox="0 0 100 100" className="w-full h-full animate-in fade-in zoom-in duration-700" style={{ color: '#dc2626' }}>
         <path fill="currentColor" d={d} />
-        
-        {/* Inner Rings (PDF: r=36 w=2, r=32 w=1) */}
         <circle cx="50" cy="50" r="36" fill="none" stroke="white" strokeWidth="2" />
         <circle cx="50" cy="50" r="32" fill="none" stroke="white" strokeWidth="1" />
       </svg>
-      
-      {/* Content */}
       <div className="absolute flex flex-col items-center justify-center pb-1" style={{ color: C.white }}>
         <div className="text-[10px] font-bold tracking-widest uppercase mb-0.5" style={{ fontFamily: 'Helvetica, sans-serif' }}>Gesalp AI</div>
         <div className="text-[7px] font-bold tracking-wider uppercase mb-0.5" style={{ fontFamily: 'Helvetica, sans-serif' }}>Verified</div>
@@ -131,10 +121,8 @@ const C = {
   green200: '#bbf7d0',
 };
 
-// Unified StatusBadge for consistent HTML & PDF rendering
-// Unified StatusBadge for consistent HTML & PDF rendering
+// Unified StatusBadge
 function StatusBadge({ status, text, isPdf = false }: { status: boolean | null | "neutral", text?: string, isPdf?: boolean }) {
-    // Determine configuration based on status
     let bg = C.slate100;
     let textCol = C.slate500;
     let border = C.slate200;
@@ -152,7 +140,6 @@ function StatusBadge({ status, text, isPdf = false }: { status: boolean | null |
         label = text || "WARN";
     }
 
-    // PDF Fallback: Remove background/border to avoid alignment artifacts
     if (isPdf) {
         return (
             <div style={{
@@ -161,7 +148,7 @@ function StatusBadge({ status, text, isPdf = false }: { status: boolean | null |
                 fontWeight: 700,
                 textTransform: 'uppercase',
                 display: 'inline-block',
-                textAlign: 'right', // Align text right to look clean without box
+                textAlign: 'right', 
                 padding: 0,
                 lineHeight: 'normal'
             }}>
@@ -186,7 +173,7 @@ function StatusBadge({ status, text, isPdf = false }: { status: boolean | null |
             justifyContent: 'center',
             padding: '0 8px',
             position: 'relative',
-            top: '2px', // Explicitly offset box for PDF alignment
+            top: '2px', 
             lineHeight: 1
         }}>
             {label}
@@ -207,8 +194,61 @@ export default function ReportView({ report }: { report: Report }) {
 
   const passMIA = typeof p.mia_auc === "number" ? p.mia_auc <= 0.60 : null;
   const passDup = typeof p.dup_rate === "number" ? (p.dup_rate * 100) <= 5.0 : null;
+  const passLinkage = typeof p.linkage_attack_success === "number" ? p.linkage_attack_success <= 0.05 : null;
   const passKS = typeof u.ks_mean === "number" ? u.ks_mean <= 0.10 : null;
   const passCorr = typeof u.corr_delta === "number" ? u.corr_delta <= 0.10 : null;
+  const passAUROC = typeof u.auroc === "number" ? u.auroc >= 0.80 : null;
+
+  // Composite Logic for Defensible GTM Compliance with Granular Feedback
+  
+  // Helper: Returns false (Fail) if ANY fail. Returns null (N/A) if ANY null (and no fails). Returns true (Pass) only if ALL pass.
+  const getCompositeStatus = (metrics: (boolean | null)[]) => {
+      if (metrics.some(m => m === false)) return false; // Hard Fail
+      if (metrics.some(m => m === null)) return null;   // Missing Data
+      return true; // All Pass
+  };
+
+  // 1. GDPR Logic
+  const statusGDPR = getCompositeStatus([passMIA, passLinkage]);
+  let textGDPR = "Anonymization confirmed via Singling Out (MIA) and Linkage resistance.";
+  
+  if (statusGDPR === false) {
+      const fails: string[] = [];
+      if (passMIA === false) fails.push("Singling Out (MIA > 0.60)");
+      if (passLinkage === false) fails.push("Linkage (Risk > 5%)");
+      textGDPR = `Non-Compliant: Failed ${fails.join(" & ")}.`;
+  } else if (statusGDPR === null) {
+       const missing: string[] = [];
+       if (passMIA === null) missing.push("MIA");
+       if (passLinkage === null) missing.push("Linkage");
+       textGDPR = `Verification Pending: Waiting for ${missing.join(" & ")} metrics.`;
+  }
+
+  // 2. HIPAA Logic
+  const statusHIPAA = getCompositeStatus([passDup, passLinkage]);
+  let textHIPAA = "Expert Determination Proxy: Statistical Re-ID Risk < 0.05 verified.";
+  
+  if (statusHIPAA === false) {
+      const fails: string[] = [];
+      if (passDup === false) fails.push("Duplicates (> 5%)");
+      if (passLinkage === false) fails.push("Linkage (> 5%)");
+      textHIPAA = `High Risk: ${fails.join(" & ")} exceed limits.`;
+  } else if (statusHIPAA === null) {
+      textHIPAA = "Verification Pending: Insufficient data for Expert Determination.";
+  }
+
+  // 3. nFADP Logic
+  const statusNFADP = getCompositeStatus([passMIA, passLinkage]);
+  let textNFADP = "Privacy by Design: Validated against Linkage and Inference attacks.";
+  
+  if (statusNFADP === false) {
+      const fails: string[] = [];
+      if (passLinkage === false) fails.push("Linkage Risk");
+      if (passMIA === false) fails.push("Inference Risk");
+      textNFADP = `Non-Compliant: Vulnerable to ${fails.join(" & ")}.`;
+  } else if (statusNFADP === null) {
+      textNFADP = "Verification Pending: Privacy validation metrics unavailable.";
+  }
 
   const today = meta.completed_at 
     ? new Date(meta.completed_at).toLocaleDateString() 
@@ -219,8 +259,6 @@ export default function ReportView({ report }: { report: Report }) {
   const uploadReportToSupabase = async (blob: Blob, fileName: string) => {
     try {
         if (runId === "UNKNOWN") return;
-        
-        // 1. Upload File
         const filePath = `${runId}/${fileName}`;
         const { error: uploadError } = await supabase.storage
             .from('run_artifacts')
@@ -229,12 +267,8 @@ export default function ReportView({ report }: { report: Report }) {
                 upsert: true
             });
 
-        if (uploadError) {
-            console.error("Upload failed:", uploadError);
-            return;
-        }
+        if (uploadError) return;
 
-        // 2. Register in run_artifacts table
         const { error: dbError } = await supabase
             .from('run_artifacts')
             .upsert({
@@ -244,14 +278,6 @@ export default function ReportView({ report }: { report: Report }) {
                 mime: 'application/pdf',
                 bytes: blob.size
             }, { onConflict: 'run_id, kind' });
-
-        if (dbError) {
-             console.error("DB Registration failed:", dbError);
-        } else {
-             console.log("Officially synced report to Supabase (Audit Log)");
-             // toast({ title: "Official Report Synced", variant: "success" }); // Silent sync per user request
-        }
-
     } catch (e) {
         console.error("Sync error:", e);
     }
@@ -261,15 +287,12 @@ export default function ReportView({ report }: { report: Report }) {
     if (!reportRef.current) return;
     setGeneratingPDF(true);
 
-    // 0. Save Original Styles & Apply Temporary Fixed Width
     const originalMinWidth = reportRef.current.style.minWidth;
     const originalWidth = reportRef.current.style.width;
 
-    // Force Desktop Width for Capture
     reportRef.current.style.minWidth = '245mm';
     reportRef.current.style.width = '245mm';
     
-    // Allow small delay for reflow (optional but safer)
     await new Promise(resolve => setTimeout(resolve, 50));
 
     try {
@@ -281,67 +304,53 @@ export default function ReportView({ report }: { report: Report }) {
 
         const pageWidth = 210;
         const pageHeight = 297;
-        const margin = 10; // 10mm margin
+        const margin = 10;
         const contentWidth = pageWidth - (margin * 2);
         
         let cursorY = margin;
 
-        // Helper to add element to PDF
         const addElementToPDF = async (element: HTMLElement) => {
             const canvas = await html2canvas(element, {
                 scale: 2,
                 useCORS: true,
                 logging: false,
                 backgroundColor: '#ffffff',
-                windowWidth: 1400, // Force desktop width for consistent rendering
+                windowWidth: 1400,
             });
 
             const imgData = canvas.toDataURL('image/png');
             const imgHeight = (canvas.height * contentWidth) / canvas.width;
 
-            // Check if we need a new page
             if (cursorY + imgHeight > pageHeight - margin) {
                 pdf.addPage();
                 cursorY = margin;
             }
 
             pdf.addImage(imgData, 'PNG', margin, cursorY, contentWidth, imgHeight);
-            cursorY += imgHeight + 5; // Add 5mm gap between sections
+            cursorY += imgHeight + 5; 
         };
 
-        // 1. Capture Header
         const header = reportRef.current.querySelector('header');
         if (header) await addElementToPDF(header);
 
-        // 2. Capture Main Sections
         const sections = Array.from(reportRef.current.querySelectorAll('main > section'));
         for (const section of sections) {
             await addElementToPDF(section as HTMLElement);
         }
 
-        // 3. Capture Footer
         const footer = reportRef.current.querySelector('footer');
-        // Ensure footer stays together or moves to new page if needed
-        if (footer) {
-             // Optional: Force footer to bottom of page if space permits? 
-             // For now, just flow it naturally like other sections
-             await addElementToPDF(footer);
-        }
+        if (footer) await addElementToPDF(footer);
         
-        // Open in new tab
         const blobUrl = pdf.output('bloburl');
         const pdfBlob = pdf.output('blob');
         
-        // Background Upload
         uploadReportToSupabase(pdfBlob, 'gesalps_quality_report.pdf');
-
         window.open(blobUrl, '_blank');
         
     } catch (err) {
         console.error("PDF Generation failed:", err);
         toast({ title: "Failed to generate PDF", variant: "error" });
     } finally {
-        // 4. Restore Original Styles
         if (reportRef.current) {
             reportRef.current.style.minWidth = originalMinWidth;
             reportRef.current.style.width = originalWidth;
@@ -353,8 +362,6 @@ export default function ReportView({ report }: { report: Report }) {
   return (
     <div className="bg-slate-100 min-h-screen p-8 flex justify-center relative">
       
-      {/* Floating Unified Download Button */}
-      {/* Floating Unified Download Button */}
       <div className="absolute top-4 right-4 z-50" data-html2canvas-ignore>
         <button 
            onClick={handleDownloadWebView}
@@ -369,7 +376,6 @@ export default function ReportView({ report }: { report: Report }) {
         </button>
       </div>
 
-      {/* Main Report Container - Explicit Background */}
       <div 
         ref={reportRef} 
         id="report-printable-area"
@@ -377,21 +383,17 @@ export default function ReportView({ report }: { report: Report }) {
         style={{ backgroundColor: C.white, color: C.slate900, borderColor: C.slate200 }} 
       >
       
-      {/* --- HEADER --- */}
       <header className="pb-0 relative" style={{ backgroundColor: C.white }}>
          <div className="absolute bottom-0 left-0 right-0 h-1" style={{ backgroundColor: C.red600 }}></div>
          <div className="p-8 pb-6 flex justify-between items-start">
-            {/* Logo Left */}
             <div className="flex flex-col">
                <div className="flex items-center justify-between w-full">
                   <span className="text-4xl font-extrabold tracking-tighter uppercase" style={{ color: C.slate900 }}>GESALP</span>
                   <span className="text-4xl font-extrabold tracking-tighter uppercase" style={{ color: '#E0342C' }}>AI</span>
                </div>
-
                <div className="text-xs font-bold tracking-[0.2em] uppercase mt-1 pl-1" style={{ color: '#E0342C' }}>Confidential Report</div>
             </div>
 
-            {/* Metadata Right */}
             <div className="text-right space-y-1">
                <div className="grid grid-cols-[80px_1fr] gap-x-3 text-xs">
                   <span className="font-bold uppercase tracking-wider text-right" style={{ color: C.slate400 }}>Project</span>
@@ -412,7 +414,6 @@ export default function ReportView({ report }: { report: Report }) {
 
       <main className="flex-1 p-8 space-y-12 relative z-10">
         
-        {/* Executive Summary */}
         <section>
            <div className="flex items-center gap-3 mb-6 pb-3" style={{ borderBottom: `1px solid ${C.slate100}` }}>
               <div className="h-6 w-1 rounded-full" style={{ backgroundColor: C.red600 }}></div>
@@ -439,10 +440,7 @@ export default function ReportView({ report }: { report: Report }) {
                     Meets HIPAA Expert Determination & GDPR Art. 32 Anonymization Standards
                  </p>
               </div>
-              
-              {/* Vertical Separator */}
               <div className="h-16 w-px mx-8 opacity-40" style={{ backgroundColor: C.slate400 }}></div>
-
               <div className="text-right">
                   <div className="text-4xl font-extrabold mb-2" style={{ color: C.slate900 }}>{(compliance?.score ? compliance.score * 100 : 0).toFixed(0)}%</div>
                   <div className="text-[10px] uppercase font-bold tracking-wider" style={{ color: C.slate500 }}>Confidence Score</div>
@@ -459,8 +457,20 @@ export default function ReportView({ report }: { report: Report }) {
               </div>
               <div className="space-y-6">
                   <MetricRow label="MIA ROC-AUC" value={cell(p.mia_auc, 4)} target="≤ 0.60" status={passMIA} isPdf={generatingPDF} />
-                  <MetricRow label="Linkage Risk" value={`${((p.dup_rate || 0) * 100).toFixed(2)}%`} target="≤ 5%" status={passDup} isPdf={generatingPDF} />
-                  <MetricRow label="Identifiability" value={cell(p.identifiability_score, 3)} target="≤ 0.10" status={true} isPdf={generatingPDF} />
+                  <MetricRow 
+                    label="Linkage Risk" 
+                    value={typeof p.linkage_attack_success === 'number' ? `${(p.linkage_attack_success * 100).toFixed(2)}%` : "N/A"} 
+                    target="≤ 5%" 
+                    status={passLinkage} 
+                    isPdf={generatingPDF} 
+                  />
+                  <MetricRow 
+                    label="Identical Match Rate" 
+                    value={typeof p.dup_rate === 'number' ? `${(p.dup_rate * 100).toFixed(2)}%` : "N/A"} 
+                    target="≤ 1%" 
+                    status={passDup} 
+                    isPdf={generatingPDF} 
+                  />
               </div>
            </div>
 
@@ -473,11 +483,11 @@ export default function ReportView({ report }: { report: Report }) {
               <div className="space-y-6">
                   <MetricRow label="Statistical Fidelity (KS)" value={cell(u.ks_mean, 4)} target="≤ 0.10" status={passKS} note="Lower is better" isPdf={generatingPDF} />
                   <MetricRow label="Correlation (Delta)" value={cell(u.corr_delta, 4)} target="≤ 0.10" status={passCorr} note="Lower is better" isPdf={generatingPDF} />
+                  <MetricRow label="AUROC Retention" value={cell(u.auroc, 3)} target="≥ 0.80" status={passAUROC} note="Higher is better" isPdf={generatingPDF} />
               </div>
            </div>
         </section>
 
-        {/* --- TIER 2: COMPLIANCE MATRIX --- */}
         <section className="mb-8 break-inside-avoid">
             <div className="flex items-center gap-3 mb-6 pb-3" style={{ borderBottom: `1px solid ${C.slate100}` }}>
                  <div className="h-6 w-1 rounded-full" style={{ backgroundColor: C.slate300, marginTop: '4px' }}></div>
@@ -485,51 +495,47 @@ export default function ReportView({ report }: { report: Report }) {
             </div>
             
             <div className="grid grid-cols-3 gap-4">
-                {/* GDPR Card */}
                 <div className="p-4 rounded-lg" style={{ backgroundColor: C.white, border: `1px solid ${C.slate200}` }}>
                     <div className="flex justify-between items-start mb-3">
                         <div className="font-bold text-xs uppercase tracking-wider" style={{ color: C.slate700 }}>GDPR</div>
-                        <StatusBadge status={true} text="COMPLIANT" isPdf={generatingPDF} />
+                        <StatusBadge status={statusGDPR === null ? "neutral" : statusGDPR} text={statusGDPR === true ? "COMPLIANT" : statusGDPR === false ? "NON-COMPLIANT" : "PENDING"} isPdf={generatingPDF} />
                     </div>
                     <div className="space-y-2">
                         <div className="text-[10px] uppercase font-bold" style={{ color: C.slate400 }}>Basis</div>
                         <p className="text-xs font-medium leading-relaxed" style={{ color: C.slate600 }}>
-                            Anonymization confirmed via Singling Out resistance (MIA AUC &lt; 0.60).
+                            {textGDPR}
                         </p>
                     </div>
                 </div>
 
-                {/* HIPAA Card */}
                 <div className="p-4 rounded-lg" style={{ backgroundColor: C.white, border: `1px solid ${C.slate200}` }}>
                      <div className="flex justify-between items-start mb-3">
                         <div className="font-bold text-xs uppercase tracking-wider" style={{ color: C.slate700 }}>HIPAA</div>
-                        <StatusBadge status={true} text="SAFE HARBOR" isPdf={generatingPDF} />
+                        <StatusBadge status={statusHIPAA === null ? "neutral" : statusHIPAA} text={statusHIPAA === true ? "SAFE HARBOR" : statusHIPAA === false ? "HIGH RISK" : "PENDING"} isPdf={generatingPDF} />
                     </div>
                     <div className="space-y-2">
                         <div className="text-[10px] uppercase font-bold" style={{ color: C.slate400 }}>Basis</div>
                         <p className="text-xs font-medium leading-relaxed" style={{ color: C.slate600 }}>
-                            Expert Determination Proxy: Statistical Risk &lt; 0.05 satisfied.
+                            {textHIPAA}
                         </p>
                     </div>
                 </div>
 
-                {/* nFADP Card */}
                 <div className="p-4 rounded-lg" style={{ backgroundColor: C.white, border: `1px solid ${C.slate200}` }}>
                      <div className="flex justify-between items-start mb-3">
                         <div className="font-bold text-xs uppercase tracking-wider" style={{ color: C.slate700 }}>Swiss nFADP</div>
-                        <StatusBadge status={true} text="COMPLIANT" isPdf={generatingPDF} />
+                        <StatusBadge status={statusNFADP === null ? "neutral" : statusNFADP} text={statusNFADP === true ? "COMPLIANT" : statusNFADP === false ? "NON-COMPLIANT" : "PENDING"} isPdf={generatingPDF} />
                     </div>
                     <div className="space-y-2">
                         <div className="text-[10px] uppercase font-bold" style={{ color: C.slate400 }}>Basis</div>
                         <p className="text-xs font-medium leading-relaxed" style={{ color: C.slate600 }}>
-                            Privacy by Design: Generated via {meta.model || 'SOTA'} with Differential Privacy.
+                            {textNFADP}
                         </p>
                     </div>
                 </div>
             </div>
         </section>
 
-        {/* --- TIER 3: TECHNICAL RISK ASSESSMENT --- */}
         <section className="break-inside-avoid mb-8">
              <div className="flex items-center gap-3 mb-6 pb-3" style={{ borderBottom: `1px solid ${C.slate100}` }}>
                  <div className="h-6 w-1 rounded-full" style={{ backgroundColor: C.slate300, marginTop: '4px' }}></div>
@@ -537,7 +543,6 @@ export default function ReportView({ report }: { report: Report }) {
             </div>
 
             <div className="space-y-8">
-                {/* 3.1 Privacy Compliance Matrix */}
                 <div className="rounded-lg p-6" style={{ border: `1px solid ${C.slate100}`, backgroundColor: C.slate50 }}>
                     <div className="flex justify-between items-end mb-4">
                         <h3 className="text-xs font-bold uppercase" style={{ color: C.slate500 }}>3.1 Privacy Compliance Matrix (Mandatory)</h3>
@@ -566,7 +571,7 @@ export default function ReportView({ report }: { report: Report }) {
                             <div>Auditor Note</div>
                         </div>
                         
-                         <RiskRow 
+                        <RiskRow 
                             label="Identical Match Rate" 
                             value={`${((p.dup_rate || 0) * 100).toFixed(2)}%`} 
                             threshold="< 1.0%" 
@@ -593,7 +598,6 @@ export default function ReportView({ report }: { report: Report }) {
                     </div>
                 </div>
 
-                {/* 3.2 Statistical Fidelity */}
                 <div className="rounded-lg p-6" style={{ border: `1px solid ${C.slate100}`, backgroundColor: C.slate50 }}>
                     <h3 className="text-xs font-bold uppercase mb-4" style={{ color: C.slate500 }}>3.2 Statistical Fidelity & Clinical Insight</h3>
                     
@@ -613,7 +617,6 @@ export default function ReportView({ report }: { report: Report }) {
             </div>
         </section>
 
-        {/* --- TIER 4: DPIA SUMMARY --- */}
         <section className="break-inside-avoid">
              <div className="flex items-center gap-3 mb-6 pb-3" style={{ borderBottom: `1px solid ${C.slate100}` }}>
                  <div className="h-6 w-1 rounded-full" style={{ backgroundColor: C.slate300, marginTop: '4px' }}></div>
@@ -631,7 +634,7 @@ export default function ReportView({ report }: { report: Report }) {
                 </div>
                 <div className="grid grid-cols-[150px_1fr] gap-4">
                     <div className="text-xs font-bold uppercase" style={{ color: C.slate500 }}>Mitigation</div>
-                    <div className="text-sm" style={{ color: C.slate700 }}>Implemented Differential Privacy (ε=2.4) and automated outlier clipping. 'Singling Out' attack simulation confirmed resilience.</div>
+                    <div className="text-sm" style={{ color: C.slate700 }}>Implemented Synthetic Anonymization and automated outlier clipping. 'Singling Out' attack simulation confirmed resilience.</div>
                 </div>
                 <div className="grid grid-cols-[150px_1fr] gap-4 items-center">
                     <div className="text-xs font-bold uppercase" style={{ color: C.slate500 }}>Residual Risk</div>
@@ -645,7 +648,6 @@ export default function ReportView({ report }: { report: Report }) {
 
       </main>
 
-      {/* Footer / Seal */}
       <footer className="p-8 pt-0 mt-auto relative">
          <div className="flex justify-between items-end pt-8" style={{ borderTop: `1px solid ${C.slate100}` }}>
             <div className="text-xs italic" style={{ color: C.slate400 }}>
@@ -653,34 +655,29 @@ export default function ReportView({ report }: { report: Report }) {
                Confidential Verification Report
             </div>
             
-            {/* The Seal */}
             <div className="transform translate-y-2 translate-x-4">
                <CertifiedSeal />
             </div>
          </div>
       </footer>
       
-      {/* Background Watermark */}
       <div className="absolute inset-0 pointer-events-none z-0 flex items-center justify-center opacity-[0.02]">
          <Shield className="w-96 h-96" color={C.slate900} />
       </div>
 
-      </div> {/* Close Report Area */}
+      </div>
     </div>
   );
 }
 
-// Updated MetricRow with Grid Layout for strict alignment
 function MetricRow({ label, value, target, status, note, isPdf }: { label: string, value: string, target: string, status: boolean | null, note?: string, isPdf?: boolean }) {
    return (
       <div className="grid grid-cols-2 gap-4 py-4 last:border-0 px-4 items-start" style={{ borderBottom: `1px solid ${C.slate100}` }}>
-         {/* Left Column: Label */}
          <div className="flex flex-col justify-start">
             <span className="text-sm font-semibold text-left" style={{ color: C.slate700 }}>{label}</span>
             {note && <span className="text-[10px] italic mt-1 text-left" style={{ color: C.slate400 }}>{note}</span>}
          </div>
          
-         {/* Right Column: Value & Status */}
          <div className="flex flex-col items-end text-right">
             <div className="text-base font-bold mb-1.5" style={{ color: status === null ? C.slate400 : C.slate900 }}>{value}</div>
             <div className="flex items-center justify-end gap-3 w-full">
@@ -697,7 +694,6 @@ function MetricRow({ label, value, target, status, note, isPdf }: { label: strin
    );
 }
 
-// Table-style row for the Privacy Matrix
 function RiskRow({ label, value, threshold, pass, note, isPdf }: { label: string, value: string, threshold: string, pass: boolean | null, note: string, isPdf?: boolean }) {
     if (pass === null) {
          return (
@@ -731,7 +727,6 @@ function TechnicalRow({ label, value, limit, status, isPdf }: { label: string, v
         <div className="flex justify-between items-start py-2 last:border-0" style={{ borderBottom: `1px solid ${C.slate100}` }}>
             <div className="flex flex-col">
                  <span className="text-sm font-semibold" style={{ color: C.slate700 }}>{label}</span>
-                 {/* Placeholder for description if needed, matching dashboard style */}
             </div>
             
             <div className="flex flex-col items-end gap-1">
