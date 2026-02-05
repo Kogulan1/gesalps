@@ -272,14 +272,16 @@ export function GlobalHeader() {
                         </Link>
                       </DropdownMenuItem>
                     )}
-                    <DropdownMenuItem className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
-                      <Link href={`/${locale}/settings`} className="w-full flex items-center">
-                        <div className="flex items-center gap-3">
-                          <Settings className="h-4 w-4" />
-                          <span>Account Settings</span>
-                        </div>
-                      </Link>
-                    </DropdownMenuItem>
+                    {!pathname.includes('/settings') && (
+                      <DropdownMenuItem className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                        <Link href={`/${locale}/settings`} className="w-full flex items-center">
+                          <div className="flex items-center gap-3">
+                            <Settings className="h-4 w-4" />
+                            <span>Account Settings</span>
+                          </div>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
 
                     <DropdownMenuItem className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer" onClick={handleLogout}>
                       <div className="flex items-center gap-3">
