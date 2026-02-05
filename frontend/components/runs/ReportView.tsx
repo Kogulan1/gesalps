@@ -15,6 +15,7 @@ export type Report = {
     identifiability_score?: number | null;
     dp_epsilon?: number | null;
     dp_effective?: boolean | null;
+    linkage_attack_success?: number | null;
   };
   utility?: { 
     ks_mean?: number | null; 
@@ -472,7 +473,6 @@ export default function ReportView({ report }: { report: Report }) {
               <div className="space-y-6">
                   <MetricRow label="Statistical Fidelity (KS)" value={cell(u.ks_mean, 4)} target="≤ 0.10" status={passKS} note="Lower is better" isPdf={generatingPDF} />
                   <MetricRow label="Correlation (Delta)" value={cell(u.corr_delta, 4)} target="≤ 0.10" status={passCorr} note="Lower is better" isPdf={generatingPDF} />
-                  <MetricRow label="AUROC Retention" value={cell(u.auroc, 3)} target="≥ 0.80" status={true} note="Higher is better" isPdf={generatingPDF} />
               </div>
            </div>
         </section>
@@ -566,7 +566,7 @@ export default function ReportView({ report }: { report: Report }) {
                             <div>Auditor Note</div>
                         </div>
                         
-                        <RiskRow 
+                         <RiskRow 
                             label="Identical Match Rate" 
                             value={`${((p.dup_rate || 0) * 100).toFixed(2)}%`} 
                             threshold="< 1.0%" 
@@ -575,11 +575,11 @@ export default function ReportView({ report }: { report: Report }) {
                             isPdf={generatingPDF}
                         />
                          <RiskRow 
-                            label="Distance to Closest (DCR)" 
-                            value={cell(p.identifiability_score, 2)}
-                            threshold="> 0.10" 
-                            pass={true} 
-                            note="Synthetic points are sufficiently distant from real points." 
+                            label="Linkage Attack Success" 
+                            value={`${((p.linkage_attack_success || 0) * 100).toFixed(2)}%`}
+                            threshold="< 5.0%" 
+                            pass={(p.linkage_attack_success || 0) < 0.05} 
+                            note="Red Team simulated re-identification attempt." 
                             isPdf={generatingPDF}
                         />
                          <RiskRow 
@@ -588,14 +588,6 @@ export default function ReportView({ report }: { report: Report }) {
                             threshold="< 0.60" 
                             pass={passMIA} 
                             note={passMIA ? "Attacker cannot distinguish training membership." : "Risk: Model may define training set boundary."} 
-                            isPdf={generatingPDF}
-                        />
-                         <RiskRow 
-                            label="Differential Privacy (ε)" 
-                            value={`ε = ${p.dp_epsilon || '2.4'}`} 
-                            threshold="≤ 4.0" 
-                            pass={true} 
-                            note="High-tier mathematical privacy protection enabled." 
                             isPdf={generatingPDF}
                         />
                     </div>
