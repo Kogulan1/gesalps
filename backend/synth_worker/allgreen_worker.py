@@ -39,14 +39,16 @@ from worker import (
 
 # ----- NEW IMPORTS FOR AUDIT -----
 try:
-    from libs.skills.regulatory_auditor import RegulatoryAuditor, RedTeamer
+    from libs.skills.regulatory_auditor import RegulatoryAuditor
+    from libs.skills.red_teamer import RedTeamer
     AUDITOR_AVAILABLE = True
     print("[allgreen-worker] Loaded RegulatoryAuditor & RedTeamer")
 except ImportError as e:
     print(f"[allgreen-worker] WARNING: RegulatoryAuditor missing: {e}")
     # Try alternate import path if running from root
     try:
-         from backend.libs.skills.regulatory_auditor import RegulatoryAuditor, RedTeamer
+         from backend.libs.skills.regulatory_auditor import RegulatoryAuditor
+         from backend.libs.skills.red_teamer import RedTeamer
          AUDITOR_AVAILABLE = True
          print("[allgreen-worker] Loaded RegulatoryAuditor & RedTeamer (abs path)")
     except ImportError:
