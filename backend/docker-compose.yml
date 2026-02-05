@@ -20,9 +20,9 @@ services:
       report-service:
         condition: service_started
       ollama:
-        condition: service_healthy         # 👈 wait for Ollama health
+        condition: service_healthy # 👈 wait for Ollama health
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" ]
       interval: 10s
       timeout: 5s
       retries: 6
@@ -48,7 +48,7 @@ services:
       - OPENROUTER_BASE=${OPENROUTER_BASE:-https://openrouter.ai/api/v1}
     depends_on:
       ollama:
-        condition: service_healthy         # 👈 wait for Ollama health
+        condition: service_healthy # 👈 wait for Ollama health
     volumes:
       - ../.antigravity:/app/.antigravity
       - ./services/omop_engine/models:/app/services/omop_engine/models
@@ -56,6 +56,25 @@ services:
       - ./synth_worker/worker.py:/app/worker.py
       - ./synth_worker/generation_service.py:/app/generation_service.py
       - ./services/omop_engine/src/mapper.py:/app/services/omop_engine/src/mapper.py
+    restart: unless-stopped
+
+  allgreen-worker:
+    build:
+      context: .
+      dockerfile: synth_worker/Dockerfile
+    container_name: gesalps_allgreen_worker
+    command: [ "python", "-u", "allgreen_worker.py" ]
+    env_file: .env
+    environment:
+      - DP_BACKEND=custom
+      - DP_STRICT_DEFAULT=false
+    volumes:
+      - ../.antigravity:/app/.antigravity
+      # Map the script specifically to allow hot-reloading/updates
+      - ./synth_worker/allgreen_worker.py:/app/allgreen_worker.py
+    depends_on:
+      api:
+        condition: service_started
     restart: unless-stopped
 
   report-service:
@@ -67,7 +86,7 @@ services:
     ports:
       - "8010:8010"
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8010/health')"]
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8010/health')" ]
       interval: 10s
       timeout: 5s
       retries: 6
@@ -92,7 +111,7 @@ services:
     container_name: gesalps_ollama_init
     volumes:
       - ollama:/root/.ollama
-    entrypoint: ["/bin/sh","-lc","ollama serve & sleep 2 && ollama pull llama3.1:8b"]
+    entrypoint: [ "/bin/sh", "-lc", "ollama serve & sleep 2 && ollama pull llama3.1:8b" ]
     restart: "no"
 
   ollama:
@@ -101,7 +120,7 @@ services:
     ports:
       - "11434:11434"
     environment:
-      - OLLAMA_HOST=0.0.0.0:11434      # ensure it listens on all interfaces
+      - OLLAMA_HOST=0.0.0.0:11434 # ensure it listens on all interfaces
     volumes:
       - ollama:/root/.ollama
     depends_on:
@@ -109,7 +128,7 @@ services:
         condition: service_completed_successfully
     healthcheck:
       # use the ollama CLI (bundled) instead of wget/curl
-      test: ["CMD", "ollama", "list"]
+      test: [ "CMD", "ollama", "list" ]
       interval: 10s
       timeout: 5s
       retries: 12
