@@ -57,16 +57,16 @@ except ImportError as e:
          RedTeamer = None
 # ---------------------------------
 
-# Configuration - EXACT values from proven local setup
+# Configuration - OPTIMIZED for VPS CPU (Faster iteration, safe quality)
 ALL_GREEN_CONFIG = {
     "method": "tvae",
-    "epochs": 2000,  # Proven: works across all clinical datasets
-    "batch_size": 32,  # Proven: optimal regularization
-    "embedding_dim": 512,  # Proven architecture
-    "compress_dims": [256, 256],  # Proven architecture
-    "decompress_dims": [256, 256],  # Proven architecture
+    "epochs": 600,       # Reduced from 2000 to fit into lunch break
+    "batch_size": 128,   # Increased from 32 (reduces per-epoch overhead)
+    "embedding_dim": 128, # Adjusted from 512 (sufficient for ~30 dims)
+    "compress_dims": [128, 128],
+    "decompress_dims": [128, 128],
     "loss_factor": 2,
-    "verbose": True,
+    "verbose": True
 }
 
 # Supabase client
